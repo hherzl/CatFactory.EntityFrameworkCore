@@ -1,6 +1,4 @@
-﻿using CatFactory.CodeFactory;
-using CatFactory.DotNetCore;
-using CatFactory.Mapping;
+﻿using CatFactory.Mapping;
 using Xunit;
 
 namespace CatFactory.EfCore.Tests
@@ -10,27 +8,20 @@ namespace CatFactory.EfCore.Tests
         [Fact]
         public void TestSingular()
         {
-            var dbObject = new DbObject { Name = "Products" };
-
-            Assert.True("Product" == dbObject.GetSingularName());
+            Assert.True("Product" == new DbObject { Name = "Products" }.GetSingularName());
+            Assert.True("Category" == new DbObject { Name = "Categories" }.GetSingularName());
         }
 
         [Fact]
         public void TestPluralization()
         {
-            var dbObject = new DbObject { Name = "Query" };
-
-            Assert.True("Queries" == dbObject.GetPluralName());
+            Assert.True("Queries" == new DbObject { Name = "Query" }.GetPluralName());
         }
 
         [Fact]
         public void TestMapName()
         {
-            var namingConvention = new DotNetNamingConvention() as INamingConvention;
-
-            var view = new View { Name = "Orders Qry" };
-
-            Assert.True("OrdersQryMap" == view.GetMapName());
+            Assert.True("OrdersQryMap" == new View { Name = "Orders Qry" }.GetMapName());
         }
     }
 }

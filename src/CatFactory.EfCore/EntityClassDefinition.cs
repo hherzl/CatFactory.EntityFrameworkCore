@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using CatFactory.DotNetCore;
+﻿using CatFactory.DotNetCore;
 using CatFactory.Mapping;
 using CatFactory.OOP;
 
@@ -10,12 +8,9 @@ namespace CatFactory.EfCore
     {
         public EntityClassDefinition(IDbObject dbObject)
         {
-            Namespaces = new List<String>()
-            {
-                "System"
-            };
+            Namespaces.Add("System");
 
-            Name = dbObject.GetEntityName();
+            Name = dbObject.GetSingularName();
 
             Constructors.Add(new ClassConstructorDefinition());
 

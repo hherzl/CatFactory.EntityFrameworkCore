@@ -23,7 +23,7 @@ namespace CatFactory.EfCore
 
             var mapMethodLines = new List<CodeLine>();
 
-            mapMethodLines.Add(new CodeLine("var entity = modelBuilder.Entity<{0}>();", mappedObject.GetEntityName()));
+            mapMethodLines.Add(new CodeLine("var entity = modelBuilder.Entity<{0}>();", mappedObject.GetSingularName()));
             mapMethodLines.Add(new CodeLine());
 
             if (String.IsNullOrEmpty(mappedObject.Schema))

@@ -8,19 +8,22 @@ namespace CatFactory.EfCore
         {
             EntityLayer = "EntityLayer";
             DataLayer = "DataLayer";
-            DataLayerMapping = "DataLayer.Mapping";
-            DataLayerContracts = "DataLayer.Contracts";
-            DataLayerRepositories = "DataLayer.Repositories";
+            Mapping = "Mapping";
+            Contracts = "Contracts";
+            DataContracts = "DataContracts";
+            Repositories = "Repositories";
         }
 
         public String EntityLayer { get; set; }
 
         public String DataLayer { get; set; }
 
-        public String DataLayerMapping { get; set; }
+        public String Mapping { get; set; }
 
-        public String DataLayerContracts { get; set; }
+        public String Contracts { get; set; }
 
-        public String DataLayerRepositories { get; set; }
+        public String DataContracts { get; set; }
+
+        public String Repositories { get; set; }
     }
 }

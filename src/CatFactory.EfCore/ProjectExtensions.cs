@@ -5,34 +5,34 @@ namespace CatFactory.EfCore
 {
     public static class ProjectExtensions
     {
-        public static String GetEntityLayerDirectory(this Project project)
+        public static String GetEntityLayerDirectory(this EfCoreProject project)
         {
-            return Path.Combine(project.OutputDirectory, "EntityLayer");
+            return Path.Combine(project.OutputDirectory, project.Namespaces.EntityLayer);
         }
 
-        public static String GetDataLayerDirectory(this Project project)
+        public static String GetDataLayerDirectory(this EfCoreProject project)
         {
-            return Path.Combine(project.OutputDirectory, "DataLayer");
+            return Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer);
         }
 
-        public static String GetDataLayerMappingDirectory(this Project project)
+        public static String GetDataLayerMappingDirectory(this EfCoreProject project)
         {
-            return Path.Combine(project.OutputDirectory, "DataLayer", "Mapping");
+            return Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer, project.Namespaces.Mapping);
         }
 
-        public static String GetDataLayerContractsDirectory(this Project project)
+        public static String GetDataLayerContractsDirectory(this EfCoreProject project)
         {
-            return Path.Combine(project.OutputDirectory, "DataLayer", "Contracts");
+            return Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer, project.Namespaces.Contracts);
         }
 
-        public static String GetDataLayerDataContractsDirectory(this Project project)
+        public static String GetDataLayerDataContractsDirectory(this EfCoreProject project)
         {
-            return Path.Combine(project.OutputDirectory, "DataLayer", "DataContracts");
+            return Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer, project.Namespaces.DataContracts);
         }
 
-        public static String GetDataLayerRepositoriesDirectory(this Project project)
+        public static String GetDataLayerRepositoriesDirectory(this EfCoreProject project)
         {
-            return Path.Combine(project.OutputDirectory, "DataLayer", "Repositories");
+            return Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer, project.Namespaces.Repositories);
         }
     }
 }

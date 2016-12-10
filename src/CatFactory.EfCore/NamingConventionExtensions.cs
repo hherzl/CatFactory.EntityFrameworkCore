@@ -14,34 +14,19 @@ namespace CatFactory.EfCore
             namingConvention = new DotNetNamingConvention() as INamingConvention;
         }
 
+        public static String GetSingularName(this IDbObject dbObject)
+        {
+            return NamingService.GetSingularName(dbObject.GetEntityName());
+        }
+
         public static String GetSingularName(this DbObject dbObject)
         {
-            var entityName = dbObject.GetEntityName();
-
-            if (dbObject.Name.EndsWith("ies"))
-            {
-                return String.Format("{0}y", entityName.Substring(0, entityName.Length - 2));
-            }
-            else
-            {
-                return String.Format("{0}", entityName.Substring(0, entityName.Length - 1));
-            }
+            return NamingService.GetSingularName(dbObject.GetEntityName());
         }
 
         public static String GetPluralName(this DbObject dbObject)
         {
-            // todo: improve the way to pluralize a name
-
-            var entityName = dbObject.GetEntityName();
-
-            if (dbObject.Name.EndsWith("y"))
-            {
-                return String.Format("{0}ies", entityName.Substring(0, entityName.Length - 1));
-            }
-            else
-            {
-                return String.Format("{0}s", entityName);
-            }
+            return NamingService.GetPluralName(dbObject.GetEntityName());
         }
 
         public static String GetEntityName(this IDbObject dbObject)
@@ -74,6 +59,11 @@ namespace CatFactory.EfCore
             return namingConvention.GetClassName(String.Format("{0}DbContext", db.Name));
         }
 
+        public static String GetDbEntityMapperName(this Database db)
+        {
+            return namingConvention.GetClassName(String.Format("{0}EntityMapper", db.Name));
+        }
+
         public static String GetEntityLayerNamespace(this EfCoreProject project)
         {
             return namingConvention.GetClassName(String.Format("{0}.{1}", project.Name, project.Namespaces.EntityLayer));
@@ -86,22 +76,17 @@ namespace CatFactory.EfCore
 
         public static String GetDataLayerMappingNamespace(this EfCoreProject project)
         {
-            return namingConvention.GetClassName(String.Format("{0}.{1}", project.Name, project.Namespaces.DataLayerMapping));
+            return namingConvention.GetClassName(String.Join(".", project.Name, project.Namespaces.DataLayer, project.Namespaces.Mapping));
         }
 
         public static String GetDataLayerContractsNamespace(this EfCoreProject project)
         {
-            return namingConvention.GetClassName(String.Format("{0}.{1}", project.Name, project.Namespaces.DataLayerContracts));
+            return namingConvention.GetClassName(String.Join(".", project.Name, project.Namespaces.DataLayer, project.Namespaces.Contracts));
         }
 
         public static String GetDataLayerRepositoriesNamespace(this EfCoreProject project)
         {
-            return namingConvention.GetClassName(String.Format("{0}.{1}", project.Name, project.Namespaces.DataLayerRepositories));
-        }
-
-        public static String GetDbEntityMapperName(this Database db)
-        {
-            return namingConvention.GetClassName(String.Format("{0}EntityMapper", db.Name));
+            return namingConvention.GetClassName(String.Join(".", project.Name, project.Namespaces.DataLayer, project.Namespaces.Repositories));
         }
     }
 }

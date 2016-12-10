@@ -17,39 +17,39 @@ namespace CatFactory.EfCore
 
             foreach (var dbObject in projectFeature.DbObjects)
             {
-                Methods.Add(new MethodDefinition(String.Format("IEnumerable<{0}>", dbObject.GetEntityName()), String.Format("Get{0}", dbObject.GetPluralName())));
+                Methods.Add(new MethodDefinition(String.Format("IEnumerable<{0}>", dbObject.GetSingularName()), String.Format("Get{0}", dbObject.GetPluralName())));
 
-                Methods.Add(new MethodDefinition(dbObject.GetEntityName(), String.Format("Get{0}", dbObject.GetEntityName()))
+                Methods.Add(new MethodDefinition(dbObject.GetSingularName(), String.Format("Get{0}", dbObject.GetSingularName()))
                 {
                     Parameters = new List<ParameterDefinition>()
                     {
-                        new ParameterDefinition(dbObject.GetEntityName(), "entity")
+                        new ParameterDefinition(dbObject.GetSingularName(), "entity")
                     }
                 });
 
                 if (!projectFeature.IsView(dbObject))
                 {
-                    Methods.Add(new MethodDefinition("void", String.Format("Add{0}", dbObject.GetEntityName()))
+                    Methods.Add(new MethodDefinition("void", String.Format("Add{0}", dbObject.GetSingularName()))
                     {
                         Parameters = new List<ParameterDefinition>()
                         {
-                            new ParameterDefinition(dbObject.GetEntityName(), "entity")
+                            new ParameterDefinition(dbObject.GetSingularName(), "entity")
                         }
                     });
 
-                    Methods.Add(new MethodDefinition("void", String.Format("Update{0}", dbObject.GetEntityName()))
+                    Methods.Add(new MethodDefinition("void", String.Format("Update{0}", dbObject.GetSingularName()))
                     {
                         Parameters = new List<ParameterDefinition>()
                         {
-                            new ParameterDefinition(dbObject.GetEntityName(), "changes")
+                            new ParameterDefinition(dbObject.GetSingularName(), "changes")
                         }
                     });
 
-                    Methods.Add(new MethodDefinition("void", String.Format("Delete{0}", dbObject.GetEntityName()))
+                    Methods.Add(new MethodDefinition("void", String.Format("Delete{0}", dbObject.GetSingularName()))
                     {
                         Parameters = new List<ParameterDefinition>()
                         {
-                            new ParameterDefinition(dbObject.GetEntityName(), "entity")
+                            new ParameterDefinition(dbObject.GetSingularName(), "entity")
                         }
                     });
                 }

@@ -70,11 +70,11 @@ namespace CatFactory.EfCore
 
         public MethodDefinition GetGetAllMethod(ProjectFeature projectFeature, DbObject dbObject)
         {
-            return new MethodDefinition(String.Format("IEnumerable<{0}>", dbObject.GetEntityName()), String.Format("Get{0}", dbObject.GetPluralName()))
+            return new MethodDefinition(String.Format("IEnumerable<{0}>", dbObject.GetSingularName()), String.Format("Get{0}", dbObject.GetPluralName()))
             {
                 Lines = new List<CodeLine>()
                 {
-                    new CodeLine("return DbContext.Set<{0}>();", dbObject.GetEntityName())
+                    new CodeLine("return DbContext.Set<{0}>();", dbObject.GetSingularName())
                 }
             };
         }
@@ -100,30 +100,30 @@ namespace CatFactory.EfCore
                 }
             }
 
-            return new MethodDefinition(dbObject.GetEntityName(), String.Format("Get{0}", dbObject.GetEntityName()))
+            return new MethodDefinition(dbObject.GetSingularName(), String.Format("Get{0}", dbObject.GetSingularName()))
             {
                 Parameters = new List<ParameterDefinition>()
                 {
-                    new ParameterDefinition(dbObject.GetEntityName(), "entity")
+                    new ParameterDefinition(dbObject.GetSingularName(), "entity")
                 },
                 Lines = new List<CodeLine>()
                 {
-                    new CodeLine("return DbContext.Set<{0}>().FirstOrDefault({1});", dbObject.GetEntityName(), expression)
+                    new CodeLine("return DbContext.Set<{0}>().FirstOrDefault({1});", dbObject.GetSingularName(), expression)
                 }
             };
         }
 
         public MethodDefinition GetAddMethod(ProjectFeature projectFeature, DbObject dbObject)
         {
-            return new MethodDefinition("void", String.Format("Add{0}", dbObject.GetEntityName()))
+            return new MethodDefinition("void", String.Format("Add{0}", dbObject.GetSingularName()))
             {
                 Parameters = new List<ParameterDefinition>()
                 {
-                    new ParameterDefinition(dbObject.GetEntityName(), "entity")
+                    new ParameterDefinition(dbObject.GetSingularName(), "entity")
                 },
                 Lines = new List<CodeLine>()
                 {
-                    new CodeLine("DbContext.Set<{0}>().Add(entity);", dbObject.GetEntityName()),
+                    new CodeLine("DbContext.Set<{0}>().Add(entity);", dbObject.GetSingularName()),
                     new CodeLine(),
                     new CodeLine("DbContext.SaveChanges();")
                 }
@@ -134,7 +134,7 @@ namespace CatFactory.EfCore
         {
             var lines = new List<CodeLine>();
 
-            lines.Add(new CodeLine("var entity = Get{0}(changes);", dbObject.GetEntityName()));
+            lines.Add(new CodeLine("var entity = Get{0}(changes);", dbObject.GetSingularName()));
             lines.Add(new CodeLine());
             lines.Add(new CodeLine("if (entity != null)"));
             lines.Add(new CodeLine("{{"));
@@ -153,11 +153,11 @@ namespace CatFactory.EfCore
             lines.Add(new CodeLine(1, "DbContext.SaveChanges();"));
             lines.Add(new CodeLine("}}"));
 
-            return new MethodDefinition("void", String.Format("Update{0}", dbObject.GetEntityName()))
+            return new MethodDefinition("void", String.Format("Update{0}", dbObject.GetSingularName()))
             {
                 Parameters = new List<ParameterDefinition>()
                 {
-                    new ParameterDefinition(dbObject.GetEntityName(), "changes")
+                    new ParameterDefinition(dbObject.GetSingularName(), "changes")
                 },
                 Lines = lines
             };
@@ -165,15 +165,15 @@ namespace CatFactory.EfCore
 
         public MethodDefinition GetDeleteMethod(ProjectFeature projectFeature, DbObject dbObject)
         {
-            return new MethodDefinition("void", String.Format("Delete{0}", dbObject.GetEntityName()))
+            return new MethodDefinition("void", String.Format("Delete{0}", dbObject.GetSingularName()))
             {
                 Parameters = new List<ParameterDefinition>()
                 {
-                    new ParameterDefinition(dbObject.GetEntityName(), "entity")
+                    new ParameterDefinition(dbObject.GetSingularName(), "entity")
                 },
                 Lines = new List<CodeLine>()
                 {
-                    new CodeLine("DbContext.Set<{0}>().Remove(entity);", dbObject.GetEntityName()),
+                    new CodeLine("DbContext.Set<{0}>().Remove(entity);", dbObject.GetSingularName()),
                     new CodeLine(),
                     new CodeLine("DbContext.SaveChanges();")
                 }
