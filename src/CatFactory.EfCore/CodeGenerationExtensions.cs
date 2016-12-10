@@ -5,7 +5,7 @@ namespace CatFactory.EfCore
 {
     public static class CodeGenerationExtensions
     {
-        public static Project GenerateEntities(this Project project)
+        public static EfCoreProject GenerateEntities(this EfCoreProject project)
         {
             foreach (var table in project.Database.Tables)
             {
@@ -38,7 +38,7 @@ namespace CatFactory.EfCore
             return project;
         }
 
-        public static Project GenerateAppSettings(this Project project)
+        public static EfCoreProject GenerateAppSettings(this EfCoreProject project)
         {
             var codeBuilder = new CSharpClassBuilder()
             {
@@ -54,7 +54,7 @@ namespace CatFactory.EfCore
             return project;
         }
 
-        public static Project GenerateMappingDependences(this Project project)
+        public static EfCoreProject GenerateMappingDependences(this EfCoreProject project)
         {
             var codeBuilders = new List<DotNetCodeBuilder>()
             {
@@ -100,7 +100,7 @@ namespace CatFactory.EfCore
             return project;
         }
 
-        public static Project GenerateMappings(this Project project)
+        public static EfCoreProject GenerateMappings(this EfCoreProject project)
         {
             foreach (var table in project.Database.Tables)
             {
@@ -137,7 +137,7 @@ namespace CatFactory.EfCore
             return project;
         }
 
-        public static Project GenerateDbContext(this Project project)
+        public static EfCoreProject GenerateDbContext(this EfCoreProject project)
         {
             var codeBuilder = new CSharpClassBuilder()
             {
@@ -155,7 +155,7 @@ namespace CatFactory.EfCore
             return project;
         }
 
-        public static Project GenerateContracts(this Project project)
+        public static EfCoreProject GenerateContracts(this EfCoreProject project)
         {
             foreach (var projectFeature in project.Features)
             {
@@ -176,7 +176,7 @@ namespace CatFactory.EfCore
             return project;
         }
 
-        public static Project GenerateRepositories(this Project project)
+        public static EfCoreProject GenerateRepositories(this EfCoreProject project)
         {
             foreach (var projectFeature in project.Features)
             {

@@ -8,7 +8,7 @@ namespace CatFactory.EfCore.Tests
         [Fact]
         public void ProjectGenerationFromMockDatabaseTest()
         {
-            var project = new Project()
+            var project = new EfCoreProject()
             {
                 Name = "Sales",
                 Database = Mocks.SalesDatabase,
@@ -39,7 +39,7 @@ namespace CatFactory.EfCore.Tests
 
             var db = dbFactory.Import();
 
-            var project = new Project()
+            var project = new EfCoreProject()
             {
                 Name = "Northwind",
                 Database = db,
