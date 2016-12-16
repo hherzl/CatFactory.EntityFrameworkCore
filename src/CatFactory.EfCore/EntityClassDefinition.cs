@@ -1,4 +1,5 @@
-﻿using CatFactory.DotNetCore;
+﻿using System.Collections.Generic;
+using CatFactory.DotNetCore;
 using CatFactory.Mapping;
 using CatFactory.OOP;
 
@@ -6,39 +7,38 @@ namespace CatFactory.EfCore
 {
     public class EntityClassDefinition : CSharpClassDefinition
     {
-        public EntityClassDefinition(ITable table)
+        public EntityClassDefinition(IDbObject dbObject)
         {
             Namespaces.Add("System");
 
-            Name = table.GetSingularName();
+            Name = dbObject.GetSingularName();
 
             Constructors.Add(new ClassConstructorDefinition());
 
             var resolver = new ClrTypeResolver() as ITypeResolver;
 
-            for (var i = 0; i < table.Columns.Count; i++)
-            {
-                var column = table.Columns[i];
+            var columns = default(IEnumerable<Column>);
 
-                Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), column.GetPropertyName()));
+            var tableCast = dbObject as ITable;
+
+            if (tableCast != null)
+            {
+                columns = tableCast.Columns;
             }
-        }
 
-        public EntityClassDefinition(IView view)
-        {
-            Namespaces.Add("System");
+            var viewCast = dbObject as IView;
 
-            Name = view.GetSingularName();
-
-            Constructors.Add(new ClassConstructorDefinition());
-
-            var resolver = new ClrTypeResolver() as ITypeResolver;
-
-            for (var i = 0; i < view.Columns.Count; i++)
+            if (viewCast != null)
             {
-                var column = view.Columns[i];
+                columns = viewCast.Columns;
+            }
 
-                Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), column.GetPropertyName()));
+            if (tableCast != null || viewCast != null)
+            {
+                foreach (var column in columns)
+                {
+                    Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), column.GetPropertyName()));
+                }
             }
         }
     }

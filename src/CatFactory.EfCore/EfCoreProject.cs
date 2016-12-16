@@ -1,4 +1,6 @@
-﻿namespace CatFactory.EfCore
+﻿using System;
+
+namespace CatFactory.EfCore
 {
     public class EfCoreProject : Project
     {
@@ -9,5 +11,9 @@
         }
 
         public Namespaces Namespaces { get; set; }
+
+        public Boolean UseDataAnnotations { get; set; }
+
+        public Boolean DeclareDbSetPropertiesInDbContext { get; set; }
     }
 }

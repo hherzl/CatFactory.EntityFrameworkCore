@@ -62,7 +62,7 @@ namespace CatFactory.EfCore
         {
             return new MethodDefinition("void", "OnConfiguring")
             {
-                ModifierAccess = ModifierAccess.Protected,
+                AccessModifier = AccessModifier.Protected,
                 Prefix = "override",
                 Parameters = new List<ParameterDefinition>() { new ParameterDefinition("DbContextOptionsBuilder", "optionsBuilder") },
                 Lines = new List<CodeLine>()
@@ -78,7 +78,7 @@ namespace CatFactory.EfCore
         {
             return new MethodDefinition("void", "OnModelCreating")
             {
-                ModifierAccess = ModifierAccess.Protected,
+                AccessModifier = AccessModifier.Protected,
                 Prefix = "override",
                 Parameters = new List<ParameterDefinition>()
                 {

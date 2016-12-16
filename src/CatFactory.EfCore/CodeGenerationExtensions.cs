@@ -18,6 +18,11 @@ namespace CatFactory.EfCore
                     OutputDirectory = project.OutputDirectory
                 };
 
+                if ( project.UseDataAnnotations)
+                {
+                    // todo: add data annotations
+                }
+
                 codeBuilder.CreateFile(project.GetEntityLayerDirectory());
             }
 
@@ -56,45 +61,36 @@ namespace CatFactory.EfCore
 
         public static EfCoreProject GenerateMappingDependences(this EfCoreProject project)
         {
-            var codeBuilders = new List<DotNetCodeBuilder>()
+            if (!project.UseDataAnnotations)
             {
-                new CSharpInterfaceBuilder()
+                var codeBuilders = new List<DotNetCodeBuilder>()
                 {
-                    ObjectDefinition = new IEntityMapperInterfaceDefinition()
+                    new CSharpInterfaceBuilder()
                     {
-                        Namespace = project.GetDataLayerMappingNamespace()
+                        ObjectDefinition = new IEntityMapperInterfaceDefinition() { Namespace = project.GetDataLayerMappingNamespace() },
+                        OutputDirectory = project.OutputDirectory
                     },
-                    OutputDirectory = project.OutputDirectory
-                },
-                new CSharpClassBuilder()
-                {
-                    ObjectDefinition = new EntityMapperClassDefinition()
+                    new CSharpClassBuilder()
                     {
-                        Namespace = project.GetDataLayerMappingNamespace()
+                        ObjectDefinition = new EntityMapperClassDefinition() { Namespace = project.GetDataLayerMappingNamespace() },
+                        OutputDirectory = project.OutputDirectory
                     },
-                    OutputDirectory = project.OutputDirectory
-                },
-                new CSharpInterfaceBuilder()
-                {
-                    ObjectDefinition = new IEntityMapInterfaceDefinition()
+                    new CSharpInterfaceBuilder()
                     {
-                        Namespace = project.GetDataLayerMappingNamespace()
+                        ObjectDefinition = new IEntityMapInterfaceDefinition() { Namespace = project.GetDataLayerMappingNamespace() },
+                        OutputDirectory = project.OutputDirectory
                     },
-                    OutputDirectory = project.OutputDirectory
-                },
-                new CSharpClassBuilder()
-                {
-                    ObjectDefinition = new DbMapperClassDefinition(project.Database)
+                    new CSharpClassBuilder()
                     {
-                        Namespace = project.GetDataLayerMappingNamespace()
+                        ObjectDefinition = new DbMapperClassDefinition(project.Database) { Namespace = project.GetDataLayerMappingNamespace() },
+                        OutputDirectory = project.OutputDirectory
                     },
-                    OutputDirectory = project.OutputDirectory
-                },
-            };
+                };
 
-            foreach (var codeBuilder in codeBuilders)
-            {
-                codeBuilder.CreateFile(project.GetDataLayerMappingDirectory());
+                foreach (var codeBuilder in codeBuilders)
+                {
+                    codeBuilder.CreateFile(project.GetDataLayerMappingDirectory());
+                }
             }
 
             return project;
@@ -102,36 +98,39 @@ namespace CatFactory.EfCore
 
         public static EfCoreProject GenerateMappings(this EfCoreProject project)
         {
-            foreach (var table in project.Database.Tables)
+            if (!project.UseDataAnnotations)
             {
-                var codeBuilder = new CSharpClassBuilder()
+                foreach (var table in project.Database.Tables)
                 {
-                    ObjectDefinition = new MappingClassDefinition(table)
+                    var codeBuilder = new CSharpClassBuilder()
                     {
-                        Namespace = project.GetDataLayerMappingNamespace()
-                    },
-                    OutputDirectory = project.OutputDirectory
-                };
+                        ObjectDefinition = new MappingClassDefinition(table)
+                        {
+                            Namespace = project.GetDataLayerMappingNamespace()
+                        },
+                        OutputDirectory = project.OutputDirectory
+                    };
 
-                codeBuilder.ObjectDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
+                    codeBuilder.ObjectDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
 
-                codeBuilder.CreateFile(project.GetDataLayerMappingDirectory());
-            }
+                    codeBuilder.CreateFile(project.GetDataLayerMappingDirectory());
+                }
 
-            foreach (var view in project.Database.Views)
-            {
-                var codeBuilder = new CSharpClassBuilder()
+                foreach (var view in project.Database.Views)
                 {
-                    ObjectDefinition = new MappingClassDefinition(view)
+                    var codeBuilder = new CSharpClassBuilder()
                     {
-                        Namespace = project.GetDataLayerMappingNamespace()
-                    },
-                    OutputDirectory = project.OutputDirectory
-                };
+                        ObjectDefinition = new MappingClassDefinition(view)
+                        {
+                            Namespace = project.GetDataLayerMappingNamespace()
+                        },
+                        OutputDirectory = project.OutputDirectory
+                    };
 
-                codeBuilder.ObjectDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
+                    codeBuilder.ObjectDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
 
-                codeBuilder.CreateFile(project.GetDataLayerMappingDirectory());
+                    codeBuilder.CreateFile(project.GetDataLayerMappingDirectory());
+                }
             }
 
             return project;
@@ -149,6 +148,11 @@ namespace CatFactory.EfCore
             };
 
             codeBuilder.ObjectDefinition.Namespaces.Add(project.GetDataLayerMappingNamespace());
+
+            if (project.DeclareDbSetPropertiesInDbContext)
+            {
+                // todo: add code for declare DbSet properties in DbContext
+            }
 
             codeBuilder.CreateFile(project.GetDataLayerDirectory());
 

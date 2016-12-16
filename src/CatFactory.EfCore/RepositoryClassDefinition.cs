@@ -21,8 +21,8 @@ namespace CatFactory.EfCore
             Implements.Add(nameof(IDisposable));
             Implements.Add(projectFeature.GetInterfaceRepositoryName());
 
-            Fields.Add(new FieldDefinition("Boolean", "Disposed") { ModifierAccess = ModifierAccess.Protected });
-            Fields.Add(new FieldDefinition(projectFeature.Database.GetDbContextName(), "DbContext") { ModifierAccess = ModifierAccess.Protected });
+            Fields.Add(new FieldDefinition("Boolean", "Disposed") { AccessModifier = AccessModifier.Protected });
+            Fields.Add(new FieldDefinition(projectFeature.Database.GetDbContextName(), "DbContext") { AccessModifier = AccessModifier.Protected });
 
             Constructors.Add(new ClassConstructorDefinition()
             {
