@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using CatFactory.DotNetCore;
+using CatFactory.OOP;
 
 namespace CatFactory.EfCore
 {
@@ -20,7 +22,65 @@ namespace CatFactory.EfCore
 
                 if (project.UseDataAnnotations)
                 {
-                    // todo: add data annotations
+                    codeBuilder.ObjectDefinition.Namespaces.Add("System.ComponentModel.DataAnnotations");
+                    codeBuilder.ObjectDefinition.Namespaces.Add("System.ComponentModel.DataAnnotations.Schema");
+
+                    codeBuilder.ObjectDefinition.Attributes.Add(new MetadataAttribute("Table")
+                    {
+                        Arguments = new List<String>
+                        {
+                            String.Format("\"{0}\"", table.Name),
+                            String.Format("Schema = \"{0}\"", table.Schema),
+                        }
+                    });
+
+                    for (var i = 0; i < table.Columns.Count; i++)
+                    {
+                        var column = table.Columns[i];
+
+                        foreach (var property in codeBuilder.ObjectDefinition.Properties)
+                        {
+                            if (column.GetPropertyName() == property.Name)
+                            {
+                                if (table.Identity != null && table.Identity.Name == column.Name)
+                                {
+                                    property.Attributes.Add(new MetadataAttribute("DatabaseGenerated")
+                                    {
+                                        Arguments = new List<String>()
+                                        {
+                                            "DatabaseGeneratedOption.Identity"
+                                        }
+                                    });
+                                }
+
+                                if (table.PrimaryKey != null && table.PrimaryKey.Key.Contains(column.Name))
+                                {
+                                    property.Attributes.Add(new MetadataAttribute("Key"));
+                                }
+
+                                property.Attributes.Add(new MetadataAttribute("Column")
+                                {
+                                    Arguments = new List<string>
+                                    {
+                                        String.Format("Order = {0}", i + 1)
+                                    }
+                                });
+
+                                if (!column.Nullable)
+                                {
+                                    property.Attributes.Add(new MetadataAttribute("Required"));
+                                }
+
+                                if (column.Type.Contains("char") && column.Length > 0)
+                                {
+                                    property.Attributes.Add(new MetadataAttribute("StringLength")
+                                    {
+                                        Arguments = new List<String>() { column.Length.ToString() }
+                                    });
+                                }
+                            }
+                        }
+                    }
                 }
 
                 codeBuilder.CreateFile(project.GetEntityLayerDirectory());
@@ -149,7 +209,15 @@ namespace CatFactory.EfCore
                     OutputDirectory = project.OutputDirectory
                 };
 
-                codeBuilder.ObjectDefinition.Namespaces.Add(project.GetDataLayerMappingNamespace());
+                if (project.UseDataAnnotations)
+                {
+                    codeBuilder.ObjectDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
+                }
+                else
+                {
+                    codeBuilder.ObjectDefinition.Namespaces.Add(project.GetDataLayerMappingNamespace());
+                }
+
                 codeBuilder.CreateFile(project.GetDataLayerDirectory());
             }
 

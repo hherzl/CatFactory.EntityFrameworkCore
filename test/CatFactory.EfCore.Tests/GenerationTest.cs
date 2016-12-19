@@ -17,6 +17,29 @@ namespace CatFactory.EfCore.Tests
 
             project.BuildFeatures();
 
+            project
+                .GenerateEntities()
+                .GenerateAppSettings()
+                .GenerateMappingDependences()
+                .GenerateMappings()
+                .GenerateDbContext()
+                .GenerateContracts()
+                .GenerateRepositories();
+        }
+
+        [Fact]
+        public void ProjectGenerationWithDbSetPropertiesAndDataAnnotationsTest()
+        {
+            var project = new EfCoreProject()
+            {
+                Name = "Sales",
+                Database = Mocks.SalesDatabase,
+                OutputDirectory = "C:\\Temp\\SalesWithDbSetPropertiesAndDataAnnotations"
+            };
+
+            project.BuildFeatures();
+
+            project.UseDataAnnotations = true;
             project.DeclareDbSetPropertiesInDbContext = true;
 
             project

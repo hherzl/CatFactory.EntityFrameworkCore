@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using CatFactory.CodeFactory;
 using CatFactory.DotNetCore;
 using CatFactory.OOP;
@@ -21,25 +22,46 @@ namespace CatFactory.EfCore
 
             BaseClass = "Microsoft.EntityFrameworkCore.DbContext";
 
-            Constructors.Add(new ClassConstructorDefinition()
+            if (project.UseDataAnnotations)
             {
-                Parameters = new List<ParameterDefinition>()
+                Constructors.Add(new ClassConstructorDefinition()
+                {
+                    Parameters = new List<ParameterDefinition>()
+                    {
+                        new ParameterDefinition("IOptions<AppSettings>", "appSettings")
+                    },
+                    Lines = new List<CodeLine>()
+                    {
+                        new CodeLine("ConnectionString = appSettings.Value.ConnectionString;"),
+                    }
+                });
+            }
+            else
+            {
+                Constructors.Add(new ClassConstructorDefinition()
+                {
+                    Parameters = new List<ParameterDefinition>()
                 {
                     new ParameterDefinition("IOptions<AppSettings>", "appSettings"),
                     new ParameterDefinition("IEntityMapper", "entityMapper")
                 },
-                Lines = new List<CodeLine>()
+                    Lines = new List<CodeLine>()
                 {
                     new CodeLine("ConnectionString = appSettings.Value.ConnectionString;"),
                     new CodeLine("EntityMapper = entityMapper;")
                 }
-            });
+                });
+            }
 
             Properties.Add(new PropertyDefinition("String", "ConnectionString"));
-            Properties.Add(new PropertyDefinition("IEntityMapper", "EntityMapper"));
+
+            if (!project.UseDataAnnotations)
+            {
+                Properties.Add(new PropertyDefinition("IEntityMapper", "EntityMapper"));
+            }
 
             Methods.Add(GetOnConfiguringMethod());
-            Methods.Add(GetOnModelCreatingMethod());
+            Methods.Add(GetOnModelCreatingMethod(project));
 
             if (project.DeclareDbSetPropertiesInDbContext)
             {
@@ -71,8 +93,34 @@ namespace CatFactory.EfCore
             };
         }
 
-        public MethodDefinition GetOnModelCreatingMethod()
+        public MethodDefinition GetOnModelCreatingMethod(EfCoreProject project)
         {
+            var lines = new List<CodeLine>();
+
+            if (project.UseDataAnnotations)
+            {
+                foreach (var table in project.Database.Tables)
+                {
+                    if (table.PrimaryKey?.Key.Count > 1)
+                    {
+                        lines.Add(new CodeLine("modelBuilder.Entity<{0}>().HasKey(p => new {{ {1} }});", table.GetEntityName(), String.Join(", ", table.Columns.Select(item => String.Format("p.{0}", item.Name)))));
+                        lines.Add(new CodeLine());
+                    }
+                }
+
+                foreach (var view in project.Database.Views)
+                {
+                    lines.Add(new CodeLine("modelBuilder.Entity<{0}>().HasKey(p => new {{ {1} }});", view.GetEntityName(), String.Join(", ", view.Columns.Select(item => String.Format("p.{0}", item.Name)))));
+                    lines.Add(new CodeLine());
+                }
+            }
+            else
+            {
+                lines.Add(new CodeLine("EntityMapper.MapEntities(modelBuilder);"));
+            }
+
+            lines.Add(new CodeLine("base.OnModelCreating(modelBuilder);"));
+
             return new MethodDefinition("void", "OnModelCreating")
             {
                 AccessModifier = AccessModifier.Protected,
@@ -81,12 +129,7 @@ namespace CatFactory.EfCore
                 {
                     new ParameterDefinition("ModelBuilder", "modelBuilder")
                 },
-                Lines = new List<CodeLine>()
-                {
-                    new CodeLine("EntityMapper.MapEntities(modelBuilder);"),
-                    new CodeLine(),
-                    new CodeLine("base.OnModelCreating(modelBuilder);")
-                }
+                Lines = lines
             };
         }
     }
