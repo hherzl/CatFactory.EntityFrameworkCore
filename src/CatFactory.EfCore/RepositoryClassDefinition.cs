@@ -10,8 +10,10 @@ namespace CatFactory.EfCore
 {
     public class RepositoryClassDefinition : CSharpClassDefinition
     {
-        public RepositoryClassDefinition(ProjectFeature projectFeature)
+        public RepositoryClassDefinition(EfCoreProject project, ProjectFeature projectFeature)
         {
+            Project = project;
+
             Namespaces.Add("System");
             Namespaces.Add("System.Collections.Generic");
             Namespaces.Add("System.Linq");
@@ -54,8 +56,6 @@ namespace CatFactory.EfCore
 
             foreach (var dbObject in projectFeature.DbObjects)
             {
-                // todo: add primary predicate for get method
-
                 Methods.Add(GetGetAllMethod(projectFeature, dbObject));
                 Methods.Add(GetGetMethod(projectFeature, dbObject));
 
@@ -68,13 +68,15 @@ namespace CatFactory.EfCore
             }
         }
 
+        public EfCoreProject Project { get; set; }
+
         public MethodDefinition GetGetAllMethod(ProjectFeature projectFeature, DbObject dbObject)
         {
             return new MethodDefinition(String.Format("IEnumerable<{0}>", dbObject.GetSingularName()), String.Format("Get{0}", dbObject.GetPluralName()))
             {
                 Lines = new List<CodeLine>()
                 {
-                    new CodeLine("return DbContext.Set<{0}>();", dbObject.GetSingularName())
+                    new CodeLine("return DbContext.{0};", Project.DeclareDbSetPropertiesInDbContext ?  String.Format("Set<{0}>()", dbObject.GetEntityName()) : dbObject.GetEntityName())
                 }
             };
         }
@@ -108,7 +110,7 @@ namespace CatFactory.EfCore
                 },
                 Lines = new List<CodeLine>()
                 {
-                    new CodeLine("return DbContext.Set<{0}>().FirstOrDefault({1});", dbObject.GetSingularName(), expression)
+                    new CodeLine("return DbContext.{0}.FirstOrDefault({1});", Project.DeclareDbSetPropertiesInDbContext ?  String.Format("Set<{0}>()", dbObject.GetEntityName()) : dbObject.GetEntityName(), expression)
                 }
             };
         }
@@ -123,7 +125,7 @@ namespace CatFactory.EfCore
                 },
                 Lines = new List<CodeLine>()
                 {
-                    new CodeLine("DbContext.Set<{0}>().Add(entity);", dbObject.GetSingularName()),
+                    new CodeLine("DbContext.{0}.Add(entity);", Project.DeclareDbSetPropertiesInDbContext ?  String.Format("Set<{0}>()", dbObject.GetEntityName()) : dbObject.GetEntityName()),
                     new CodeLine(),
                     new CodeLine("DbContext.SaveChanges();")
                 }
@@ -173,7 +175,7 @@ namespace CatFactory.EfCore
                 },
                 Lines = new List<CodeLine>()
                 {
-                    new CodeLine("DbContext.Set<{0}>().Remove(entity);", dbObject.GetSingularName()),
+                    new CodeLine("DbContext.{0}.Remove(entity);", Project.DeclareDbSetPropertiesInDbContext ?  String.Format("Set<{0}>()", dbObject.GetEntityName()) : dbObject.GetEntityName(), dbObject.GetSingularName()),
                     new CodeLine(),
                     new CodeLine("DbContext.SaveChanges();")
                 }

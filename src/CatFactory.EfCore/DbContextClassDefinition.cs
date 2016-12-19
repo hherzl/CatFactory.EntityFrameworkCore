@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using CatFactory.CodeFactory;
 using CatFactory.DotNetCore;
-using CatFactory.Mapping;
 using CatFactory.OOP;
 
 namespace CatFactory.EfCore
 {
     public class DbContextClassDefinition : CSharpClassDefinition
     {
-        public DbContextClassDefinition(Database db)
+        public DbContextClassDefinition(EfCoreProject project, ProjectFeature projectFeature)
         {
             Namespaces = new List<String>()
             {
@@ -18,7 +17,7 @@ namespace CatFactory.EfCore
                 "Microsoft.Extensions.Options"
             };
 
-            Name = db.GetDbContextName();
+            Name = project.Database.GetDbContextName();
 
             BaseClass = "Microsoft.EntityFrameworkCore.DbContext";
 
@@ -42,21 +41,19 @@ namespace CatFactory.EfCore
             Methods.Add(GetOnConfiguringMethod());
             Methods.Add(GetOnModelCreatingMethod());
 
-            if (DeclareDbSetProperties)
+            if (project.DeclareDbSetPropertiesInDbContext)
             {
-                foreach (var table in db.Tables)
+                foreach (var table in project.Database.Tables)
                 {
                     Properties.Add(new PropertyDefinition(String.Format("DbSet<{0}>", table.GetEntityName()), table.GetEntityName()));
                 }
 
-                foreach (var view in db.Views)
+                foreach (var view in project.Database.Views)
                 {
                     Properties.Add(new PropertyDefinition(String.Format("DbSet<{0}>", view.GetEntityName()), view.GetEntityName()));
                 }
             }
         }
-
-        public Boolean DeclareDbSetProperties { get; set; }
 
         public MethodDefinition GetOnConfiguringMethod()
         {

@@ -17,6 +17,8 @@ namespace CatFactory.EfCore.Tests
 
             project.BuildFeatures();
 
+            project.DeclareDbSetPropertiesInDbContext = true;
+
             project
                 .GenerateEntities()
                 .GenerateAppSettings()

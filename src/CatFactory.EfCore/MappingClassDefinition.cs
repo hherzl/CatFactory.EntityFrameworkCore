@@ -52,7 +52,8 @@ namespace CatFactory.EfCore
                 {
                     if (table.PrimaryKey.Key.Count == 0)
                     {
-                        // todo: add logic to handle null key
+                        mapMethodLines.Add(new CodeLine("entity.HasKey(p => new {{ {0} }});", String.Join(", ", table.Columns.Select(item => String.Format("p.{0}", item)))));
+                        mapMethodLines.Add(new CodeLine());
                     }
                     else if (table.PrimaryKey.Key.Count == 1)
                     {

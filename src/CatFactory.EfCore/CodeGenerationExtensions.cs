@@ -18,7 +18,7 @@ namespace CatFactory.EfCore
                     OutputDirectory = project.OutputDirectory
                 };
 
-                if ( project.UseDataAnnotations)
+                if (project.UseDataAnnotations)
                 {
                     // todo: add data annotations
                 }
@@ -138,23 +138,20 @@ namespace CatFactory.EfCore
 
         public static EfCoreProject GenerateDbContext(this EfCoreProject project)
         {
-            var codeBuilder = new CSharpClassBuilder()
+            foreach (var projectFeature in project.Features)
             {
-                ObjectDefinition = new DbContextClassDefinition(project.Database)
+                var codeBuilder = new CSharpClassBuilder()
                 {
-                    Namespace = project.GetDataLayerNamespace()
-                },
-                OutputDirectory = project.OutputDirectory
-            };
+                    ObjectDefinition = new DbContextClassDefinition(project, projectFeature)
+                    {
+                        Namespace = project.GetDataLayerNamespace()
+                    },
+                    OutputDirectory = project.OutputDirectory
+                };
 
-            codeBuilder.ObjectDefinition.Namespaces.Add(project.GetDataLayerMappingNamespace());
-
-            if (project.DeclareDbSetPropertiesInDbContext)
-            {
-                // todo: add code for declare DbSet properties in DbContext
+                codeBuilder.ObjectDefinition.Namespaces.Add(project.GetDataLayerMappingNamespace());
+                codeBuilder.CreateFile(project.GetDataLayerDirectory());
             }
-
-            codeBuilder.CreateFile(project.GetDataLayerDirectory());
 
             return project;
         }
@@ -186,9 +183,10 @@ namespace CatFactory.EfCore
             {
                 var codeBuilder = new CSharpClassBuilder
                 {
-                    ObjectDefinition = new RepositoryClassDefinition(projectFeature)
+                    ObjectDefinition = new RepositoryClassDefinition(project, projectFeature)
                     {
-                        Namespace = project.GetDataLayerRepositoriesNamespace()
+                        Namespace = project.GetDataLayerRepositoriesNamespace(),
+                        Project = project
                     },
                     OutputDirectory = project.OutputDirectory
                 };
