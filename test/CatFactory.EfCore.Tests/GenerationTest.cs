@@ -10,9 +10,9 @@ namespace CatFactory.EfCore.Tests
         {
             var project = new EfCoreProject()
             {
-                Name = "Sales",
+                Name = "Store",
                 Database = Mocks.SalesDatabase,
-                OutputDirectory = "C:\\Temp\\Sales"
+                OutputDirectory = "C:\\Temp\\Store"
             };
 
             project.BuildFeatures();
@@ -34,7 +34,7 @@ namespace CatFactory.EfCore.Tests
             {
                 Name = "Sales",
                 Database = Mocks.SalesDatabase,
-                OutputDirectory = "C:\\Temp\\SalesWithDbSetPropertiesAndDataAnnotations"
+                OutputDirectory = "C:\\Temp\\StoreWithDbSetPropertiesAndDataAnnotations"
             };
 
             project.BuildFeatures();
@@ -59,7 +59,7 @@ namespace CatFactory.EfCore.Tests
             {
                 Name = "Sales",
                 Database = Mocks.SalesDatabase,
-                OutputDirectory = "C:\\Temp\\ModifiedSales"
+                OutputDirectory = "C:\\Temp\\ModifiedStore"
             };
 
             project.BuildFeatures();

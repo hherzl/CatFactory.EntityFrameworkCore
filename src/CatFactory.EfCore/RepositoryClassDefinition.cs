@@ -76,7 +76,7 @@ namespace CatFactory.EfCore
             {
                 Lines = new List<CodeLine>()
                 {
-                    new CodeLine("return DbContext.{0};", Project.DeclareDbSetPropertiesInDbContext ?  String.Format("Set<{0}>()", dbObject.GetEntityName()) : dbObject.GetEntityName())
+                    new CodeLine("return DbContext.{0};", Project.DeclareDbSetPropertiesInDbContext ?  dbObject.GetEntityName() : String.Format("Set<{0}>()", dbObject.GetEntityName()))
                 }
             };
         }
@@ -110,7 +110,7 @@ namespace CatFactory.EfCore
                 },
                 Lines = new List<CodeLine>()
                 {
-                    new CodeLine("return DbContext.{0}.FirstOrDefault({1});", Project.DeclareDbSetPropertiesInDbContext ?  String.Format("Set<{0}>()", dbObject.GetEntityName()) : dbObject.GetEntityName(), expression)
+                    new CodeLine("return DbContext.{0}.FirstOrDefault({1});", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetEntityName() : String.Format("Set<{0}>()", dbObject.GetEntityName()), expression)
                 }
             };
         }
@@ -125,7 +125,7 @@ namespace CatFactory.EfCore
                 },
                 Lines = new List<CodeLine>()
                 {
-                    new CodeLine("DbContext.{0}.Add(entity);", Project.DeclareDbSetPropertiesInDbContext ?  String.Format("Set<{0}>()", dbObject.GetEntityName()) : dbObject.GetEntityName()),
+                    new CodeLine("DbContext.{0}.Add(entity);", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetEntityName() : String.Format("Set<{0}>()", dbObject.GetEntityName())),
                     new CodeLine(),
                     new CodeLine("DbContext.SaveChanges();")
                 }
@@ -175,7 +175,7 @@ namespace CatFactory.EfCore
                 },
                 Lines = new List<CodeLine>()
                 {
-                    new CodeLine("DbContext.{0}.Remove(entity);", Project.DeclareDbSetPropertiesInDbContext ?  String.Format("Set<{0}>()", dbObject.GetEntityName()) : dbObject.GetEntityName(), dbObject.GetSingularName()),
+                    new CodeLine("DbContext.{0}.Remove(entity);", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetEntityName() : String.Format("Set<{0}>()", dbObject.GetEntityName()), dbObject.GetSingularName()),
                     new CodeLine(),
                     new CodeLine("DbContext.SaveChanges();")
                 }
