@@ -12,10 +12,7 @@ namespace CatFactory.EfCore
     {
         public MappingClassDefinition(IDbObject mappedObject)
         {
-            Namespaces = new List<String>()
-            {
-                "Microsoft.EntityFrameworkCore"
-            };
+            Namespaces.Add("Microsoft.EntityFrameworkCore");
 
             Name = mappedObject.GetMapName();
 

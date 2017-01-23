@@ -6,14 +6,15 @@ using CatFactory.OOP;
 
 namespace CatFactory.EfCore
 {
-    public class RepositoryInterfaceDefinition : CSharpInterfaceDefinition
+    public class BusinessObjectClassDefinition : CSharpClassDefinition
     {
-        public RepositoryInterfaceDefinition(ProjectFeature projectFeature)
+        public BusinessObjectClassDefinition(ProjectFeature projectFeature)
         {
-            Namespaces.Add("System");
-            Namespaces.Add("System.Collections.Generic");
+            Name = projectFeature.GetBusinessClassName();
 
-            Name = projectFeature.GetInterfaceRepositoryName();
+            BaseClass = "BusinessObject";
+
+            Implements.Add(projectFeature.GetBusinessInterfaceName());
 
             foreach (var dbObject in projectFeature.DbObjects)
             {

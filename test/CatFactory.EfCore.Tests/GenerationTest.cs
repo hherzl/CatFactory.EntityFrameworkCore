@@ -1,4 +1,5 @@
-﻿using CatFactory.SqlServer;
+﻿using System.Linq;
+using CatFactory.SqlServer;
 using Xunit;
 
 namespace CatFactory.EfCore.Tests
@@ -11,8 +12,8 @@ namespace CatFactory.EfCore.Tests
             var project = new EfCoreProject()
             {
                 Name = "Store",
-                Database = Mocks.SalesDatabase,
-                OutputDirectory = "C:\\Temp\\Store"
+                Database = Mocks.StoreDatabase,
+                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store"
             };
 
             project.BuildFeatures();
@@ -23,8 +24,11 @@ namespace CatFactory.EfCore.Tests
                 .GenerateMappingDependences()
                 .GenerateMappings()
                 .GenerateDbContext()
-                .GenerateContracts()
-                .GenerateRepositories();
+                .GenerateDataRepositories()
+                .GenerateBusinessInterfacesResponses()
+                .GenerateBusinessClassesResponses()
+                .GenerateBusinessObjects()
+                ;
         }
 
         [Fact]
@@ -32,9 +36,9 @@ namespace CatFactory.EfCore.Tests
         {
             var project = new EfCoreProject()
             {
-                Name = "Sales",
-                Database = Mocks.SalesDatabase,
-                OutputDirectory = "C:\\Temp\\StoreWithDbSetPropertiesAndDataAnnotations"
+                Name = "Store",
+                Database = Mocks.StoreDatabase,
+                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\StoreWithDbSetPropertiesAndDataAnnotations"
             };
 
             project.BuildFeatures();
@@ -48,8 +52,8 @@ namespace CatFactory.EfCore.Tests
                 .GenerateMappingDependences()
                 .GenerateMappings()
                 .GenerateDbContext()
-                .GenerateContracts()
-                .GenerateRepositories();
+                .GenerateDataRepositories()
+                ;
         }
 
         [Fact]
@@ -57,9 +61,9 @@ namespace CatFactory.EfCore.Tests
         {
             var project = new EfCoreProject()
             {
-                Name = "Sales",
-                Database = Mocks.SalesDatabase,
-                OutputDirectory = "C:\\Temp\\ModifiedStore"
+                Name = "Store",
+                Database = Mocks.StoreDatabase,
+                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\ModifiedStore"
             };
 
             project.BuildFeatures();
@@ -73,8 +77,8 @@ namespace CatFactory.EfCore.Tests
                 .GenerateMappingDependences()
                 .GenerateMappings()
                 .GenerateDbContext()
-                .GenerateContracts()
-                .GenerateRepositories();
+                .GenerateDataRepositories()
+                ;
         }
 
         [Fact]
@@ -93,7 +97,7 @@ namespace CatFactory.EfCore.Tests
             {
                 Name = "Northwind",
                 Database = db,
-                OutputDirectory = "C:\\Temp\\ModifiedNorthwind"
+                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\ModifiedNorthwind"
             };
 
             project.BuildFeatures();
@@ -107,8 +111,8 @@ namespace CatFactory.EfCore.Tests
                 .GenerateMappingDependences()
                 .GenerateMappings()
                 .GenerateDbContext()
-                .GenerateContracts()
-                .GenerateRepositories();
+                .GenerateDataRepositories()
+                ;
         }
 
         [Fact]
@@ -121,7 +125,16 @@ namespace CatFactory.EfCore.Tests
                 ConnectionString = connectionString
             };
 
+            dbFactory.Exclusions.Add("dbo.sysdiagrams");
+
             var db = dbFactory.Import();
+
+            var dbObject = db.DbObjects.FirstOrDefault(item => item.FullName == "dbo.sysdiagrams");
+
+            if (dbObject != null)
+            {
+                db.DbObjects.Remove(dbObject);
+            }
 
             var project = new EfCoreProject()
             {
@@ -138,8 +151,8 @@ namespace CatFactory.EfCore.Tests
                 .GenerateMappingDependences()
                 .GenerateMappings()
                 .GenerateDbContext()
-                .GenerateContracts()
-                .GenerateRepositories();
+                .GenerateDataRepositories()
+                ;
         }
     }
 }

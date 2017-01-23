@@ -56,11 +56,17 @@ namespace CatFactory.EfCore
 
             foreach (var dbObject in projectFeature.DbObjects)
             {
+                if (dbObject.Type == "procedure")
+                {
+                    // todo: add logic to invoke stored procedures
+                    continue;
+                }
+
                 Methods.Add(GetGetAllMethod(projectFeature, dbObject));
-                Methods.Add(GetGetMethod(projectFeature, dbObject));
 
                 if (!projectFeature.IsView(dbObject))
                 {
+                    Methods.Add(GetGetMethod(projectFeature, dbObject));
                     Methods.Add(GetAddMethod(projectFeature, dbObject));
                     Methods.Add(GetUpdateMethod(projectFeature, dbObject));
                     Methods.Add(GetDeleteMethod(projectFeature, dbObject));
@@ -74,9 +80,16 @@ namespace CatFactory.EfCore
         {
             return new MethodDefinition(String.Format("IEnumerable<{0}>", dbObject.GetSingularName()), String.Format("Get{0}", dbObject.GetPluralName()))
             {
+                Parameters = new List<ParameterDefinition>()
+                {
+                    new ParameterDefinition("Int32", "pageSize"),
+                    new ParameterDefinition("Int32", "pageNumber")
+                },
                 Lines = new List<CodeLine>()
                 {
-                    new CodeLine("return DbContext.{0};", Project.DeclareDbSetPropertiesInDbContext ?  dbObject.GetEntityName() : String.Format("Set<{0}>()", dbObject.GetEntityName()))
+                    new CodeLine("var query = DbContext.{0};", Project.DeclareDbSetPropertiesInDbContext ?  dbObject.GetEntityName() : String.Format("Set<{0}>()", dbObject.GetSingularName())),
+                    new CodeLine(),
+                    new CodeLine("return pageSize > 0 && pageNumber > 0 ? query.Skip((pageNumber - 1) * pageSize).Take(pageSize) : query;")
                 }
             };
         }
@@ -110,7 +123,7 @@ namespace CatFactory.EfCore
                 },
                 Lines = new List<CodeLine>()
                 {
-                    new CodeLine("return DbContext.{0}.FirstOrDefault({1});", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetEntityName() : String.Format("Set<{0}>()", dbObject.GetEntityName()), expression)
+                    new CodeLine("return DbContext.{0}.FirstOrDefault({1});", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetSingularName() : String.Format("Set<{0}>()", dbObject.GetSingularName()), expression)
                 }
             };
         }
@@ -125,7 +138,7 @@ namespace CatFactory.EfCore
                 },
                 Lines = new List<CodeLine>()
                 {
-                    new CodeLine("DbContext.{0}.Add(entity);", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetEntityName() : String.Format("Set<{0}>()", dbObject.GetEntityName())),
+                    new CodeLine("DbContext.{0}.Add(entity);", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetSingularName() : String.Format("Set<{0}>()", dbObject.GetSingularName())),
                     new CodeLine(),
                     new CodeLine("DbContext.SaveChanges();")
                 }
@@ -175,7 +188,7 @@ namespace CatFactory.EfCore
                 },
                 Lines = new List<CodeLine>()
                 {
-                    new CodeLine("DbContext.{0}.Remove(entity);", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetEntityName() : String.Format("Set<{0}>()", dbObject.GetEntityName()), dbObject.GetSingularName()),
+                    new CodeLine("DbContext.{0}.Remove(entity);", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetSingularName() : String.Format("Set<{0}>()", dbObject.GetSingularName())),
                     new CodeLine(),
                     new CodeLine("DbContext.SaveChanges();")
                 }

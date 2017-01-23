@@ -11,12 +11,9 @@ namespace CatFactory.EfCore
     {
         public DbContextClassDefinition(EfCoreProject project, ProjectFeature projectFeature)
         {
-            Namespaces = new List<String>()
-            {
-                "System",
-                "Microsoft.EntityFrameworkCore",
-                "Microsoft.Extensions.Options"
-            };
+            Namespaces.Add("System");
+            Namespaces.Add("Microsoft.EntityFrameworkCore");
+            Namespaces.Add("Microsoft.Extensions.Options");
 
             Name = project.Database.GetDbContextName();
 
@@ -41,15 +38,15 @@ namespace CatFactory.EfCore
                 Constructors.Add(new ClassConstructorDefinition()
                 {
                     Parameters = new List<ParameterDefinition>()
-                {
-                    new ParameterDefinition("IOptions<AppSettings>", "appSettings"),
-                    new ParameterDefinition("IEntityMapper", "entityMapper")
-                },
+                    {
+                        new ParameterDefinition("IOptions<AppSettings>", "appSettings"),
+                        new ParameterDefinition("IEntityMapper", "entityMapper")
+                    },
                     Lines = new List<CodeLine>()
-                {
-                    new CodeLine("ConnectionString = appSettings.Value.ConnectionString;"),
-                    new CodeLine("EntityMapper = entityMapper;")
-                }
+                    {
+                        new CodeLine("ConnectionString = appSettings.Value.ConnectionString;"),
+                        new CodeLine("EntityMapper = entityMapper;")
+                    }
                 });
             }
 
@@ -117,6 +114,7 @@ namespace CatFactory.EfCore
             else
             {
                 lines.Add(new CodeLine("EntityMapper.MapEntities(modelBuilder);"));
+                lines.Add(new CodeLine());
             }
 
             lines.Add(new CodeLine("base.OnModelCreating(modelBuilder);"));

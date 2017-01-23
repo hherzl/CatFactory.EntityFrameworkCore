@@ -46,10 +46,7 @@ namespace CatFactory.EfCore
                                 {
                                     property.Attributes.Add(new MetadataAttribute("DatabaseGenerated")
                                     {
-                                        Arguments = new List<String>()
-                                        {
-                                            "DatabaseGeneratedOption.Identity"
-                                        }
+                                        Arguments = new List<String>() { "DatabaseGeneratedOption.Identity" }
                                     });
                                 }
 
@@ -60,10 +57,7 @@ namespace CatFactory.EfCore
 
                                 property.Attributes.Add(new MetadataAttribute("Column")
                                 {
-                                    Arguments = new List<string>
-                                    {
-                                        String.Format("Order = {0}", i + 1)
-                                    }
+                                    Arguments = new List<String> { String.Format("Order = {0}", i + 1) }
                                 });
 
                                 if (!column.Nullable)
@@ -224,28 +218,18 @@ namespace CatFactory.EfCore
             return project;
         }
 
-        public static EfCoreProject GenerateContracts(this EfCoreProject project)
+        private static void GenerateDataLayerContracts(EfCoreProject project, CSharpInterfaceDefinition interfaceDefinition)
         {
-            foreach (var projectFeature in project.Features)
+            var codeBuilder = new CSharpInterfaceBuilder
             {
-                var codeBuilder = new CSharpInterfaceBuilder
-                {
-                    ObjectDefinition = new RepositoryInterfaceDefinition(projectFeature)
-                    {
-                        Namespace = project.GetDataLayerContractsNamespace()
-                    },
-                    OutputDirectory = project.OutputDirectory
-                };
+                ObjectDefinition = interfaceDefinition,
+                OutputDirectory = project.OutputDirectory
+            };
 
-                codeBuilder.ObjectDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
-
-                codeBuilder.CreateFile(project.GetDataLayerContractsDirectory());
-            }
-
-            return project;
+            codeBuilder.CreateFile(project.GetDataLayerContractsDirectory());
         }
 
-        public static EfCoreProject GenerateRepositories(this EfCoreProject project)
+        public static EfCoreProject GenerateDataRepositories(this EfCoreProject project)
         {
             foreach (var projectFeature in project.Features)
             {
@@ -262,7 +246,143 @@ namespace CatFactory.EfCore
                 codeBuilder.ObjectDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
                 codeBuilder.ObjectDefinition.Namespaces.Add(project.GetDataLayerContractsNamespace());
 
+                var interfaceDef = (codeBuilder.ObjectDefinition as CSharpClassDefinition).RefactInterface();
+
+                interfaceDef.Namespace = project.GetDataLayerContractsNamespace();
+
+                GenerateDataLayerContracts(project, interfaceDef);
+
                 codeBuilder.CreateFile(project.GetDataLayerRepositoriesDirectory());
+            }
+
+            return project;
+        }
+
+        public static EfCoreProject GenerateViewModels(this EfCoreProject project)
+        {
+            foreach (var table in project.Database.Tables)
+            {
+                var codeBuilder = new CSharpClassBuilder()
+                {
+                    ObjectDefinition = new ViewModelClassDefinition(table)
+                    {
+                        Namespace = project.GetDataLayerDataContractsNamespace(),
+                    },
+                    OutputDirectory = project.OutputDirectory
+                };
+
+                codeBuilder.CreateFile(project.GetDataLayerDataContractsDirectory());
+            }
+
+            return project;
+        }
+
+        private static void GenerateBusinessLayerContracts(EfCoreProject project, CSharpInterfaceDefinition interfaceDefinition)
+        {
+            var codeBuilder = new CSharpInterfaceBuilder
+            {
+                ObjectDefinition = interfaceDefinition,
+                OutputDirectory = project.OutputDirectory
+            };
+
+            codeBuilder.ObjectDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
+
+            codeBuilder.CreateFile(project.GetBusinessLayerContractsDirectory());
+        }
+
+        public static EfCoreProject GenerateBusinessObject(this EfCoreProject project)
+        {
+            var codeBuilder = new CSharpClassBuilder
+            {
+                ObjectDefinition = new CSharpClassDefinition()
+                {
+                    Name = "BusinessObject",
+                    Namespace = project.GetBusinessLayerNamespace()
+                },
+                OutputDirectory = project.OutputDirectory
+            };
+
+            codeBuilder.ObjectDefinition.Namespaces.Add(project.GetDataLayerNamespace());
+
+            codeBuilder.CreateFile(project.GetBusinessLayerDirectory());
+
+            return project;
+        }
+
+        public static EfCoreProject GenerateBusinessObjects(this EfCoreProject project)
+        {
+            project.GenerateBusinessObject();
+
+            foreach (var projectFeature in project.Features)
+            {
+                var codeBuilder = new CSharpClassBuilder
+                {
+                    ObjectDefinition = new BusinessObjectClassDefinition(projectFeature)
+                    {
+                        Namespace = project.GetBusinessLayerNamespace()
+                    },
+                    OutputDirectory = project.OutputDirectory
+                };
+
+                codeBuilder.ObjectDefinition.Namespaces.Add(project.GetDataLayerNamespace());
+                codeBuilder.ObjectDefinition.Namespaces.Add(project.GetBusinessLayerContractsNamespace());
+
+                var interfaceDef = (codeBuilder.ObjectDefinition as CSharpClassDefinition).RefactInterface();
+
+                interfaceDef.Namespace = project.GetBusinessLayerContractsNamespace();
+
+                GenerateBusinessLayerContracts(project, interfaceDef);
+
+                codeBuilder.CreateFile(project.GetBusinessLayerDirectory());
+            }
+
+            return project;
+        }
+
+        public static EfCoreProject GenerateBusinessInterfacesResponses(this EfCoreProject project)
+        {
+            var interfacesDefinitions = new List<CSharpInterfaceDefinition>()
+            {
+                new ResponseInterfaceDefinition(),
+                new SingleModelResponseInterfaceDefinition(),
+                new ListModelResponseInterfaceDefinition()
+            };
+
+            foreach (var definition in interfacesDefinitions)
+            {
+                definition.Namespace = project.GetBusinessLayerResponsesNamespace();
+
+                var codeBuilder = new CSharpInterfaceBuilder
+                {
+                    ObjectDefinition = definition,
+                    OutputDirectory = project.OutputDirectory
+                };
+
+                codeBuilder.CreateFile(project.GetBusinessLayerResponsesDirectory());
+            }
+
+            return project;
+        }
+
+        public static EfCoreProject GenerateBusinessClassesResponses(this EfCoreProject project)
+        {
+            var classesDefinitions = new List<CSharpClassDefinition>()
+            {
+                new SingleModelResponseClassDefinition(),
+                new ListModelResponseClassDefinition()
+            };
+
+            foreach (var definition in classesDefinitions)
+            {
+                definition.Namespace = project.GetBusinessLayerResponsesNamespace();
+
+                var codeBuilder = new CSharpClassBuilder
+                {
+                    ObjectDefinition = definition,
+                    OutputDirectory = project.OutputDirectory
+                };
+
+                codeBuilder.CreateFile(project.GetBusinessLayerResponsesDirectory());
             }
 
             return project;

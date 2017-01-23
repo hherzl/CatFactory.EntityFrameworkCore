@@ -24,7 +24,11 @@ namespace CatFactory.EfCore
         {
             // todo: improve the way to pluralize a name
 
-            if (value.EndsWith("s"))
+            if (value.EndsWith("ss"))
+            {
+                return String.Format("{0}es", value);
+            }
+            else if (value.EndsWith("s"))
             {
                 return value;
             }

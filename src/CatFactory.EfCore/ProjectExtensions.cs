@@ -34,5 +34,20 @@ namespace CatFactory.EfCore
         {
             return Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer, project.Namespaces.Repositories);
         }
+
+        public static String GetBusinessLayerDirectory(this EfCoreProject project)
+        {
+            return Path.Combine(project.OutputDirectory, project.Namespaces.BusinessLayer);
+        }
+
+        public static String GetBusinessLayerContractsDirectory(this EfCoreProject project)
+        {
+            return Path.Combine(project.OutputDirectory, project.Namespaces.BusinessLayer, project.Namespaces.Contracts);
+        }
+
+        public static String GetBusinessLayerResponsesDirectory(this EfCoreProject project)
+        {
+            return Path.Combine(project.OutputDirectory, project.Namespaces.BusinessLayer, project.Namespaces.Responses);
+        }
     }
 }

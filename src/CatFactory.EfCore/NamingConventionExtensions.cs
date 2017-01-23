@@ -39,9 +39,14 @@ namespace CatFactory.EfCore
             return String.Format("{0}", namingConvention.GetClassName(dbObject.Name));
         }
 
+        public static String GetViewModelName(this IDbObject dbObject)
+        {
+            return String.Format("{0}ViewModel", namingConvention.GetClassName(dbObject.GetSingularName()));
+        }
+
         public static String GetMapName(this IDbObject dbObject)
         {
-            return namingConvention.GetClassName(String.Format("{0}Map", dbObject.Name));
+            return namingConvention.GetClassName(String.Format("{0}Map", dbObject.GetSingularName()));
         }
 
         public static String GetInterfaceRepositoryName(this ProjectFeature projectFeature)
@@ -52,6 +57,16 @@ namespace CatFactory.EfCore
         public static String GetClassRepositoryName(this ProjectFeature projectFeature)
         {
             return namingConvention.GetClassName(String.Format("{0}Repository", projectFeature.Name));
+        }
+
+        public static String GetBusinessInterfaceName(this ProjectFeature projectFeature)
+        {
+            return namingConvention.GetInterfaceName(String.Format("{0}BusinessObject", projectFeature.Name));
+        }
+
+        public static String GetBusinessClassName(this ProjectFeature projectFeature)
+        {
+            return namingConvention.GetClassName(String.Format("{0}BusinessObject", projectFeature.Name));
         }
 
         public static String GetDbContextName(this Database db)
@@ -84,9 +99,29 @@ namespace CatFactory.EfCore
             return namingConvention.GetClassName(String.Join(".", project.Name, project.Namespaces.DataLayer, project.Namespaces.Contracts));
         }
 
+        public static String GetDataLayerDataContractsNamespace(this EfCoreProject project)
+        {
+            return namingConvention.GetClassName(String.Join(".", project.Name, project.Namespaces.DataLayer, project.Namespaces.DataContracts));
+        }
+
         public static String GetDataLayerRepositoriesNamespace(this EfCoreProject project)
         {
             return namingConvention.GetClassName(String.Join(".", project.Name, project.Namespaces.DataLayer, project.Namespaces.Repositories));
+        }
+
+        public static String GetBusinessLayerNamespace(this EfCoreProject project)
+        {
+            return namingConvention.GetClassName(String.Join(".", project.Name, project.Namespaces.BusinessLayer));
+        }
+
+        public static String GetBusinessLayerContractsNamespace(this EfCoreProject project)
+        {
+            return namingConvention.GetClassName(String.Join(".", project.Name, project.Namespaces.BusinessLayer, project.Namespaces.Contracts));
+        }
+
+        public static String GetBusinessLayerResponsesNamespace(this EfCoreProject project)
+        {
+            return namingConvention.GetClassName(String.Join(".", project.Name, project.Namespaces.BusinessLayer, project.Namespaces.Responses));
         }
     }
 }
