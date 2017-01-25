@@ -19,16 +19,8 @@ namespace CatFactory.EfCore.Tests
             project.BuildFeatures();
 
             project
-                .GenerateEntities()
-                .GenerateAppSettings()
-                .GenerateMappingDependences()
-                .GenerateMappings()
-                .GenerateDbContext()
-                .GenerateDataRepositories()
-                .GenerateBusinessInterfacesResponses()
-                .GenerateBusinessClassesResponses()
-                .GenerateBusinessObjects()
-                ;
+                .GenerateEntityLayer()
+                .GenerateDataLayer();
         }
 
         [Fact]
@@ -47,13 +39,8 @@ namespace CatFactory.EfCore.Tests
             project.DeclareDbSetPropertiesInDbContext = true;
 
             project
-                .GenerateEntities()
-                .GenerateAppSettings()
-                .GenerateMappingDependences()
-                .GenerateMappings()
-                .GenerateDbContext()
-                .GenerateDataRepositories()
-                ;
+                .GenerateEntityLayer()
+                .GenerateDataLayer();
         }
 
         [Fact]
@@ -72,13 +59,8 @@ namespace CatFactory.EfCore.Tests
             project.Namespaces.DataLayer = "DL";
 
             project
-                .GenerateEntities()
-                .GenerateAppSettings()
-                .GenerateMappingDependences()
-                .GenerateMappings()
-                .GenerateDbContext()
-                .GenerateDataRepositories()
-                ;
+                .GenerateEntityLayer()
+                .GenerateDataLayer();
         }
 
         [Fact]
@@ -106,13 +88,8 @@ namespace CatFactory.EfCore.Tests
             project.Namespaces.DataLayer = "DL";
 
             project
-                .GenerateEntities()
-                .GenerateAppSettings()
-                .GenerateMappingDependences()
-                .GenerateMappings()
-                .GenerateDbContext()
-                .GenerateDataRepositories()
-                ;
+                .GenerateEntityLayer()
+                .GenerateDataLayer();
         }
 
         [Fact]
@@ -146,13 +123,8 @@ namespace CatFactory.EfCore.Tests
             project.BuildFeatures();
 
             project
-                .GenerateEntities()
-                .GenerateAppSettings()
-                .GenerateMappingDependences()
-                .GenerateMappings()
-                .GenerateDbContext()
-                .GenerateDataRepositories()
-                ;
+                .GenerateEntityLayer()
+                .GenerateDataLayer();
         }
     }
 }

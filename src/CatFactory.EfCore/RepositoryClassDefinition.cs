@@ -20,11 +20,12 @@ namespace CatFactory.EfCore
 
             Name = projectFeature.GetClassRepositoryName();
 
-            Implements.Add(nameof(IDisposable));
+            BaseClass = "Repository";
+
             Implements.Add(projectFeature.GetInterfaceRepositoryName());
 
-            Fields.Add(new FieldDefinition("Boolean", "Disposed") { AccessModifier = AccessModifier.Protected });
-            Fields.Add(new FieldDefinition(projectFeature.Database.GetDbContextName(), "DbContext") { AccessModifier = AccessModifier.Protected });
+            //Fields.Add(new FieldDefinition("Boolean", "Disposed") { AccessModifier = AccessModifier.Protected });
+            //Fields.Add(new FieldDefinition(projectFeature.Database.GetDbContextName(), "DbContext") { AccessModifier = AccessModifier.Protected });
 
             Constructors.Add(new ClassConstructorDefinition()
             {
@@ -32,27 +33,28 @@ namespace CatFactory.EfCore
                 {
                     new ParameterDefinition(projectFeature.Database.GetDbContextName(), "dbContext")
                 },
-                Lines = new List<CodeLine>()
-                {
-                    new CodeLine("DbContext = dbContext;")
-                }
+                ParentInvoke = "base(dbContext)"
+                //Lines = new List<CodeLine>()
+                //{
+                //    new CodeLine("DbContext = dbContext;")
+                //}
             });
 
-            Methods.Add(new MethodDefinition("void", "Dispose")
-            {
-                Lines = new List<CodeLine>()
-                {
-                    new CodeLine("if (!Disposed)"),
-                    new CodeLine("{{"),
-                    new CodeLine(1, "if (DbContext != null)"),
-                    new CodeLine(1, "{{"),
-                    new CodeLine(2, "DbContext.Dispose();"),
-                    new CodeLine(),
-                    new CodeLine(2, "Disposed = true;"),
-                    new CodeLine(1, "}}"),
-                    new CodeLine("}}")
-                }
-            });
+            //Methods.Add(new MethodDefinition("void", "Dispose")
+            //{
+            //    Lines = new List<CodeLine>()
+            //    {
+            //        new CodeLine("if (!Disposed)"),
+            //        new CodeLine("{{"),
+            //        new CodeLine(1, "if (DbContext != null)"),
+            //        new CodeLine(1, "{{"),
+            //        new CodeLine(2, "DbContext.Dispose();"),
+            //        new CodeLine(),
+            //        new CodeLine(2, "Disposed = true;"),
+            //        new CodeLine(1, "}}"),
+            //        new CodeLine("}}")
+            //    }
+            //});
 
             foreach (var dbObject in projectFeature.DbObjects)
             {
