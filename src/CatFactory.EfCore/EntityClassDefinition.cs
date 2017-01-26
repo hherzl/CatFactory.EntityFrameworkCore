@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using CatFactory.DotNetCore;
 using CatFactory.Mapping;
 using CatFactory.OOP;
@@ -24,6 +25,11 @@ namespace CatFactory.EfCore
             if (tableCast != null)
             {
                 columns = tableCast.Columns;
+
+                if (!String.IsNullOrEmpty(tableCast.Description))
+                {
+                    Documentation.Summary = tableCast.Description;
+                }
             }
 
             var viewCast = dbObject as IView;
@@ -31,6 +37,11 @@ namespace CatFactory.EfCore
             if (viewCast != null)
             {
                 columns = viewCast.Columns;
+
+                if (!String.IsNullOrEmpty(viewCast.Description))
+                {
+                    Documentation.Summary = viewCast.Description;
+                }
             }
 
             if (tableCast != null || viewCast != null)

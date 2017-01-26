@@ -25,13 +25,9 @@ namespace CatFactory.EfCore
                     codeBuilder.ObjectDefinition.Namespaces.Add("System.ComponentModel.DataAnnotations");
                     codeBuilder.ObjectDefinition.Namespaces.Add("System.ComponentModel.DataAnnotations.Schema");
 
-                    codeBuilder.ObjectDefinition.Attributes.Add(new MetadataAttribute("Table")
+                    codeBuilder.ObjectDefinition.Attributes.Add(new MetadataAttribute("Table", String.Format("\"{0}\"", table.Name))
                     {
-                        Arguments = new List<String>
-                        {
-                            String.Format("\"{0}\"", table.Name),
-                            String.Format("Schema = \"{0}\"", table.Schema),
-                        }
+                        Sets = new List<String>() { String.Format("Schema = \"{0}\"", table.Schema) }
                     });
 
                     for (var i = 0; i < table.Columns.Count; i++)
@@ -44,10 +40,7 @@ namespace CatFactory.EfCore
                             {
                                 if (table.Identity != null && table.Identity.Name == column.Name)
                                 {
-                                    property.Attributes.Add(new MetadataAttribute("DatabaseGenerated")
-                                    {
-                                        Arguments = new List<String>() { "DatabaseGeneratedOption.Identity" }
-                                    });
+                                    property.Attributes.Add(new MetadataAttribute("DatabaseGenerated", "DatabaseGeneratedOption.Identity"));
                                 }
 
                                 if (table.PrimaryKey != null && table.PrimaryKey.Key.Contains(column.Name))
@@ -55,10 +48,7 @@ namespace CatFactory.EfCore
                                     property.Attributes.Add(new MetadataAttribute("Key"));
                                 }
 
-                                property.Attributes.Add(new MetadataAttribute("Column")
-                                {
-                                    Arguments = new List<String> { String.Format("Order = {0}", i + 1) }
-                                });
+                                property.Attributes.Add(new MetadataAttribute("Column", String.Format("Order = {0}", i + 1)));
 
                                 if (!column.Nullable)
                                 {
@@ -67,10 +57,7 @@ namespace CatFactory.EfCore
 
                                 if (column.Type.Contains("char") && column.Length > 0)
                                 {
-                                    property.Attributes.Add(new MetadataAttribute("StringLength")
-                                    {
-                                        Arguments = new List<String>() { column.Length.ToString() }
-                                    });
+                                    property.Attributes.Add(new MetadataAttribute("StringLength", column.Length.ToString()));
                                 }
                             }
                         }

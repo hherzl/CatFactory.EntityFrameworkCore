@@ -7,13 +7,29 @@ namespace CatFactory.EfCore
         public EfCoreProject()
             : base()
         {
-            Namespaces = new Namespaces();
+            NavigationPropertyEnumerableType = "Collection";
         }
 
-        public Namespaces Namespaces { get; set; }
+        private ProjectNamespaces m_namespaces;
+
+        public ProjectNamespaces Namespaces
+        {
+            get
+            {
+                return m_namespaces ?? (m_namespaces = new ProjectNamespaces());
+            }
+            set
+            {
+                m_namespaces = value;
+            }
+        }
 
         public Boolean UseDataAnnotations { get; set; }
 
         public Boolean DeclareDbSetPropertiesInDbContext { get; set; }
+
+        public Boolean DeclareNavigationPropertiesAsVirtual { get; set; }
+
+        public String NavigationPropertyEnumerableType { get; set; }
     }
 }

@@ -2,9 +2,9 @@
 
 namespace CatFactory.EfCore
 {
-    public class Namespaces
+    public class ProjectNamespaces
     {
-        public Namespaces()
+        public ProjectNamespaces()
         {
             EntityLayer = "EntityLayer";
             DataLayer = "DataLayer";
