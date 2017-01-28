@@ -12,10 +12,9 @@ namespace CatFactory.EfCore
             Project = project;
 
             Namespaces.Add("System");
+            Namespaces.Add("System.Threading.Tasks");
 
             Name = "Repository";
-
-            //Implements.Add(projectFeature.GetInterfaceRepositoryName());
 
             Fields.Add(new FieldDefinition("Boolean", "Disposed") { AccessModifier = AccessModifier.Protected });
             Fields.Add(new FieldDefinition(project.Database.GetDbContextName(), "DbContext") { AccessModifier = AccessModifier.Protected });
@@ -45,6 +44,22 @@ namespace CatFactory.EfCore
                     new CodeLine(2, "Disposed = true;"),
                     new CodeLine(1, "}}"),
                     new CodeLine("}}")
+                }
+            });
+
+            Methods.Add(new MethodDefinition("Int32", "CommitChanges")
+            {
+                Lines = new List<CodeLine>()
+                {
+                    new CodeLine("return DbContext.SaveChanges();")
+                }
+            });
+
+            Methods.Add(new MethodDefinition("Task<Int32>", "CommitChangesAsync")
+            {
+                Lines = new List<CodeLine>()
+                {
+                    new CodeLine("return DbContext.SaveChangesAsync();")
                 }
             });
 
