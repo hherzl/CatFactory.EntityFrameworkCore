@@ -18,6 +18,9 @@ namespace CatFactory.EfCore.Tests
 
             project.BuildFeatures();
 
+            project.UpdateExclusions.Add("CreationUser");
+            project.UpdateExclusions.Add("CreationDateTime");
+
             project
                 .GenerateEntityLayer()
                 .GenerateDataLayer();

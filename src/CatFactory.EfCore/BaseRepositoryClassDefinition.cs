@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using CatFactory.CodeFactory;
 using CatFactory.DotNetCore;
 using CatFactory.OOP;
@@ -12,19 +13,16 @@ namespace CatFactory.EfCore
             Project = project;
 
             Namespaces.Add("System");
+            Namespaces.Add("System.Linq");
             Namespaces.Add("System.Threading.Tasks");
 
             Name = "Repository";
 
-            Fields.Add(new FieldDefinition("Boolean", "Disposed") { AccessModifier = AccessModifier.Protected });
-            Fields.Add(new FieldDefinition(project.Database.GetDbContextName(), "DbContext") { AccessModifier = AccessModifier.Protected });
+            Fields.Add(new FieldDefinition(AccessModifier.Protected, "Boolean", "Disposed"));
+            Fields.Add(new FieldDefinition(AccessModifier.Protected, project.Database.GetDbContextName(), "DbContext"));
 
-            Constructors.Add(new ClassConstructorDefinition()
+            Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(project.Database.GetDbContextName(), "dbContext"))
             {
-                Parameters = new List<ParameterDefinition>()
-                {
-                    new ParameterDefinition(project.Database.GetDbContextName(), "dbContext")
-                },
                 Lines = new List<CodeLine>()
                 {
                     new CodeLine("DbContext = dbContext;")
@@ -44,6 +42,23 @@ namespace CatFactory.EfCore
                     new CodeLine(2, "Disposed = true;"),
                     new CodeLine(1, "}}"),
                     new CodeLine("}}")
+                }
+            });
+
+            Methods.Add(new MethodDefinition(AccessModifier.Protected, "IQueryable<TEntity>", "Paging",
+                new ParameterDefinition("Int32", "pageSize"),
+                new ParameterDefinition("Int32", "pageNumber"))
+            {
+                GenericType = "TEntity",
+                WhereConstraints = new List<String>()
+                {
+                    "TEntity : class"
+                },
+                Lines = new List<CodeLine>()
+                {
+                    new CodeLine("var query = DbContext.Set<TEntity>();"),
+                    new CodeLine(),
+                    new CodeLine("return pageSize > 0 && pageNumber > 0 ? query.Skip((pageNumber - 1) * pageSize).Take(pageSize) : query;")
                 }
             });
 

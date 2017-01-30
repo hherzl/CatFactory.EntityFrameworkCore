@@ -21,12 +21,8 @@ namespace CatFactory.EfCore
 
             if (project.UseDataAnnotations)
             {
-                Constructors.Add(new ClassConstructorDefinition()
+                Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition("IOptions<AppSettings>", "appSettings"))
                 {
-                    Parameters = new List<ParameterDefinition>()
-                    {
-                        new ParameterDefinition("IOptions<AppSettings>", "appSettings")
-                    },
                     Lines = new List<CodeLine>()
                     {
                         new CodeLine("ConnectionString = appSettings.Value.ConnectionString;"),
@@ -35,13 +31,8 @@ namespace CatFactory.EfCore
             }
             else
             {
-                Constructors.Add(new ClassConstructorDefinition()
+                Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition("IOptions<AppSettings>", "appSettings"), new ParameterDefinition("IEntityMapper", "entityMapper"))
                 {
-                    Parameters = new List<ParameterDefinition>()
-                    {
-                        new ParameterDefinition("IOptions<AppSettings>", "appSettings"),
-                        new ParameterDefinition("IEntityMapper", "entityMapper")
-                    },
                     Lines = new List<CodeLine>()
                     {
                         new CodeLine("ConnectionString = appSettings.Value.ConnectionString;"),
@@ -76,11 +67,9 @@ namespace CatFactory.EfCore
 
         public MethodDefinition GetOnConfiguringMethod()
         {
-            return new MethodDefinition("void", "OnConfiguring")
+            return new MethodDefinition(AccessModifier.Protected, "void", "OnConfiguring", new ParameterDefinition("DbContextOptionsBuilder", "optionsBuilder"))
             {
-                AccessModifier = AccessModifier.Protected,
-                Prefix = "override",
-                Parameters = new List<ParameterDefinition>() { new ParameterDefinition("DbContextOptionsBuilder", "optionsBuilder") },
+                IsOverride = true,
                 Lines = new List<CodeLine>()
                 {
                     new CodeLine("optionsBuilder.UseSqlServer(ConnectionString);"),
@@ -119,14 +108,9 @@ namespace CatFactory.EfCore
 
             lines.Add(new CodeLine("base.OnModelCreating(modelBuilder);"));
 
-            return new MethodDefinition("void", "OnModelCreating")
+            return new MethodDefinition(AccessModifier.Protected, "void", "OnModelCreating", new ParameterDefinition("ModelBuilder", "modelBuilder"))
             {
-                AccessModifier = AccessModifier.Protected,
-                Prefix = "override",
-                Parameters = new List<ParameterDefinition>()
-                {
-                    new ParameterDefinition("ModelBuilder", "modelBuilder")
-                },
+                IsOverride = true,
                 Lines = lines
             };
         }

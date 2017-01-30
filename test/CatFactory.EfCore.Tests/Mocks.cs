@@ -115,7 +115,11 @@ namespace CatFactory.EfCore.Tests
                                 new Column { Name = "CustomerID", Type = "int", Nullable = false },
                                 new Column { Name = "EmployeeID", Type = "int", Nullable = false },
                                 new Column { Name = "ShipperID", Type = "int", Nullable = false },
-                                new Column { Name = "Comments", Type = "varchar", Length = 255, Nullable = true }
+                                new Column { Name = "Comments", Type = "varchar", Length = 255, Nullable = true },
+                                new Column { Name = "CreationUser", Type = "varchar", Length = 25, Nullable = false },
+                                new Column { Name = "CreationDateTime", Type = "datetime", Nullable = false },
+                                new Column { Name = "LastUpdateUser", Type = "varchar", Length = 25, Nullable = true },
+                                new Column { Name = "LastUpdateDateTime", Type = "datetime", Nullable = true }
                             },
                             Identity = new Identity { Name = "OrderID", Seed = 1, Increment = 1 }
                         },

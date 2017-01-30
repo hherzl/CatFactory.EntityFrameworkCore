@@ -15,8 +15,9 @@ namespace CatFactory.EfCore
             Project = project;
 
             Namespaces.Add("System");
-            Namespaces.Add("System.Collections.Generic");
             Namespaces.Add("System.Linq");
+            Namespaces.Add("System.Threading.Tasks");
+            Namespaces.Add("Microsoft.EntityFrameworkCore");
 
             Name = projectFeature.GetClassRepositoryName();
 
@@ -57,18 +58,11 @@ namespace CatFactory.EfCore
 
         public MethodDefinition GetGetAllMethod(ProjectFeature projectFeature, DbObject dbObject)
         {
-            return new MethodDefinition(String.Format("IQueryable<{0}>", dbObject.GetSingularName()), String.Format("Get{0}", dbObject.GetPluralName()))
+            return new MethodDefinition(String.Format("IQueryable<{0}>", dbObject.GetSingularName()), String.Format("Get{0}", dbObject.GetPluralName()), new ParameterDefinition("Int32", "pageSize", "0"), new ParameterDefinition("Int32", "pageNumber", "0"))
             {
-                Parameters = new List<ParameterDefinition>()
-                {
-                    new ParameterDefinition("Int32", "pageSize") { DefaultValue = "0" },
-                    new ParameterDefinition("Int32", "pageNumber")  { DefaultValue = "0" }
-                },
                 Lines = new List<CodeLine>()
                 {
-                    new CodeLine("var query = DbContext.{0};", Project.DeclareDbSetPropertiesInDbContext ?  dbObject.GetEntityName() : String.Format("Set<{0}>()", dbObject.GetSingularName())),
-                    new CodeLine(),
-                    new CodeLine("return pageSize > 0 && pageNumber > 0 ? query.Skip((pageNumber - 1) * pageSize).Take(pageSize) : query;")
+                    new CodeLine("return Paging<{0}>(pageSize, pageNumber);", dbObject.GetSingularName())
                 }
             };
         }
@@ -94,32 +88,26 @@ namespace CatFactory.EfCore
                 }
             }
 
-            return new MethodDefinition(dbObject.GetSingularName(), String.Format("Get{0}", dbObject.GetSingularName()))
+            return new MethodDefinition(String.Format("Task<{0}>", dbObject.GetSingularName()), String.Format("Get{0}Async", dbObject.GetSingularName()), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
             {
-                Parameters = new List<ParameterDefinition>()
-                {
-                    new ParameterDefinition(dbObject.GetSingularName(), "entity")
-                },
+                IsAsync = true,
                 Lines = new List<CodeLine>()
                 {
-                    new CodeLine("return DbContext.{0}.FirstOrDefault({1});", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetSingularName() : String.Format("Set<{0}>()", dbObject.GetSingularName()), expression)
+                    new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetSingularName() : String.Format("Set<{0}>()", dbObject.GetSingularName()), expression)
                 }
             };
         }
 
         public MethodDefinition GetAddMethod(ProjectFeature projectFeature, DbObject dbObject)
         {
-            return new MethodDefinition("void", String.Format("Add{0}", dbObject.GetSingularName()))
+            return new MethodDefinition("Task<Int32>", String.Format("Add{0}Async", dbObject.GetSingularName()), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
             {
-                Parameters = new List<ParameterDefinition>()
-                {
-                    new ParameterDefinition(dbObject.GetSingularName(), "entity")
-                },
+                IsAsync = true,
                 Lines = new List<CodeLine>()
                 {
                     new CodeLine("DbContext.{0}.Add(entity);", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetSingularName() : String.Format("Set<{0}>()", dbObject.GetSingularName())),
                     new CodeLine(),
-                    new CodeLine("DbContext.SaveChanges();")
+                    new CodeLine("return await CommitChangesAsync();")
                 }
             };
         }
@@ -128,7 +116,7 @@ namespace CatFactory.EfCore
         {
             var lines = new List<CodeLine>();
 
-            lines.Add(new CodeLine("var entity = Get{0}(changes);", dbObject.GetSingularName()));
+            lines.Add(new CodeLine("var entity = await Get{0}Async(changes);", dbObject.GetSingularName()));
             lines.Add(new CodeLine());
             lines.Add(new CodeLine("if (entity != null)"));
             lines.Add(new CodeLine("{{"));
@@ -137,39 +125,34 @@ namespace CatFactory.EfCore
 
             if (table != null)
             {
-                foreach (var column in table.GetColumnsWithOutKey())
+                foreach (var column in table.GetUpdateColumns(Project))
                 {
                     lines.Add(new CodeLine(1, "entity.{0} = changes.{0};", column.GetPropertyName()));
                 }
             }
 
-            lines.Add(new CodeLine());
-            lines.Add(new CodeLine(1, "DbContext.SaveChanges();"));
             lines.Add(new CodeLine("}}"));
 
-            return new MethodDefinition("void", String.Format("Update{0}", dbObject.GetSingularName()))
+            lines.Add(new CodeLine());
+            lines.Add(new CodeLine("return await CommitChangesAsync();"));
+
+            return new MethodDefinition("Task<Int32>", String.Format("Update{0}Async", dbObject.GetSingularName()), new ParameterDefinition(dbObject.GetSingularName(), "changes"))
             {
-                Parameters = new List<ParameterDefinition>()
-                {
-                    new ParameterDefinition(dbObject.GetSingularName(), "changes")
-                },
+                IsAsync = true,
                 Lines = lines
             };
         }
 
         public MethodDefinition GetDeleteMethod(ProjectFeature projectFeature, DbObject dbObject)
         {
-            return new MethodDefinition("void", String.Format("Delete{0}", dbObject.GetSingularName()))
+            return new MethodDefinition("Task<Int32>", String.Format("Delete{0}Async", dbObject.GetSingularName()), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
             {
-                Parameters = new List<ParameterDefinition>()
-                {
-                    new ParameterDefinition(dbObject.GetSingularName(), "entity")
-                },
+                IsAsync = true,
                 Lines = new List<CodeLine>()
                 {
                     new CodeLine("DbContext.{0}.Remove(entity);", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetSingularName() : String.Format("Set<{0}>()", dbObject.GetSingularName())),
                     new CodeLine(),
-                    new CodeLine("DbContext.SaveChanges();")
+                    new CodeLine("return await CommitChangesAsync();")
                 }
             };
         }
