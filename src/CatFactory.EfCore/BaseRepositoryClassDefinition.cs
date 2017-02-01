@@ -45,9 +45,7 @@ namespace CatFactory.EfCore
                 }
             });
 
-            Methods.Add(new MethodDefinition(AccessModifier.Protected, "IQueryable<TEntity>", "Paging",
-                new ParameterDefinition("Int32", "pageSize"),
-                new ParameterDefinition("Int32", "pageNumber"))
+            Methods.Add(new MethodDefinition(AccessModifier.Protected, "IQueryable<TEntity>", "Paging", new ParameterDefinition("Int32", "pageSize"), new ParameterDefinition("Int32", "pageNumber"))
             {
                 GenericType = "TEntity",
                 WhereConstraints = new List<String>()

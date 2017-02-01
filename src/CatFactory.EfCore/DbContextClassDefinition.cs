@@ -55,12 +55,12 @@ namespace CatFactory.EfCore
             {
                 foreach (var table in project.Database.Tables)
                 {
-                    Properties.Add(new PropertyDefinition(String.Format("DbSet<{0}>", table.GetEntityName()), table.GetEntityName()));
+                    Properties.Add(new PropertyDefinition(String.Format("DbSet<{0}>", table.GetEntityName()), table.GetPluralName()));
                 }
 
                 foreach (var view in project.Database.Views)
                 {
-                    Properties.Add(new PropertyDefinition(String.Format("DbSet<{0}>", view.GetEntityName()), view.GetEntityName()));
+                    Properties.Add(new PropertyDefinition(String.Format("DbSet<{0}>", view.GetEntityName()), view.GetPluralName()));
                 }
             }
         }

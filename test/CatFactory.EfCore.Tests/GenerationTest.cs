@@ -9,7 +9,7 @@ namespace CatFactory.EfCore.Tests
         [Fact]
         public void ProjectGenerationWithDefaultsFromMockDatabaseTest()
         {
-            var project = new EfCoreProject()
+            var project = new EfCoreProject
             {
                 Name = "Store",
                 Database = Mocks.StoreDatabase,
@@ -29,7 +29,7 @@ namespace CatFactory.EfCore.Tests
         [Fact]
         public void ProjectGenerationWithDbSetPropertiesAndDataAnnotationsTest()
         {
-            var project = new EfCoreProject()
+            var project = new EfCoreProject
             {
                 Name = "Store",
                 Database = Mocks.StoreDatabase,
@@ -49,7 +49,7 @@ namespace CatFactory.EfCore.Tests
         [Fact]
         public void ProjectGenerationWithModifiedNamespacesFromMockDatabaseTest()
         {
-            var project = new EfCoreProject()
+            var project = new EfCoreProject
             {
                 Name = "Store",
                 Database = Mocks.StoreDatabase,
@@ -71,7 +71,7 @@ namespace CatFactory.EfCore.Tests
         {
             var connectionString = "server=(local);database=Northwind;integrated security=yes;";
 
-            var dbFactory = new SqlServerDatabaseFactory()
+            var dbFactory = new SqlServerDatabaseFactory
             {
                 ConnectionString = connectionString
             };
@@ -100,7 +100,7 @@ namespace CatFactory.EfCore.Tests
         {
             var connectionString = "server=(local);database=Northwind;integrated security=yes;";
 
-            var dbFactory = new SqlServerDatabaseFactory()
+            var dbFactory = new SqlServerDatabaseFactory
             {
                 ConnectionString = connectionString
             };
@@ -116,7 +116,7 @@ namespace CatFactory.EfCore.Tests
                 db.DbObjects.Remove(dbObject);
             }
 
-            var project = new EfCoreProject()
+            var project = new EfCoreProject
             {
                 Name = "Northwind",
                 Database = db,

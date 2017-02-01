@@ -21,12 +21,8 @@ namespace CatFactory.EfCore
 
             Properties.Add(new PropertyDefinition("IEnumerable<IEntityMap>", "Mappings"));
 
-            Methods.Add(new MethodDefinition("void", "MapEntities")
+            Methods.Add(new MethodDefinition("void", "MapEntities", new ParameterDefinition("ModelBuilder", "modelBuilder"))
             {
-                Parameters = new List<ParameterDefinition>()
-                {
-                    new ParameterDefinition("ModelBuilder", "modelBuilder")
-                },
                 Lines = new List<CodeLine>()
                 {
                     new CodeLine("foreach (var item in Mappings)"),

@@ -52,7 +52,11 @@ namespace CatFactory.EfCore.Tests
                                 new Column { Name = "ProductCategoryID", Type = "int", Nullable = false },
                                 new Column { Name = "ProductCategoryName", Type = "varchar", Length = 100, Nullable = false },
                             },
-                            Identity = new Identity { Name = "ProductCategoryID", Seed = 1, Increment = 1 }
+                            Identity = new Identity { Name = "ProductCategoryID", Seed = 1, Increment = 1 },
+                            Uniques = new List<Unique>()
+                            {
+                                new Unique(new String[] { "ProductCategoryName" }) { ConstraintName = "U_ProductCategoryName" }
+                            }
                         },
                         new Table
                         {
@@ -65,7 +69,11 @@ namespace CatFactory.EfCore.Tests
                                 new Column { Name = "ProductCategoryID", Type = "int", Nullable = false },
                                 new Column { Name = "Description", Type = "varchar", Length = 255, Nullable = true }
                             },
-                            Identity = new Identity { Name = "ProductID", Seed = 1, Increment = 1 }
+                            Identity = new Identity { Name = "ProductID", Seed = 1, Increment = 1 },
+                            Uniques = new List<Unique>()
+                            {
+                                new Unique(new String[] { "ProductName" }) { ConstraintName = "U_ProductName" }
+                            }
                         },
                         new Table
                         {
@@ -90,7 +98,11 @@ namespace CatFactory.EfCore.Tests
                                 new Column { Name = "CompanyName", Type = "varchar", Length = 100, Nullable = true },
                                 new Column { Name = "ContactName", Type = "varchar", Length = 100, Nullable = true }
                             },
-                            Identity = new Identity { Name = "CustomerID", Seed = 1, Increment = 1 }
+                            Identity = new Identity { Name = "CustomerID", Seed = 1, Increment = 1 },
+                            Uniques = new List<Unique>()
+                            {
+                                new Unique(new String[] { "CompanyName" }) { ConstraintName = "U_CompanyName" }
+                            }
                         },
                         new Table
                         {
@@ -102,7 +114,11 @@ namespace CatFactory.EfCore.Tests
                                 new Column { Name = "CompanyName", Type = "varchar", Length = 100, Nullable = true },
                                 new Column { Name = "ContactName", Type = "varchar", Length = 100, Nullable = true }
                             },
-                            Identity = new Identity { Name = "ShipperID", Seed = 1, Increment = 1 }
+                            Identity = new Identity { Name = "ShipperID", Seed = 1, Increment = 1 },
+                            Uniques = new List<Unique>()
+                            {
+                                new Unique(new String[] { "CompanyName" }) { ConstraintName = "U_CompanyName" }
+                            }
                         },
                         new Table
                         {

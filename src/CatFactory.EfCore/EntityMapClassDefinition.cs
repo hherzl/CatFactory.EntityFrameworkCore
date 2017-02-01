@@ -8,9 +8,9 @@ using CatFactory.OOP;
 
 namespace CatFactory.EfCore
 {
-    public class MappingClassDefinition : CSharpClassDefinition
+    public class EntityMapClassDefinition : CSharpClassDefinition
     {
-        public MappingClassDefinition(IDbObject mappedObject)
+        public EntityMapClassDefinition(IDbObject mappedObject, EfCoreProject project)
         {
             Namespaces.Add("Microsoft.EntityFrameworkCore");
 
@@ -40,19 +40,17 @@ namespace CatFactory.EfCore
 
             if (table != null)
             {
-                if (table.PrimaryKey == null)
+                if (table.PrimaryKey == null || table.PrimaryKey.Key.Count == 0)
                 {
+                    mapMethodLines.Add(new CodeLine("entity.HasKey(p => new {{ {0} }});", String.Join(", ", table.Columns.Select(item => String.Format("p.{0}", item.Name)))));
+                    mapMethodLines.Add(new CodeLine());
+
                     mapMethodLines.Add(new CodeLine("entity.HasKey(p => new {{ {0} }});", String.Join(", ", table.Columns.Select(item => String.Format("p.{0}", item.Name)))));
                     mapMethodLines.Add(new CodeLine());
                 }
                 else
                 {
-                    if (table.PrimaryKey.Key.Count == 0)
-                    {
-                        mapMethodLines.Add(new CodeLine("entity.HasKey(p => new {{ {0} }});", String.Join(", ", table.Columns.Select(item => String.Format("p.{0}", item)))));
-                        mapMethodLines.Add(new CodeLine());
-                    }
-                    else if (table.PrimaryKey.Key.Count == 1)
+                    if (table.PrimaryKey.Key.Count == 1)
                     {
                         mapMethodLines.Add(new CodeLine("entity.HasKey(p => p.{0});", table.PrimaryKey.Key[0]));
                         mapMethodLines.Add(new CodeLine());
@@ -68,6 +66,46 @@ namespace CatFactory.EfCore
                 {
                     mapMethodLines.Add(new CodeLine("entity.Property(p => p.{0}).UseSqlServerIdentityColumn();", table.Identity.Name));
                     mapMethodLines.Add(new CodeLine());
+                }
+
+                //var tableCast = mappedObject as Table;
+
+                if (table != null)
+                {
+                    foreach (var foreignKey in table.ForeignKeys)
+                    {
+                        if (foreignKey.Key.Count == 1)
+                        {
+                            var foreignTable = project.Database.Tables.FirstOrDefault(item => item.FullName == foreignKey.References);
+
+                            if (foreignTable == null)
+                            {
+                                continue;
+                            }
+
+                            var foreignProperty = foreignKey.GetParentNavigationProperty(project, foreignTable);
+
+                            // todo: add logic to map foreign key
+
+                            //.HasOne(p => p.Blog).WithMany(b => b.Posts).HasForeignKey(p => p.BlogId).HasConstraintName("ForeignKey_Post_Blog");
+
+                            //mapMethodLines.Add(new CodeLine("entity"));
+                            //mapMethodLines.Add(new CodeLine(1, ".HasOne(p => p.{0})", foreignProperty.Type));
+                            //mapMethodLines.Add(new CodeLine(1, ".WithMany(b => b.{0})", "Posts"));
+                            //mapMethodLines.Add(new CodeLine(1, ".HasForeignKey(p => {0})", "p.BlogId"));
+                            //mapMethodLines.Add(new CodeLine(1, ".HasConstraintName(\"{0}\");", foreignKey.ConstraintName));
+                            //mapMethodLines.Add(new CodeLine());
+                        }
+                    }
+
+                    foreach (var unique in table.Uniques)
+                    {
+                        if (unique.Key.Count == 1)
+                        {
+                            mapMethodLines.Add(new CodeLine("entity.HasAlternateKey(p => new {{ {0} }}).HasName(\"{1}\");", String.Join(", ", unique.Key.Select(item => String.Format("p.{0}", item))), unique.ConstraintName));
+                            mapMethodLines.Add(new CodeLine());
+                        }
+                    }
                 }
 
                 columns = table.GetColumnsWithOutKey().ToList();
@@ -121,12 +159,8 @@ namespace CatFactory.EfCore
                 }
             }
 
-            var mapMethod = new MethodDefinition("void", "Map")
+            var mapMethod = new MethodDefinition("void", "Map", new ParameterDefinition("ModelBuilder", "modelBuilder"))
             {
-                Parameters = new List<ParameterDefinition>()
-                {
-                    new ParameterDefinition("ModelBuilder", "modelBuilder")
-                },
                 Lines = mapMethodLines
             };
 

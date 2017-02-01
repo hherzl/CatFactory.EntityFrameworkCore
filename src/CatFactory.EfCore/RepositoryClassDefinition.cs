@@ -25,24 +25,22 @@ namespace CatFactory.EfCore
 
             Implements.Add(projectFeature.GetInterfaceRepositoryName());
 
-            Constructors.Add(new ClassConstructorDefinition()
+            Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(projectFeature.Database.GetDbContextName(), "dbContext"))
             {
-                Parameters = new List<ParameterDefinition>()
-                {
-                    new ParameterDefinition(projectFeature.Database.GetDbContextName(), "dbContext")
-                },
                 ParentInvoke = "base(dbContext)"
             });
 
             foreach (var dbObject in projectFeature.DbObjects)
             {
-                if (dbObject.Type == "procedure")
+                if (dbObject.Type == "STORED_PROCEDURE")
                 {
                     // todo: add logic to invoke stored procedures
                     continue;
                 }
-
+                
                 Methods.Add(GetGetAllMethod(projectFeature, dbObject));
+                
+                AddGetByUniqueMethods(projectFeature, dbObject);
 
                 if (!projectFeature.IsView(dbObject))
                 {
@@ -65,6 +63,30 @@ namespace CatFactory.EfCore
                     new CodeLine("return Paging<{0}>(pageSize, pageNumber);", dbObject.GetSingularName())
                 }
             };
+        }
+
+        public void AddGetByUniqueMethods(ProjectFeature projectFeature, DbObject dbObject)
+        {
+            var table = projectFeature.Database.Tables.FirstOrDefault(item => item.FullName == dbObject.FullName);
+
+            if (table == null)
+            {
+                return;
+            }
+
+            foreach (var unique in table.Uniques)
+            {
+                var expression = String.Format("item => {0}", String.Join(" && ", unique.Key.Select(item => String.Format("item.{0} == entity.{0}", item))));
+
+                Methods.Add(new MethodDefinition(String.Format("Task<{0}>", dbObject.GetSingularName()), String.Format("Get{0}By{1}Async", dbObject.GetSingularName(), String.Join("And", unique.Key)), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
+                {
+                    IsAsync = true,
+                    Lines = new List<CodeLine>()
+                    {
+                        new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetPluralName() : String.Format("Set<{0}>()", dbObject.GetSingularName()), expression)
+                    }
+                });
+            }
         }
 
         public MethodDefinition GetGetMethod(ProjectFeature projectFeature, DbObject dbObject)
@@ -93,7 +115,7 @@ namespace CatFactory.EfCore
                 IsAsync = true,
                 Lines = new List<CodeLine>()
                 {
-                    new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetSingularName() : String.Format("Set<{0}>()", dbObject.GetSingularName()), expression)
+                    new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetPluralName() : String.Format("Set<{0}>()", dbObject.GetSingularName()), expression)
                 }
             };
         }
@@ -105,7 +127,7 @@ namespace CatFactory.EfCore
                 IsAsync = true,
                 Lines = new List<CodeLine>()
                 {
-                    new CodeLine("DbContext.{0}.Add(entity);", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetSingularName() : String.Format("Set<{0}>()", dbObject.GetSingularName())),
+                    new CodeLine("DbContext.{0}.Add(entity);", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetPluralName() : String.Format("Set<{0}>()", dbObject.GetSingularName())),
                     new CodeLine(),
                     new CodeLine("return await CommitChangesAsync();")
                 }
@@ -150,7 +172,7 @@ namespace CatFactory.EfCore
                 IsAsync = true,
                 Lines = new List<CodeLine>()
                 {
-                    new CodeLine("DbContext.{0}.Remove(entity);", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetSingularName() : String.Format("Set<{0}>()", dbObject.GetSingularName())),
+                    new CodeLine("DbContext.{0}.Remove(entity);", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetPluralName() : String.Format("Set<{0}>()", dbObject.GetSingularName())),
                     new CodeLine(),
                     new CodeLine("return await CommitChangesAsync();")
                 }

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using CatFactory.DotNetCore;
+﻿using CatFactory.DotNetCore;
 using CatFactory.OOP;
 
 namespace CatFactory.EfCore
@@ -15,13 +14,7 @@ namespace CatFactory.EfCore
 
             Properties.Add(new PropertyDefinition("IEnumerable<IEntityMap>", "Mappings") { IsReadOnly = true });
 
-            Methods.Add(new MethodDefinition("void", "MapEntities")
-            {
-                Parameters = new List<ParameterDefinition>()
-                {
-                    new ParameterDefinition("ModelBuilder", "modelBuilder")
-                }
-            });
+            Methods.Add(new MethodDefinition("void", "MapEntities", new ParameterDefinition("ModelBuilder", "modelBuilder")));
         }
     }
 }

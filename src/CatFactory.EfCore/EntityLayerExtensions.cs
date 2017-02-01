@@ -13,7 +13,7 @@ namespace CatFactory.EfCore
             {
                 var codeBuilder = new CSharpClassBuilder()
                 {
-                    ObjectDefinition = new EntityClassDefinition(table)
+                    ObjectDefinition = new EntityClassDefinition(table, project)
                     {
                         Namespace = project.GetEntityLayerNamespace(),
                     },
@@ -27,7 +27,10 @@ namespace CatFactory.EfCore
 
                     codeBuilder.ObjectDefinition.Attributes.Add(new MetadataAttribute("Table", String.Format("\"{0}\"", table.Name))
                     {
-                        Sets = new List<String>() { String.Format("Schema = \"{0}\"", table.Schema) }
+                        Sets = new List<MetadataAttributeSet>()
+                        {
+                            new MetadataAttributeSet("Schema", String.Format("\"{0}\"", table.Schema))
+                        }
                     });
 
                     for (var i = 0; i < table.Columns.Count; i++)
@@ -71,7 +74,7 @@ namespace CatFactory.EfCore
             {
                 var codeBuilder = new CSharpClassBuilder()
                 {
-                    ObjectDefinition = new EntityClassDefinition(view)
+                    ObjectDefinition = new EntityClassDefinition(view, project)
                     {
                         Namespace = project.GetEntityLayerNamespace()
                     },

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using CatFactory.DotNetCore;
+﻿using CatFactory.DotNetCore;
 using CatFactory.OOP;
 
 namespace CatFactory.EfCore
@@ -12,13 +11,7 @@ namespace CatFactory.EfCore
 
             Name = "IEntityMap";
 
-            Methods.Add(new MethodDefinition("void", "Map")
-            {
-                Parameters = new List<ParameterDefinition>()
-                {
-                    new ParameterDefinition("ModelBuilder", "modelBuilder")
-                }
-            });
+            Methods.Add(new MethodDefinition("void", "Map", new ParameterDefinition("ModelBuilder", "modelBuilder")));
         }
     }
 }

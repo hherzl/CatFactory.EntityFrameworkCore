@@ -5,8 +5,8 @@ namespace CatFactory.EfCore
     public class EfCoreProject : Project
     {
         public EfCoreProject()
-            : base()
         {
+            NavigationPropertyEnumerableNamespace = "System.Collections.ObjectModel";
             NavigationPropertyEnumerableType = "Collection";
         }
 
@@ -29,6 +29,8 @@ namespace CatFactory.EfCore
         public Boolean DeclareDbSetPropertiesInDbContext { get; set; }
 
         public Boolean DeclareNavigationPropertiesAsVirtual { get; set; }
+
+        public String NavigationPropertyEnumerableNamespace { get; set; }
 
         public String NavigationPropertyEnumerableType { get; set; }
     }

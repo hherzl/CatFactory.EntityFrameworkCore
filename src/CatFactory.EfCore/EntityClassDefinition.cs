@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using CatFactory.DotNetCore;
 using CatFactory.Mapping;
 using CatFactory.OOP;
@@ -8,7 +9,7 @@ namespace CatFactory.EfCore
 {
     public class EntityClassDefinition : CSharpClassDefinition
     {
-        public EntityClassDefinition(IDbObject dbObject)
+        public EntityClassDefinition(IDbObject dbObject, EfCoreProject project)
         {
             Namespaces.Add("System");
 
@@ -20,7 +21,7 @@ namespace CatFactory.EfCore
 
             var columns = default(IEnumerable<Column>);
 
-            var tableCast = dbObject as ITable;
+            var tableCast = dbObject as Table;
 
             if (tableCast != null)
             {
@@ -49,6 +50,38 @@ namespace CatFactory.EfCore
                 foreach (var column in columns)
                 {
                     Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), column.GetPropertyName()));
+                }
+            }
+
+            if (tableCast != null)
+            {
+                foreach (var foreignKey in tableCast.ForeignKeys)
+                {
+                    var table = project.Database.Tables.FirstOrDefault(item => item.FullName == foreignKey.References);
+
+                    if (table == null)
+                    {
+                        continue;
+                    }
+
+                    Properties.Add(foreignKey.GetParentNavigationProperty(project, table));
+                }
+
+                foreach (var child in tableCast.Childs)
+                {
+                    if (!Namespaces.Contains(project.NavigationPropertyEnumerableNamespace))
+                    {
+                        Namespaces.Add(project.NavigationPropertyEnumerableNamespace);
+                    }
+
+                    var table = project.Database.Tables.FirstOrDefault(item => item.FullName == child);
+
+                    if (table == null)
+                    {
+                        continue;
+                    }
+
+                    Properties.Add(project.GetChildNavigationProperty(table));
                 }
             }
         }
