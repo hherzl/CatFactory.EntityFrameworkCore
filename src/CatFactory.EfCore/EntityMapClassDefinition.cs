@@ -68,8 +68,6 @@ namespace CatFactory.EfCore
                     mapMethodLines.Add(new CodeLine());
                 }
 
-                //var tableCast = mappedObject as Table;
-
                 if (table != null)
                 {
                     foreach (var foreignKey in table.ForeignKeys)
@@ -89,12 +87,12 @@ namespace CatFactory.EfCore
 
                             //.HasOne(p => p.Blog).WithMany(b => b.Posts).HasForeignKey(p => p.BlogId).HasConstraintName("ForeignKey_Post_Blog");
 
-                            //mapMethodLines.Add(new CodeLine("entity"));
-                            //mapMethodLines.Add(new CodeLine(1, ".HasOne(p => p.{0})", foreignProperty.Type));
-                            //mapMethodLines.Add(new CodeLine(1, ".WithMany(b => b.{0})", "Posts"));
-                            //mapMethodLines.Add(new CodeLine(1, ".HasForeignKey(p => {0})", "p.BlogId"));
-                            //mapMethodLines.Add(new CodeLine(1, ".HasConstraintName(\"{0}\");", foreignKey.ConstraintName));
-                            //mapMethodLines.Add(new CodeLine());
+                            mapMethodLines.Add(new CodeLine("entity"));
+                            mapMethodLines.Add(new CodeLine(1, ".HasOne(p => p.{0})", foreignProperty.Name));
+                            mapMethodLines.Add(new CodeLine(1, ".WithMany(b => b.{0})", table.GetPluralName()));
+                            mapMethodLines.Add(new CodeLine(1, ".HasForeignKey(p => {0})", String.Format("p.{0}", foreignKey.Key[0])));
+                            mapMethodLines.Add(new CodeLine(1, ".HasConstraintName(\"{0}\");", foreignKey.ConstraintName));
+                            mapMethodLines.Add(new CodeLine());
                         }
                     }
 

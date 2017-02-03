@@ -67,7 +67,13 @@ namespace CatFactory.EfCore.Tests
                                 new Column { Name = "ProductID", Type = "int", Nullable = false },
                                 new Column { Name = "ProductName", Type = "varchar", Length = 100, Nullable = false },
                                 new Column { Name = "ProductCategoryID", Type = "int", Nullable = false },
-                                new Column { Name = "Description", Type = "varchar", Length = 255, Nullable = true }
+                                new Column { Name = "UnitPrice", Type = "decimal", Prec = 8, Scale = 4, Nullable = false },
+                                new Column { Name = "Description", Type = "varchar", Length = 255, Nullable = true },
+                                new Column { Name = "Discontinued", Type = "bit", Nullable = false },
+                                new Column { Name = "CreationUser", Type = "varchar", Length = 25, Nullable = false },
+                                new Column { Name = "CreationDateTime", Type = "datetime", Nullable = false },
+                                new Column { Name = "LastUpdateUser", Type = "varchar", Length = 25, Nullable = true },
+                                new Column { Name = "LastUpdateDateTime", Type = "datetime", Nullable = true }
                             },
                             Identity = new Identity { Name = "ProductID", Seed = 1, Increment = 1 },
                             Uniques = new List<Unique>()
@@ -84,7 +90,8 @@ namespace CatFactory.EfCore.Tests
                                 new Column { Name = "ProductInventoryID", Type = "int", Nullable = false },
                                 new Column { Name = "ProductID", Type = "int", Nullable = false },
                                 new Column { Name = "EntryDate", Type = "datetime", Nullable = false },
-                                new Column { Name = "Quantity", Type = "int", Nullable = false }
+                                new Column { Name = "Quantity", Type = "int", Nullable = false },
+                                new Column { Name = "Stocks", Type = "int", Nullable = false }
                             },
                             Identity = new Identity { Name = "ProductInventoryID", Seed = 1, Increment = 1 }
                         },
@@ -127,10 +134,12 @@ namespace CatFactory.EfCore.Tests
                             Columns = new List<Column>()
                             {
                                 new Column { Name = "OrderID", Type = "int", Nullable = false },
+                                new Column { Name = "OrderStatusID", Type = "smallint", Nullable = false },
                                 new Column { Name = "OrderDate", Type = "datetime", Nullable = false },
                                 new Column { Name = "CustomerID", Type = "int", Nullable = false },
                                 new Column { Name = "EmployeeID", Type = "int", Nullable = false },
                                 new Column { Name = "ShipperID", Type = "int", Nullable = false },
+                                new Column { Name = "Total", Type = "decimal", Prec = 12, Scale = 4, Nullable = false },
                                 new Column { Name = "Comments", Type = "varchar", Length = 255, Nullable = true },
                                 new Column { Name = "CreationUser", Type = "varchar", Length = 25, Nullable = false },
                                 new Column { Name = "CreationDateTime", Type = "datetime", Nullable = false },
@@ -145,6 +154,7 @@ namespace CatFactory.EfCore.Tests
                             Name = "OrderDetail",
                             Columns = new List<Column>()
                             {
+                                new Column { Name = "OrderDetailID", Type = "int", Nullable = false },
                                 new Column { Name = "OrderID", Type = "int", Nullable = false },
                                 new Column { Name = "ProductID", Type = "int", Nullable = false },
                                 new Column { Name = "ProductName", Type = "varchar", Length = 255, Nullable = false },
@@ -152,7 +162,7 @@ namespace CatFactory.EfCore.Tests
                                 new Column { Name = "Quantity", Type = "int", Nullable = false },
                                 new Column { Name = "Total", Type = "decimal", Prec = 8, Scale = 4, Nullable = false }
                             },
-                            PrimaryKey = new PrimaryKey(new String[] { "OrderID", "ProductID" })
+                            Identity = new Identity { Name = "OrderDetailID", Seed = 1, Increment = 1 }
                         }
                     },
                     Views = new List<View>()
