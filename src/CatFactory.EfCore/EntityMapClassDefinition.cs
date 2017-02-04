@@ -52,19 +52,19 @@ namespace CatFactory.EfCore
                 {
                     if (table.PrimaryKey.Key.Count == 1)
                     {
-                        mapMethodLines.Add(new CodeLine("entity.HasKey(p => p.{0});", table.PrimaryKey.Key[0]));
+                        mapMethodLines.Add(new CodeLine("entity.HasKey(p => p.{0});", NamingConvention.GetPropertyName(table.PrimaryKey.Key[0])));
                         mapMethodLines.Add(new CodeLine());
                     }
                     else if (table.PrimaryKey.Key.Count > 1)
                     {
-                        mapMethodLines.Add(new CodeLine("entity.HasKey(p => new {{ {0} }});", String.Join(", ", table.PrimaryKey.Key.Select(item => String.Format("p.{0}", item)))));
+                        mapMethodLines.Add(new CodeLine("entity.HasKey(p => new {{ {0} }});", String.Join(", ", table.PrimaryKey.Key.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item))))));
                         mapMethodLines.Add(new CodeLine());
                     }
                 }
 
                 if (table.Identity != null)
                 {
-                    mapMethodLines.Add(new CodeLine("entity.Property(p => p.{0}).UseSqlServerIdentityColumn();", table.Identity.Name));
+                    mapMethodLines.Add(new CodeLine("entity.Property(p => p.{0}).UseSqlServerIdentityColumn();", NamingConvention.GetPropertyName(table.Identity.Name)));
                     mapMethodLines.Add(new CodeLine());
                 }
 
@@ -83,14 +83,10 @@ namespace CatFactory.EfCore
 
                             var foreignProperty = foreignKey.GetParentNavigationProperty(project, foreignTable);
 
-                            // todo: add logic to map foreign key
-
-                            //.HasOne(p => p.Blog).WithMany(b => b.Posts).HasForeignKey(p => p.BlogId).HasConstraintName("ForeignKey_Post_Blog");
-
                             mapMethodLines.Add(new CodeLine("entity"));
                             mapMethodLines.Add(new CodeLine(1, ".HasOne(p => p.{0})", foreignProperty.Name));
                             mapMethodLines.Add(new CodeLine(1, ".WithMany(b => b.{0})", table.GetPluralName()));
-                            mapMethodLines.Add(new CodeLine(1, ".HasForeignKey(p => {0})", String.Format("p.{0}", foreignKey.Key[0])));
+                            mapMethodLines.Add(new CodeLine(1, ".HasForeignKey(p => {0})", String.Format("p.{0}", NamingConvention.GetPropertyName(foreignKey.Key[0]))));
                             mapMethodLines.Add(new CodeLine(1, ".HasConstraintName(\"{0}\");", foreignKey.ConstraintName));
                             mapMethodLines.Add(new CodeLine());
                         }
@@ -100,7 +96,7 @@ namespace CatFactory.EfCore
                     {
                         if (unique.Key.Count == 1)
                         {
-                            mapMethodLines.Add(new CodeLine("entity.HasAlternateKey(p => new {{ {0} }}).HasName(\"{1}\");", String.Join(", ", unique.Key.Select(item => String.Format("p.{0}", item))), unique.ConstraintName));
+                            mapMethodLines.Add(new CodeLine("entity.HasAlternateKey(p => new {{ {0} }}).HasName(\"{1}\");", String.Join(", ", unique.Key.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item)))), unique.ConstraintName));
                             mapMethodLines.Add(new CodeLine());
                         }
                     }
@@ -137,6 +133,10 @@ namespace CatFactory.EfCore
                     case "varchar":
                     case "nvarchar":
                         lines.Add(column.Length == 0 ? String.Format("HasColumnType(\"{0}(max)\")", column.Type) : String.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
+                        break;
+
+                    case "decimal":
+                        lines.Add(String.Format("HasColumnType(\"{0}({1}, {2})\")", column.Type, column.Prec, column.Scale));
                         break;
 
                     default:

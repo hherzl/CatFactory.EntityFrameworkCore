@@ -76,9 +76,9 @@ namespace CatFactory.EfCore
 
             foreach (var unique in table.Uniques)
             {
-                var expression = String.Format("item => {0}", String.Join(" && ", unique.Key.Select(item => String.Format("item.{0} == entity.{0}", item))));
+                var expression = String.Format("item => {0}", String.Join(" && ", unique.Key.Select(item => String.Format("item.{0} == entity.{0}", NamingConvention.GetPropertyName(item)))));
 
-                Methods.Add(new MethodDefinition(String.Format("Task<{0}>", dbObject.GetSingularName()), String.Format("Get{0}By{1}Async", dbObject.GetSingularName(), String.Join("And", unique.Key)), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
+                Methods.Add(new MethodDefinition(String.Format("Task<{0}>", dbObject.GetSingularName()), String.Format("Get{0}By{1}Async", dbObject.GetSingularName(), String.Join("And", unique.Key.Select(item => NamingConvention.GetPropertyName(item)))), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
                 {
                     IsAsync = true,
                     Lines = new List<CodeLine>()
@@ -101,12 +101,12 @@ namespace CatFactory.EfCore
                 {
                     if (table.Identity != null)
                     {
-                        expression = String.Format("item => item.{0} == entity.{0}", table.Identity.Name);
+                        expression = String.Format("item => item.{0} == entity.{0}", NamingConvention.GetPropertyName(table.Identity.Name));
                     }
                 }
                 else
                 {
-                    expression = String.Format("item => {0}", String.Join(" && ", table.PrimaryKey.Key.Select(item => String.Format("item.{0} == entity.{0}", item))));
+                    expression = String.Format("item => {0}", String.Join(" && ", table.PrimaryKey.Key.Select(item => String.Format("item.{0} == entity.{0}", NamingConvention.GetPropertyName(item)))));
                 }
             }
 

@@ -4,13 +4,13 @@ using CatFactory.Mapping;
 
 namespace CatFactory.EfCore.Tests
 {
-    public static class Mocks
+    public static class StoreDatabase
     {
-        public static Database StoreDatabase
+        public static Database Mock
         {
             get
             {
-                var db = new Database()
+                var db = new Database
                 {
                     Name = "Store",
                     Tables = new List<Table>()
@@ -186,12 +186,12 @@ namespace CatFactory.EfCore.Tests
 
                 foreach (var item in db.Tables)
                 {
-                    db.DbObjects.Add(new DbObject { Schema = item.Schema, Name = item.Name, Type = "table" });
+                    db.DbObjects.Add(new DbObject { Schema = item.Schema, Name = item.Name, Type = "USER_TABLE" });
                 }
 
                 foreach (var item in db.Views)
                 {
-                    db.DbObjects.Add(new DbObject { Schema = item.Schema, Name = item.Name, Type = "view" });
+                    db.DbObjects.Add(new DbObject { Schema = item.Schema, Name = item.Name, Type = "VIEW" });
                 }
 
                 db.AddPrimaryKeyToTables();

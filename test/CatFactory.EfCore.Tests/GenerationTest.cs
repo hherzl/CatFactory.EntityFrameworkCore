@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using CatFactory.SqlServer;
+﻿using CatFactory.SqlServer;
 using Xunit;
 
 namespace CatFactory.EfCore.Tests
@@ -7,12 +6,29 @@ namespace CatFactory.EfCore.Tests
     public class GenerationTest
     {
         [Fact]
+        public void ProjectGenerationWithDefaultsFromClassicMockDatabaseTest()
+        {
+            var project = new EfCoreProject
+            {
+                Name = "School",
+                Database = SchoolDatabase.Mock,
+                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\School"
+            };
+
+            project.BuildFeatures();
+
+            project
+                .GenerateEntityLayer()
+                .GenerateDataLayer();
+        }
+
+        [Fact]
         public void ProjectGenerationWithDefaultsFromMockDatabaseTest()
         {
             var project = new EfCoreProject
             {
                 Name = "Store",
-                Database = Mocks.StoreDatabase,
+                Database = StoreDatabase.Mock,
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store"
             };
 
@@ -32,7 +48,7 @@ namespace CatFactory.EfCore.Tests
             var project = new EfCoreProject
             {
                 Name = "Store",
-                Database = Mocks.StoreDatabase,
+                Database = StoreDatabase.Mock,
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\StoreWithDbSetPropertiesAndDataAnnotations"
             };
 
@@ -52,7 +68,7 @@ namespace CatFactory.EfCore.Tests
             var project = new EfCoreProject
             {
                 Name = "Store",
-                Database = Mocks.StoreDatabase,
+                Database = StoreDatabase.Mock,
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\ModifiedStore"
             };
 
@@ -69,14 +85,7 @@ namespace CatFactory.EfCore.Tests
         [Fact]
         public void ProjectGenerationWithModifiedNamespacesFromExistingDatabaseTest()
         {
-            var connectionString = "server=(local);database=Northwind;integrated security=yes;";
-
-            var dbFactory = new SqlServerDatabaseFactory
-            {
-                ConnectionString = connectionString
-            };
-
-            var db = dbFactory.Import();
+            var db = SqlServerDatabaseFactory.Import("server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
 
             var project = new EfCoreProject()
             {
@@ -96,31 +105,34 @@ namespace CatFactory.EfCore.Tests
         }
 
         [Fact]
-        public void ProjectGenerationFromExistingDatabaseTest()
+        public void ProjectGenerationForNorthwindDatabaseTest()
         {
-            var connectionString = "server=(local);database=Northwind;integrated security=yes;";
-
-            var dbFactory = new SqlServerDatabaseFactory
-            {
-                ConnectionString = connectionString
-            };
-
-            dbFactory.Exclusions.Add("dbo.sysdiagrams");
-
-            var db = dbFactory.Import();
-
-            var dbObject = db.DbObjects.FirstOrDefault(item => item.FullName == "dbo.sysdiagrams");
-
-            if (dbObject != null)
-            {
-                db.DbObjects.Remove(dbObject);
-            }
+            var db = SqlServerDatabaseFactory.Import("server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
 
             var project = new EfCoreProject
             {
                 Name = "Northwind",
                 Database = db,
                 OutputDirectory = "C:\\VsCode\\Northwind\\src"
+            };
+
+            project.BuildFeatures();
+
+            project
+                .GenerateEntityLayer()
+                .GenerateDataLayer();
+        }
+
+        [Fact]
+        public void ProjectGenerationForAdventureWorksDatabaseTest()
+        {
+            var db = SqlServerDatabaseFactory.Import("server=(local);database=AdventureWorks2012;integrated security=yes;", "dbo.sysdiagrams");
+
+            var project = new EfCoreProject
+            {
+                Name = "AdventureWorks",
+                Database = db,
+                OutputDirectory = "C:\\VsCode\\AdventureWorks\\src"
             };
 
             project.BuildFeatures();

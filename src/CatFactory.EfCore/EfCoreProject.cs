@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using CatFactory.Mapping;
+using CatFactory.SqlServer;
 
 namespace CatFactory.EfCore
 {
@@ -33,5 +37,28 @@ namespace CatFactory.EfCore
         public String NavigationPropertyEnumerableNamespace { get; set; }
 
         public String NavigationPropertyEnumerableType { get; set; }
+
+        public override void BuildFeatures()
+        {
+            if (Database == null)
+            {
+                return;
+            }
+
+            Features = Database
+                .DbObjects
+                .Select(item => item.Schema)
+                .Distinct()
+                .Select(item =>
+                {
+                    var dbObjects = new List<DbObject>();
+
+                    dbObjects.AddRange(Database.GetTables());
+                    dbObjects.AddRange(Database.GetViews());
+
+                    return new ProjectFeature(item, dbObjects, Database);
+                })
+                .ToList();
+        }
     }
 }
