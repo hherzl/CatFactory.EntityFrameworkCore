@@ -70,7 +70,7 @@ namespace CatFactory.EfCore
             return new MethodDefinition(AccessModifier.Protected, "void", "OnConfiguring", new ParameterDefinition("DbContextOptionsBuilder", "optionsBuilder"))
             {
                 IsOverride = true,
-                Lines = new List<CodeLine>()
+                Lines = new List<ILine>()
                 {
                     new CodeLine("optionsBuilder.UseSqlServer(ConnectionString);"),
                     new CodeLine(),
@@ -81,7 +81,7 @@ namespace CatFactory.EfCore
 
         public MethodDefinition GetOnModelCreatingMethod(EfCoreProject project)
         {
-            var lines = new List<CodeLine>();
+            var lines = new List<ILine>();
 
             if (project.UseDataAnnotations)
             {

@@ -57,32 +57,32 @@ namespace CatFactory.EfCore
             {
                 foreach (var foreignKey in tableCast.ForeignKeys)
                 {
-                    var table = project.Database.Tables.FirstOrDefault(item => item.FullName == foreignKey.References);
+                    var foreignTable = project.Database.Tables.FirstOrDefault(item => item.FullName == foreignKey.References);
 
-                    if (table == null)
+                    if (foreignTable == null)
                     {
                         continue;
                     }
 
-                    Properties.Add(foreignKey.GetParentNavigationProperty(project, table));
+                    Properties.Add(foreignKey.GetParentNavigationProperty(project, foreignTable));
                 }
 
-                foreach (var child in tableCast.Childs)
+                foreach (var child in project.Database.Tables)
                 {
-                    if (!Namespaces.Contains(project.NavigationPropertyEnumerableNamespace))
+                    foreach (var fk in child.ForeignKeys)
                     {
-                        Namespaces.Add(project.NavigationPropertyEnumerableNamespace);
+                        if (fk.References == tableCast.FullName)
+                        {
+                            if (!Namespaces.Contains(project.NavigationPropertyEnumerableNamespace))
+                            {
+                                Namespaces.Add(project.NavigationPropertyEnumerableNamespace);
+                            }
+
+                            Properties.Add(project.GetChildNavigationProperty(child));
+                        }
                     }
-
-                    var table = project.Database.Tables.FirstOrDefault(item => item.FullName == child);
-
-                    if (table == null)
-                    {
-                        continue;
-                    }
-
-                    Properties.Add(project.GetChildNavigationProperty(table));
                 }
+
             }
         }
     }

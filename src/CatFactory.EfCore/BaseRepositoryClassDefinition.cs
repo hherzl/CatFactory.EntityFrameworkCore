@@ -31,7 +31,7 @@ namespace CatFactory.EfCore
 
             Methods.Add(new MethodDefinition("void", "Dispose")
             {
-                Lines = new List<CodeLine>()
+                Lines = new List<ILine>()
                 {
                     new CodeLine("if (!Disposed)"),
                     new CodeLine("{{"),
@@ -52,7 +52,7 @@ namespace CatFactory.EfCore
                 {
                     "TEntity : class"
                 },
-                Lines = new List<CodeLine>()
+                Lines = new List<ILine>()
                 {
                     new CodeLine("var query = DbContext.Set<TEntity>();"),
                     new CodeLine(),
@@ -62,7 +62,7 @@ namespace CatFactory.EfCore
 
             Methods.Add(new MethodDefinition("Int32", "CommitChanges")
             {
-                Lines = new List<CodeLine>()
+                Lines = new List<ILine>()
                 {
                     new CodeLine("return DbContext.SaveChanges();")
                 }
@@ -70,7 +70,7 @@ namespace CatFactory.EfCore
 
             Methods.Add(new MethodDefinition("Task<Int32>", "CommitChangesAsync")
             {
-                Lines = new List<CodeLine>()
+                Lines = new List<ILine>()
                 {
                     new CodeLine("return DbContext.SaveChangesAsync();")
                 }

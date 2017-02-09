@@ -18,7 +18,7 @@ namespace CatFactory.EfCore
 
             Implements.Add("IEntityMap");
 
-            var mapMethodLines = new List<CodeLine>();
+            var mapMethodLines = new List<ILine>();
 
             mapMethodLines.Add(new CodeLine("var entity = modelBuilder.Entity<{0}>();", mappedObject.GetSingularName()));
             mapMethodLines.Add(new CodeLine());

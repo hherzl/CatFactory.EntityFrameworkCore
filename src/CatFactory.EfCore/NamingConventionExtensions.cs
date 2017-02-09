@@ -7,11 +7,11 @@ namespace CatFactory.EfCore
 {
     public static class NamingConventionExtensions
     {
-        private static INamingConvention namingConvention;
+        private static ICodeNamingConvention namingConvention;
 
         static NamingConventionExtensions()
         {
-            namingConvention = new DotNetNamingConvention() as INamingConvention;
+            namingConvention = new DotNetNamingConvention() as ICodeNamingConvention;
         }
 
         public static String GetSingularName(this IDbObject dbObject)

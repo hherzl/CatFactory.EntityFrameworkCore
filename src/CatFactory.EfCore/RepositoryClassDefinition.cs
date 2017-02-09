@@ -58,7 +58,7 @@ namespace CatFactory.EfCore
         {
             return new MethodDefinition(String.Format("IQueryable<{0}>", dbObject.GetSingularName()), String.Format("Get{0}", dbObject.GetPluralName()), new ParameterDefinition("Int32", "pageSize", "0"), new ParameterDefinition("Int32", "pageNumber", "0"))
             {
-                Lines = new List<CodeLine>()
+                Lines = new List<ILine>()
                 {
                     new CodeLine("return Paging<{0}>(pageSize, pageNumber);", dbObject.GetSingularName())
                 }
@@ -81,7 +81,7 @@ namespace CatFactory.EfCore
                 Methods.Add(new MethodDefinition(String.Format("Task<{0}>", dbObject.GetSingularName()), String.Format("Get{0}By{1}Async", dbObject.GetSingularName(), String.Join("And", unique.Key.Select(item => NamingConvention.GetPropertyName(item)))), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
                 {
                     IsAsync = true,
-                    Lines = new List<CodeLine>()
+                    Lines = new List<ILine>()
                     {
                         new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetPluralName() : String.Format("Set<{0}>()", dbObject.GetSingularName()), expression)
                     }
@@ -113,7 +113,7 @@ namespace CatFactory.EfCore
             return new MethodDefinition(String.Format("Task<{0}>", dbObject.GetSingularName()), String.Format("Get{0}Async", dbObject.GetSingularName()), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
             {
                 IsAsync = true,
-                Lines = new List<CodeLine>()
+                Lines = new List<ILine>()
                 {
                     new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetPluralName() : String.Format("Set<{0}>()", dbObject.GetSingularName()), expression)
                 }
@@ -125,7 +125,7 @@ namespace CatFactory.EfCore
             return new MethodDefinition("Task<Int32>", String.Format("Add{0}Async", dbObject.GetSingularName()), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
             {
                 IsAsync = true,
-                Lines = new List<CodeLine>()
+                Lines = new List<ILine>()
                 {
                     new CodeLine("DbContext.{0}.Add(entity);", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetPluralName() : String.Format("Set<{0}>()", dbObject.GetSingularName())),
                     new CodeLine(),
@@ -136,7 +136,7 @@ namespace CatFactory.EfCore
 
         public MethodDefinition GetUpdateMethod(ProjectFeature projectFeature, DbObject dbObject)
         {
-            var lines = new List<CodeLine>();
+            var lines = new List<ILine>();
 
             lines.Add(new CodeLine("var entity = await Get{0}Async(changes);", dbObject.GetSingularName()));
             lines.Add(new CodeLine());
@@ -170,7 +170,7 @@ namespace CatFactory.EfCore
             return new MethodDefinition("Task<Int32>", String.Format("Delete{0}Async", dbObject.GetSingularName()), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
             {
                 IsAsync = true,
-                Lines = new List<CodeLine>()
+                Lines = new List<ILine>()
                 {
                     new CodeLine("DbContext.{0}.Remove(entity);", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetPluralName() : String.Format("Set<{0}>()", dbObject.GetSingularName())),
                     new CodeLine(),

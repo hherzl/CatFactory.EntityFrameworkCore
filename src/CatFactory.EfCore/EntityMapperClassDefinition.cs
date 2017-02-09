@@ -23,7 +23,7 @@ namespace CatFactory.EfCore
 
             Methods.Add(new MethodDefinition("void", "MapEntities", new ParameterDefinition("ModelBuilder", "modelBuilder"))
             {
-                Lines = new List<CodeLine>()
+                Lines = new List<ILine>()
                 {
                     new CodeLine("foreach (var item in Mappings)"),
                     new CodeLine("{{"),
