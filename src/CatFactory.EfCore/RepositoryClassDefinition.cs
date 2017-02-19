@@ -30,44 +30,98 @@ namespace CatFactory.EfCore
                 ParentInvoke = "base(dbContext)"
             });
 
-            foreach (var dbObject in projectFeature.DbObjects)
-            {
-                if (dbObject.Type == "STORED_PROCEDURE")
-                {
-                    // todo: add logic to invoke stored procedures
-                    continue;
-                }
-                
-                Methods.Add(GetGetAllMethod(projectFeature, dbObject));
-                
-                AddGetByUniqueMethods(projectFeature, dbObject);
+            var dbos = projectFeature.DbObjects.Select(dbo => dbo.FullName).ToList();
+            var tables = projectFeature.Database.Tables.Where(t => dbos.Contains(t.FullName)).ToList();
 
-                if (!projectFeature.IsView(dbObject))
-                {
-                    Methods.Add(GetGetMethod(projectFeature, dbObject));
-                    Methods.Add(GetAddMethod(projectFeature, dbObject));
-                    Methods.Add(GetUpdateMethod(projectFeature, dbObject));
-                    Methods.Add(GetDeleteMethod(projectFeature, dbObject));
-                }
+            foreach (var table in tables)
+            {
+                Methods.Add(GetGetAllMethod(projectFeature, table));
+
+                AddGetByUniqueMethods(projectFeature, table);
+
+                Methods.Add(GetGetMethod(projectFeature, table));
+                Methods.Add(GetAddMethod(projectFeature, table));
+                Methods.Add(GetUpdateMethod(projectFeature, table));
+                Methods.Add(GetDeleteMethod(projectFeature, table));
             }
         }
 
         public EfCoreProject Project { get; set; }
 
-        public MethodDefinition GetGetAllMethod(ProjectFeature projectFeature, DbObject dbObject)
+        public MethodDefinition GetGetAllMethod(ProjectFeature projectFeature, IDbObject dbObject)
         {
-            return new MethodDefinition(String.Format("IQueryable<{0}>", dbObject.GetSingularName()), String.Format("Get{0}", dbObject.GetPluralName()), new ParameterDefinition("Int32", "pageSize", "0"), new ParameterDefinition("Int32", "pageNumber", "0"))
+            var tableCast = dbObject as Table;
+
+            var properties = new List<String>();
+
+            var parameters = new List<ParameterDefinition>()
             {
-                Lines = new List<ILine>()
+                new ParameterDefinition("Int32", "pageSize", "0"),
+                new ParameterDefinition("Int32", "pageNumber", "0")
+            };
+
+            var lines = new List<ILine>();
+
+            if (tableCast == null)
+            {
+                lines.Add(new CodeLine("return Paging<{0}>(pageSize, pageNumber);", dbObject.GetSingularName()));
+            }
+            else
+            {
+                foreach (var column in tableCast.Columns)
                 {
-                    new CodeLine("return Paging<{0}>(pageSize, pageNumber);", dbObject.GetSingularName())
+                    properties.Add(column.Name);
                 }
+
+                if (tableCast.ForeignKeys.Count == 0)
+                {
+                    lines.Add(new CodeLine("return Paging<{0}>(pageSize, pageNumber);", dbObject.GetSingularName()));
+                }
+                else
+                {
+                    lines.Add(new CodeLine("var query = DbContext.Set<{0}>().AsQueryable();", dbObject.GetSingularName()));
+                    lines.Add(new CodeLine());
+
+                    var resolver = new ClrTypeResolver() as ITypeResolver;
+
+                    for (var i = 0; i < tableCast.ForeignKeys.Count; i++)
+                    {
+                        var foreignKey = tableCast.ForeignKeys[i];
+
+                        if (foreignKey.Key.Count == 1)
+                        {
+                            var column = tableCast.Columns.First(item => item.Name == foreignKey.Key[0]);
+
+                            var parameterName = NamingConvention.GetParameterName(column.Name);
+
+                            parameters.Add(new ParameterDefinition(resolver.Resolve(column.Type), parameterName, "null"));
+
+                            lines.Add(new CodeLine("if ({0}.HasValue)", NamingConvention.GetParameterName(column.Name)));
+                            lines.Add(new CodeLine("{{"));
+                            lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
+                            lines.Add(new CodeLine("}}"));
+                            lines.Add(new CodeLine());
+                        }
+                    }
+
+                    lines.Add(new CodeLine("return Paging(query, pageSize, pageNumber);"));
+                }
+            }
+
+            return new MethodDefinition(String.Format("IQueryable<{0}>", dbObject.GetSingularName()), String.Format("Get{0}", dbObject.GetPluralName()), parameters.ToArray())
+            {
+                Lines = lines
             };
         }
 
-        public void AddGetByUniqueMethods(ProjectFeature projectFeature, DbObject dbObject)
+        public void AddGetByUniqueMethods(ProjectFeature projectFeature, IDbObject dbObject)
         {
-            var table = projectFeature.Database.Tables.FirstOrDefault(item => item.FullName == dbObject.FullName);
+            var table = dbObject as Table;
+
+            if (table == null)
+            {
+                table = projectFeature.Database.Tables.FirstOrDefault(item => item.FullName == dbObject.FullName);
+            }
 
             if (table == null)
             {
@@ -89,7 +143,7 @@ namespace CatFactory.EfCore
             }
         }
 
-        public MethodDefinition GetGetMethod(ProjectFeature projectFeature, DbObject dbObject)
+        public MethodDefinition GetGetMethod(ProjectFeature projectFeature, IDbObject dbObject)
         {
             var table = projectFeature.Database.Tables.FirstOrDefault(item => item.FullName == dbObject.FullName);
 
@@ -120,41 +174,37 @@ namespace CatFactory.EfCore
             };
         }
 
-        public MethodDefinition GetAddMethod(ProjectFeature projectFeature, DbObject dbObject)
-        {
-            return new MethodDefinition("Task<Int32>", String.Format("Add{0}Async", dbObject.GetSingularName()), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
-            {
-                IsAsync = true,
-                Lines = new List<ILine>()
-                {
-                    new CodeLine("DbContext.{0}.Add(entity);", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetPluralName() : String.Format("Set<{0}>()", dbObject.GetSingularName())),
-                    new CodeLine(),
-                    new CodeLine("return await CommitChangesAsync();")
-                }
-            };
-        }
-
-        public MethodDefinition GetUpdateMethod(ProjectFeature projectFeature, DbObject dbObject)
+        public MethodDefinition GetAddMethod(ProjectFeature projectFeature, IDbObject dbObject)
         {
             var lines = new List<ILine>();
 
-            lines.Add(new CodeLine("var entity = await Get{0}Async(changes);", dbObject.GetSingularName()));
-            lines.Add(new CodeLine());
-            lines.Add(new CodeLine("if (entity != null)"));
-            lines.Add(new CodeLine("{{"));
+            var tableCast = dbObject as Table;
 
-            var table = projectFeature.Database.Tables.FirstOrDefault(x => x.FullName == dbObject.FullName);
-
-            if (table != null)
+            if (tableCast != null)
             {
-                foreach (var column in table.GetUpdateColumns(Project))
+                if (tableCast.IsPrimaryKeyGuid())
                 {
-                    lines.Add(new CodeLine(1, "entity.{0} = changes.{0};", column.GetPropertyName()));
+                    lines.Add(new CodeLine("entity.{0} = Guid.NewGuid();"));
+                    lines.Add(new CodeLine());
                 }
             }
 
-            lines.Add(new CodeLine("}}"));
+            lines.Add(new CodeLine("Add(entity);"));
+            lines.Add(new CodeLine());
+            lines.Add(new CodeLine("return await CommitChangesAsync();"));
 
+            return new MethodDefinition("Task<Int32>", String.Format("Add{0}Async", dbObject.GetSingularName()), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
+            {
+                IsAsync = true,
+                Lines = lines
+            };
+        }
+
+        public MethodDefinition GetUpdateMethod(ProjectFeature projectFeature, IDbObject dbObject)
+        {
+            var lines = new List<ILine>();
+
+            lines.Add(new CodeLine("Update(changes);"));
             lines.Add(new CodeLine());
             lines.Add(new CodeLine("return await CommitChangesAsync();"));
 
@@ -165,14 +215,14 @@ namespace CatFactory.EfCore
             };
         }
 
-        public MethodDefinition GetDeleteMethod(ProjectFeature projectFeature, DbObject dbObject)
+        public MethodDefinition GetDeleteMethod(ProjectFeature projectFeature, IDbObject dbObject)
         {
-            return new MethodDefinition("Task<Int32>", String.Format("Delete{0}Async", dbObject.GetSingularName()), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
+            return new MethodDefinition("Task<Int32>", String.Format("Remove{0}Async", dbObject.GetSingularName()), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
             {
                 IsAsync = true,
                 Lines = new List<ILine>()
                 {
-                    new CodeLine("DbContext.{0}.Remove(entity);", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetPluralName() : String.Format("Set<{0}>()", dbObject.GetSingularName())),
+                    new CodeLine("Remove(entity);"),
                     new CodeLine(),
                     new CodeLine("return await CommitChangesAsync();")
                 }

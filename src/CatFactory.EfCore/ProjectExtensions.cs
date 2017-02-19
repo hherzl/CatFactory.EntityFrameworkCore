@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using CatFactory.Mapping;
 using CatFactory.OOP;
@@ -34,14 +35,15 @@ namespace CatFactory.EfCore
         public static String GetBusinessLayerResponsesDirectory(this EfCoreProject project)
             => Path.Combine(project.OutputDirectory, project.Namespaces.BusinessLayer, project.Namespaces.Responses);
 
-        public static PropertyDefinition GetChildNavigationProperty(this EfCoreProject project, Table table)
+        public static PropertyDefinition GetChildNavigationProperty(this EfCoreProject project, Table table, ForeignKey fk)
         {
             var propertyType = String.Format("{0}<{1}>", project.NavigationPropertyEnumerableType, table.GetSingularName());
             var propertyName = table.GetPluralName();
 
             return new PropertyDefinition(propertyType, propertyName)
             {
-                IsVirtual = project.DeclareNavigationPropertiesAsVirtual
+                IsVirtual = project.DeclareNavigationPropertiesAsVirtual,
+                Attributes = project.UseDataAnnotations ? new List<MetadataAttribute>() { new MetadataAttribute("ForeignKey", String.Format("\"{0}\"", String.Join(",", fk.Key))) } : null
             };
         }
     }

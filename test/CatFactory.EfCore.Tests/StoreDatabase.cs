@@ -69,11 +69,7 @@ namespace CatFactory.EfCore.Tests
                                 new Column { Name = "ProductCategoryID", Type = "int", Nullable = false },
                                 new Column { Name = "UnitPrice", Type = "decimal", Prec = 8, Scale = 4, Nullable = false },
                                 new Column { Name = "Description", Type = "varchar", Length = 255, Nullable = true },
-                                new Column { Name = "Discontinued", Type = "bit", Nullable = false },
-                                new Column { Name = "CreationUser", Type = "varchar", Length = 25, Nullable = false },
-                                new Column { Name = "CreationDateTime", Type = "datetime", Nullable = false },
-                                new Column { Name = "LastUpdateUser", Type = "varchar", Length = 25, Nullable = true },
-                                new Column { Name = "LastUpdateDateTime", Type = "datetime", Nullable = true }
+                                new Column { Name = "Discontinued", Type = "bit", Nullable = false }
                             },
                             Identity = new Identity { Name = "ProductID", Seed = 1, Increment = 1 },
                             Uniques = new List<Unique>()
@@ -140,11 +136,7 @@ namespace CatFactory.EfCore.Tests
                                 new Column { Name = "EmployeeID", Type = "int", Nullable = false },
                                 new Column { Name = "ShipperID", Type = "int", Nullable = false },
                                 new Column { Name = "Total", Type = "decimal", Prec = 12, Scale = 4, Nullable = false },
-                                new Column { Name = "Comments", Type = "varchar", Length = 255, Nullable = true },
-                                new Column { Name = "CreationUser", Type = "varchar", Length = 25, Nullable = false },
-                                new Column { Name = "CreationDateTime", Type = "datetime", Nullable = false },
-                                new Column { Name = "LastUpdateUser", Type = "varchar", Length = 25, Nullable = true },
-                                new Column { Name = "LastUpdateDateTime", Type = "datetime", Nullable = true }
+                                new Column { Name = "Comments", Type = "varchar", Length = 255, Nullable = true }
                             },
                             Identity = new Identity { Name = "OrderID", Seed = 1, Increment = 1 }
                         },
@@ -197,6 +189,17 @@ namespace CatFactory.EfCore.Tests
                 db.AddPrimaryKeyToTables();
 
                 db.LinkTables();
+
+                var columns = new Column[]
+                {
+                    new Column { Name = "CreationUser", Type = "varchar", Length = 25, Nullable = false },
+                    new Column { Name = "CreationDateTime", Type = "datetime", Nullable = false },
+                    new Column { Name = "LastUpdateUser", Type = "varchar", Length = 25, Nullable = true },
+                    new Column { Name = "LastUpdateDateTime", Type = "datetime", Nullable = true },
+                    new Column { Name = "Timestamp", Type = "rowversion", Nullable = true }
+                };
+
+                db.AddColumnForAllTables(columns, "dbo.EventLog", "dbo.ChangeLog");
 
                 return db;
             }

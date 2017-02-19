@@ -10,8 +10,6 @@ namespace CatFactory.EfCore
     {
         public EfCoreProject()
         {
-            NavigationPropertyEnumerableNamespace = "System.Collections.ObjectModel";
-            NavigationPropertyEnumerableType = "Collection";
         }
 
         private ProjectNamespaces m_namespaces;
@@ -34,15 +32,40 @@ namespace CatFactory.EfCore
 
         public Boolean DeclareNavigationPropertiesAsVirtual { get; set; }
 
-        public String NavigationPropertyEnumerableNamespace { get; set; }
+        public String NavigationPropertyEnumerableNamespace { get; set; } = "System.Collections.ObjectModel";
 
-        public String NavigationPropertyEnumerableType { get; set; }
+        public String NavigationPropertyEnumerableType { get; set; } = "Collection";
+
+        public String ConcurrencyToken { get; set; }
+
+        public String EntityInterfaceName { get; set; } = "IEntity";
+
+        public AuditEntity AuditEntity { get; set; }
+
+        private List<String> m_entitiesWithDataContracts;
+
+        public List<String> EntitiesWithDataContracts
+        {
+            get
+            {
+                return m_entitiesWithDataContracts ?? (m_entitiesWithDataContracts = new List<String>());
+            }
+            set
+            {
+                m_entitiesWithDataContracts = value;
+            }
+        }
 
         public override void BuildFeatures()
         {
             if (Database == null)
             {
                 return;
+            }
+
+            if (AuditEntity != null)
+            {
+                EntityInterfaceName = "IAuditEntity";
             }
 
             Features = Database
@@ -53,8 +76,8 @@ namespace CatFactory.EfCore
                 {
                     var dbObjects = new List<DbObject>();
 
-                    dbObjects.AddRange(Database.GetTables());
-                    dbObjects.AddRange(Database.GetViews());
+                    dbObjects.AddRange(Database.GetTables().Where(t => t.Schema == item));
+                    dbObjects.AddRange(Database.GetViews().Where(v => v.Schema == item));
 
                     return new ProjectFeature(item, dbObjects, Database);
                 })

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using CatFactory.DotNetCore;
 
 namespace CatFactory.EfCore
@@ -28,7 +29,6 @@ namespace CatFactory.EfCore
             };
 
             codeBuilder.CreateFile(project.GetDataLayerDirectory());
-
         }
 
         private static void GenerateMappingDependencies(EfCoreProject project)
@@ -76,7 +76,6 @@ namespace CatFactory.EfCore
                     codeBuilder.CreateFile(project.GetDataLayerMappingDirectory());
                 }
             }
-
         }
 
         private static void GenerateMappings(EfCoreProject project)
@@ -115,7 +114,6 @@ namespace CatFactory.EfCore
                     codeBuilder.CreateFile(project.GetDataLayerMappingDirectory());
                 }
             }
-            
         }
 
         private static void GenerateDbContext(EfCoreProject project)
@@ -142,7 +140,6 @@ namespace CatFactory.EfCore
 
                 codeBuilder.CreateFile(project.GetDataLayerDirectory());
             }
-
         }
 
         private static void GenerateDataLayerContracts(EfCoreProject project, CSharpInterfaceDefinition interfaceDefinition)
@@ -174,7 +171,7 @@ namespace CatFactory.EfCore
         {
             var codeBuilder = new CSharpClassBuilder
             {
-                ObjectDefinition = new BaseRepositoryClassDefinition(project)
+                ObjectDefinition = new RepositoryBaseClassDefinition(project)
                 {
                     Namespace = project.GetDataLayerContractsNamespace()
                 },
@@ -183,9 +180,14 @@ namespace CatFactory.EfCore
 
             codeBuilder.CreateFile(project.GetDataLayerRepositoriesDirectory());
         }
-        
+
         private static void GenerateDataRepositories(EfCoreProject project)
         {
+            if (!String.IsNullOrEmpty(project.ConcurrencyToken))
+            {
+                project.UpdateExclusions.Add(project.ConcurrencyToken);
+            }
+
             GenerateRepositoryInterface(project);
             GenerateBaseRepositoryClassDefinition(project);
 
@@ -214,7 +216,6 @@ namespace CatFactory.EfCore
 
                 codeBuilder.CreateFile(project.GetDataLayerRepositoriesDirectory());
             }
-
         }
     }
 }

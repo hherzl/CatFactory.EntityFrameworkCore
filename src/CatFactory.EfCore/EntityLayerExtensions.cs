@@ -7,8 +7,34 @@ namespace CatFactory.EfCore
 {
     public static class EntityLayerExtensions
     {
+        private static void GenerateEntityInterface(EfCoreProject project)
+        {
+            var codeBuilder = new CSharpInterfaceBuilder()
+            {
+                ObjectDefinition = new EntityInterfaceDefinition()
+                {
+                    Namespace = project.GetEntityLayerNamespace()
+                },
+                OutputDirectory = project.OutputDirectory
+            };
+
+            codeBuilder.CreateFile(project.GetEntityLayerDirectory());
+
+            if (project.AuditEntity != null)
+            {
+                codeBuilder.ObjectDefinition = new AuditEntityInterfaceDefinition(project)
+                {
+                    Namespace = project.GetEntityLayerNamespace(),
+                };
+
+                codeBuilder.CreateFile(project.GetEntityLayerDirectory());
+            }
+        }
+
         public static EfCoreProject GenerateEntityLayer(this EfCoreProject project)
         {
+            GenerateEntityInterface(project);
+
             foreach (var table in project.Database.Tables)
             {
                 var codeBuilder = new CSharpClassBuilder()
@@ -22,9 +48,6 @@ namespace CatFactory.EfCore
 
                 if (project.UseDataAnnotations)
                 {
-                    codeBuilder.ObjectDefinition.Namespaces.Add("System.ComponentModel.DataAnnotations");
-                    codeBuilder.ObjectDefinition.Namespaces.Add("System.ComponentModel.DataAnnotations.Schema");
-
                     codeBuilder.ObjectDefinition.Attributes.Add(new MetadataAttribute("Table", String.Format("\"{0}\"", table.Name))
                     {
                         Sets = new List<MetadataAttributeSet>()

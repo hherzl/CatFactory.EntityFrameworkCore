@@ -96,7 +96,9 @@ namespace CatFactory.EfCore
                     {
                         if (unique.Key.Count == 1)
                         {
-                            mapMethodLines.Add(new CodeLine("entity.HasAlternateKey(p => new {{ {0} }}).HasName(\"{1}\");", String.Join(", ", unique.Key.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item)))), unique.ConstraintName));
+                            mapMethodLines.Add(new CodeLine("entity"));
+                            mapMethodLines.Add(new CodeLine(1, ".HasAlternateKey(p => new {{ {0} }})", String.Join(", ", unique.Key.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item))))));
+                            mapMethodLines.Add(new CodeLine(1, ".HasName(\"{0}\");", unique.ConstraintName));
                             mapMethodLines.Add(new CodeLine());
                         }
                     }
@@ -116,47 +118,57 @@ namespace CatFactory.EfCore
             {
                 var column = columns[i];
 
-                var lines = new List<String>()
+                if (!String.IsNullOrEmpty(project.ConcurrencyToken) && column.Name == project.ConcurrencyToken)
                 {
-                    String.Format("entity.Property(p => p.{0})", column.GetPropertyName())
-                };
-
-                if (String.Compare(column.Name, column.GetPropertyName()) != 0)
-                {
-                    lines.Add(String.Format("HasColumnName(\"{0}\")", column.Name));
+                    mapMethodLines.Add(new CodeLine("entity"));
+                    mapMethodLines.Add(new CodeLine(1, ".Property(p => p.{0})", column.GetPropertyName()));
+                    mapMethodLines.Add(new CodeLine(1, ".ValueGeneratedOnAddOrUpdate()"));
+                    mapMethodLines.Add(new CodeLine(1, ".IsConcurrencyToken();"));
                 }
-
-                switch (column.Type)
+                else
                 {
-                    case "char":
-                    case "nchar":
-                    case "varchar":
-                    case "nvarchar":
-                        lines.Add(column.Length == 0 ? String.Format("HasColumnType(\"{0}(max)\")", column.Type) : String.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
-                        break;
+                    var lines = new List<String>()
+                    {
+                        String.Format("entity.Property(p => p.{0})", column.GetPropertyName())
+                    };
 
-                    case "decimal":
-                        lines.Add(String.Format("HasColumnType(\"{0}({1}, {2})\")", column.Type, column.Prec, column.Scale));
-                        break;
+                    if (String.Compare(column.Name, column.GetPropertyName()) != 0)
+                    {
+                        lines.Add(String.Format("HasColumnName(\"{0}\")", column.Name));
+                    }
 
-                    default:
-                        lines.Add(String.Format("HasColumnType(\"{0}\")", column.Type));
-                        break;
-                }
+                    switch (column.Type)
+                    {
+                        case "char":
+                        case "nchar":
+                        case "varchar":
+                        case "nvarchar":
+                            lines.Add(column.Length == 0 ? String.Format("HasColumnType(\"{0}(max)\")", column.Type) : String.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
+                            break;
 
-                if (!column.Nullable)
-                {
-                    lines.Add("IsRequired()");
-                }
+                        case "decimal":
+                            lines.Add(String.Format("HasColumnType(\"{0}({1}, {2})\")", column.Type, column.Prec, column.Scale));
+                            break;
 
-                mapMethodLines.Add(new CodeLine("{0};", String.Join(".", lines)));
+                        default:
+                            lines.Add(String.Format("HasColumnType(\"{0}\")", column.Type));
+                            break;
+                    }
 
-                if (i < columns.Count - 1)
-                {
-                    mapMethodLines.Add(new CodeLine());
+                    if (!column.Nullable)
+                    {
+                        lines.Add("IsRequired()");
+                    }
+
+                    mapMethodLines.Add(new CodeLine("{0};", String.Join(".", lines)));
+
+                    if (i < columns.Count - 1)
+                    {
+                        mapMethodLines.Add(new CodeLine());
+                    }
                 }
             }
-
+            
             var mapMethod = new MethodDefinition("void", "Map", new ParameterDefinition("ModelBuilder", "modelBuilder"))
             {
                 Lines = mapMethodLines

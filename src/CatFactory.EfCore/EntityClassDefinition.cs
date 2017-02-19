@@ -13,6 +13,12 @@ namespace CatFactory.EfCore
         {
             Namespaces.Add("System");
 
+            if (project.UseDataAnnotations)
+            {
+                Namespaces.Add("System.ComponentModel.DataAnnotations");
+                Namespaces.Add("System.ComponentModel.DataAnnotations.Schema");
+            }
+
             Name = dbObject.GetSingularName();
 
             Constructors.Add(new ClassConstructorDefinition());
@@ -21,7 +27,7 @@ namespace CatFactory.EfCore
 
             var columns = default(IEnumerable<Column>);
 
-            var tableCast = dbObject as Table;
+            var tableCast = dbObject as ITable;
 
             if (tableCast != null)
             {
@@ -51,6 +57,32 @@ namespace CatFactory.EfCore
                 {
                     Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), column.GetPropertyName()));
                 }
+
+                if (project.AuditEntity == null)
+                {
+                    Implements.Add("IEntity");
+                }
+                else
+                {
+                    var count = 0;
+
+                    foreach (var column in columns)
+                    {
+                        if (project.AuditEntity.Names.Contains(column.Name))
+                        {
+                            count += 1;
+                        }
+                    }
+
+                    if (count == project.AuditEntity.Names.Length)
+                    {
+                        Implements.Add(project.EntityInterfaceName);
+                    }
+                    else
+                    {
+                        Implements.Add("IEntity");
+                    }
+                }
             }
 
             if (tableCast != null)
@@ -78,7 +110,7 @@ namespace CatFactory.EfCore
                                 Namespaces.Add(project.NavigationPropertyEnumerableNamespace);
                             }
 
-                            Properties.Add(project.GetChildNavigationProperty(child));
+                            Properties.Add(project.GetChildNavigationProperty(child, fk));
                         }
                     }
                 }

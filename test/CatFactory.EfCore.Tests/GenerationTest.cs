@@ -1,4 +1,5 @@
-﻿using CatFactory.SqlServer;
+﻿using System;
+using CatFactory.SqlServer;
 using Xunit;
 
 namespace CatFactory.EfCore.Tests
@@ -32,10 +33,19 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store"
             };
 
-            project.BuildFeatures();
+            project.UpdateExclusions.AddRange(new String[] { "CreationUser", "CreationDateTime" });
 
-            project.UpdateExclusions.Add("CreationUser");
-            project.UpdateExclusions.Add("CreationDateTime");
+            project.AuditEntity = new AuditEntity
+            {
+                CreationUserColumnName = "CreationUser",
+                CreationDateTimeColumnName = "CreationDateTime",
+                LastUpdateUserColumnName = "LastUpdateUser",
+                LastUpdateDateTimeColumnName = "LastUpdateDateTime"
+            };
+
+            project.ConcurrencyToken = "Timestamp";
+
+            project.BuildFeatures();
 
             project
                 .GenerateEntityLayer()
@@ -52,10 +62,10 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\StoreWithDbSetPropertiesAndDataAnnotations"
             };
 
-            project.BuildFeatures();
-
             project.UseDataAnnotations = true;
             project.DeclareDbSetPropertiesInDbContext = true;
+
+            project.BuildFeatures();
 
             project
                 .GenerateEntityLayer()
@@ -72,10 +82,10 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\ModifiedStore"
             };
 
-            project.BuildFeatures();
-
             project.Namespaces.EntityLayer = "EL";
             project.Namespaces.DataLayer = "DL";
+
+            project.BuildFeatures();
 
             project
                 .GenerateEntityLayer()
@@ -94,10 +104,10 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\ModifiedNorthwind"
             };
 
-            project.BuildFeatures();
-
             project.Namespaces.EntityLayer = "EL";
             project.Namespaces.DataLayer = "DL";
+
+            project.BuildFeatures();
 
             project
                 .GenerateEntityLayer()
