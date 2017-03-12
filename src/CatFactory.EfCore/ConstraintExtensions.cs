@@ -13,7 +13,7 @@ namespace CatFactory.EfCore
 
             return new PropertyDefinition(propertyType, propertyName)
             {
-                IsVirtual = project.DeclareNavigationPropertiesAsVirtual
+                IsVirtual = project.Settings.DeclareNavigationPropertiesAsVirtual
             };
         }
     }

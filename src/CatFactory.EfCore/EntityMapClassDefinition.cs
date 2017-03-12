@@ -42,10 +42,7 @@ namespace CatFactory.EfCore
             {
                 if (table.PrimaryKey == null || table.PrimaryKey.Key.Count == 0)
                 {
-                    mapMethodLines.Add(new CodeLine("entity.HasKey(p => new {{ {0} }});", String.Join(", ", table.Columns.Select(item => String.Format("p.{0}", item.Name)))));
-                    mapMethodLines.Add(new CodeLine());
-
-                    mapMethodLines.Add(new CodeLine("entity.HasKey(p => new {{ {0} }});", String.Join(", ", table.Columns.Select(item => String.Format("p.{0}", item.Name)))));
+                    mapMethodLines.Add(new CodeLine("entity.HasKey(p => new {{ {0} }});", String.Join(", ", table.Columns.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item.Name))))));
                     mapMethodLines.Add(new CodeLine());
                 }
                 else
@@ -118,7 +115,7 @@ namespace CatFactory.EfCore
             {
                 var column = columns[i];
 
-                if (!String.IsNullOrEmpty(project.ConcurrencyToken) && column.Name == project.ConcurrencyToken)
+                if (!String.IsNullOrEmpty(project.Settings.ConcurrencyToken) && column.Name == project.Settings.ConcurrencyToken)
                 {
                     mapMethodLines.Add(new CodeLine("entity"));
                     mapMethodLines.Add(new CodeLine(1, ".Property(p => p.{0})", column.GetPropertyName()));

@@ -27,7 +27,7 @@ namespace CatFactory.EfCore
             {
                 var item = db.Tables[i];
 
-                lines.Add(new CodeLine(1, "new {0}() as {1}{2}", item.GetMapName(), "IEntityMap", i == db.Tables.Count - 1 ? String.Empty : ","));
+                lines.Add(new CodeLine(1, "new {0}(){1}", item.GetMapName(), i == db.Tables.Count - 1 ? String.Empty : ","));
             }
 
             lines.Add(new CodeLine("}};"));

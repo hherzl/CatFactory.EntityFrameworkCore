@@ -35,6 +35,11 @@ namespace CatFactory.EfCore
 
             foreach (var table in tables)
             {
+                if (project.Settings.EntitiesWithDataContracts.Contains(table.FullName) && !Namespaces.Contains(project.GetDataLayerDataContractsNamespace()))
+                {
+                    Namespaces.Add(project.GetDataLayerDataContractsNamespace());
+                }
+
                 Methods.Add(GetGetAllMethod(projectFeature, table));
 
                 AddGetByUniqueMethods(projectFeature, table);
@@ -50,37 +55,130 @@ namespace CatFactory.EfCore
 
         public MethodDefinition GetGetAllMethod(ProjectFeature projectFeature, IDbObject dbObject)
         {
-            var tableCast = dbObject as Table;
-
-            var properties = new List<String>();
-
-            var parameters = new List<ParameterDefinition>()
-            {
-                new ParameterDefinition("Int32", "pageSize", "0"),
-                new ParameterDefinition("Int32", "pageNumber", "0")
-            };
+            var returnType = String.Empty;
 
             var lines = new List<ILine>();
 
+            var tableCast = dbObject as Table;
+
             if (tableCast == null)
             {
+                returnType = dbObject.GetSingularName();
+
                 lines.Add(new CodeLine("return Paging<{0}>(pageSize, pageNumber);", dbObject.GetSingularName()));
             }
             else
             {
-                foreach (var column in tableCast.Columns)
+                if (Project.Settings.EntitiesWithDataContracts.Contains(tableCast.FullName))
                 {
-                    properties.Add(column.Name);
-                }
+                    // todo: add logic to generate data contract
 
+                    var entityAlias = CatFactory.NamingConvention.GetCamelCase(tableCast.GetEntityName());
+
+                    returnType = String.Format("{0}DataContract", tableCast.GetEntityName());
+
+                    var dataContractPropertiesSets = new[] { new { Source = String.Empty, Target = String.Empty } }.ToList();
+
+                    foreach (var column in tableCast.Columns)
+                    {
+                        var propertyName = column.GetPropertyName();
+
+                        dataContractPropertiesSets.Add(new { Source = String.Format("{0}.{1}", entityAlias, propertyName), Target = propertyName });
+                    }
+
+                    foreach (var foreignKey in tableCast.ForeignKeys)
+                    {
+                        var foreignTable = projectFeature.Database.Tables.FirstOrDefault(item => item.FullName == foreignKey.References);
+
+                        var foreignKeyAlias = CatFactory.NamingConvention.GetCamelCase(foreignTable.GetEntityName());
+
+                        foreach (var column in foreignTable?.GetColumnsWithOutKey())
+                        {
+                            if (dataContractPropertiesSets.Where(item => item.Source == String.Format("{0}.{1}", entityAlias, column.GetPropertyName())).Count() == 0)
+                            {
+                                var source = String.Format("{0}.{1}", foreignKeyAlias, column.GetPropertyName());
+                                var target = String.Format("{0}{1}", foreignTable.GetEntityName(), column.GetPropertyName());
+
+                                dataContractPropertiesSets.Add(new { Source = source, Target = target });
+                            }
+                        }
+                    }
+
+                    lines.Add(new CodeLine("var query = from {0} in DbContext.Set<{1}>()", entityAlias, tableCast.GetEntityName()));
+
+                    foreach (var foreignKey in tableCast.ForeignKeys)
+                    {
+                        var foreignTable = projectFeature.Database.Tables.FirstOrDefault(item => item.FullName == foreignKey.References);
+
+                        var foreignKeyEntityName = foreignTable.GetEntityName();
+
+                        var foreignKeyAlias = CatFactory.NamingConvention.GetCamelCase(foreignTable.GetEntityName());
+
+                        if (foreignKey.Key.Count == 1)
+                        {
+                            if (foreignTable == null)
+                            {
+                                lines.Add(new CommentLine(1, " There isn't definition for '{0}' in your current database", foreignKey.References));
+                            }
+                            else
+                            {
+                                lines.Add(new CodeLine(1, "join {0} in DbContext.Set<{1}>() on {2}.{3} equals {0}.{4}", foreignKeyAlias, foreignKeyEntityName, entityAlias, foreignKey.Key[0], NamingConvention.GetPropertyName(foreignTable.PrimaryKey.Key[0])));
+                            }
+                        }
+                        else
+                        {
+                            // todo: add logic for foreignkey with multiple key
+                        }
+                    }
+
+                    lines.Add(new CodeLine(1, "select new {0}", returnType));
+                    lines.Add(new CodeLine(1, "{{"));
+
+                    for (var i = 0; i < dataContractPropertiesSets.Count; i++)
+                    {
+                        var property = dataContractPropertiesSets[i];
+
+                        if (String.IsNullOrEmpty(property.Source) && String.IsNullOrEmpty(property.Target))
+                        {
+                            continue;
+                        }
+
+                        lines.Add(new CodeLine(2, "{0} = {1}{2}", property.Target, property.Source, i < dataContractPropertiesSets.Count - 1 ? "," : String.Empty));
+                    }
+
+                    lines.Add(new CodeLine(1, "}};"));
+                    lines.Add(new CodeLine());
+                }
+                else
+                {
+                    returnType = dbObject.GetSingularName();
+
+                    lines.Add(new CodeLine("var query = DbContext.Set<{0}>().AsQueryable();", dbObject.GetSingularName()));
+                    lines.Add(new CodeLine());
+
+                }
+            }
+
+            var parameters = new List<ParameterDefinition>()
+            {
+                new ParameterDefinition("Int32", "pageSize", "10"),
+                new ParameterDefinition("Int32", "pageNumber", "0")
+            };
+
+            if (tableCast == null)
+            {
+
+            }
+            else
+            {
                 if (tableCast.ForeignKeys.Count == 0)
                 {
                     lines.Add(new CodeLine("return Paging<{0}>(pageSize, pageNumber);", dbObject.GetSingularName()));
                 }
                 else
                 {
-                    lines.Add(new CodeLine("var query = DbContext.Set<{0}>().AsQueryable();", dbObject.GetSingularName()));
-                    lines.Add(new CodeLine());
+                    //lines.Add(new CodeLine("var query = DbContext.Set<{0}>().AsQueryable();", dbObject.GetSingularName()));
+                    //lines.Add(new CodeLine());
 
                     var resolver = new ClrTypeResolver() as ITypeResolver;
 
@@ -108,7 +206,7 @@ namespace CatFactory.EfCore
                 }
             }
 
-            return new MethodDefinition(String.Format("IQueryable<{0}>", dbObject.GetSingularName()), String.Format("Get{0}", dbObject.GetPluralName()), parameters.ToArray())
+            return new MethodDefinition(String.Format("IQueryable<{0}>", returnType), String.Format("Get{0}", dbObject.GetPluralName()), parameters.ToArray())
             {
                 Lines = lines
             };
@@ -137,7 +235,7 @@ namespace CatFactory.EfCore
                     IsAsync = true,
                     Lines = new List<ILine>()
                     {
-                        new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetPluralName() : String.Format("Set<{0}>()", dbObject.GetSingularName()), expression)
+                        new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", Project.Settings.DeclareDbSetPropertiesInDbContext ? dbObject.GetPluralName() : String.Format("Set<{0}>()", dbObject.GetSingularName()), expression)
                     }
                 });
             }
@@ -169,7 +267,7 @@ namespace CatFactory.EfCore
                 IsAsync = true,
                 Lines = new List<ILine>()
                 {
-                    new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", Project.DeclareDbSetPropertiesInDbContext ? dbObject.GetPluralName() : String.Format("Set<{0}>()", dbObject.GetSingularName()), expression)
+                    new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", Project.Settings.DeclareDbSetPropertiesInDbContext ? dbObject.GetPluralName() : String.Format("Set<{0}>()", dbObject.GetSingularName()), expression)
                 }
             };
         }

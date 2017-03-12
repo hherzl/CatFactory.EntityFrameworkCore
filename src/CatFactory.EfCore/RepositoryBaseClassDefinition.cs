@@ -15,7 +15,7 @@ namespace CatFactory.EfCore
             Namespaces.Add("System.Threading.Tasks");
             Namespaces.Add("Microsoft.EntityFrameworkCore");
 
-            if (project.AuditEntity != null)
+            if (project.Settings.AuditEntity != null)
             {
                 Namespaces.Add(project.GetEntityLayerNamespace());
             }
@@ -128,7 +128,7 @@ namespace CatFactory.EfCore
         {
             var lines = new List<ILine>();
 
-            if (project.AuditEntity != null)
+            if (project.Settings.AuditEntity != null)
             {
                 lines.AddRange(new List<ILine>
                 {
@@ -177,7 +177,7 @@ namespace CatFactory.EfCore
         {
             var lines = new List<ILine>();
 
-            if (project.AuditEntity != null)
+            if (project.Settings.AuditEntity != null)
             {
                 lines.AddRange(new List<ILine>
                 {

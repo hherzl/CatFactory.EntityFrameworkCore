@@ -7,7 +7,7 @@ namespace CatFactory.EfCore
     {
         public AuditEntityInterfaceDefinition(EfCoreProject project)
         {
-            if (project.AuditEntity == null)
+            if (project.Settings.AuditEntity == null)
             {
                 return;
             }

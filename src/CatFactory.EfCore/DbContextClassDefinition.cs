@@ -19,7 +19,7 @@ namespace CatFactory.EfCore
 
             BaseClass = "Microsoft.EntityFrameworkCore.DbContext";
 
-            if (project.UseDataAnnotations)
+            if (project.Settings.UseDataAnnotations)
             {
                 Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition("IOptions<AppSettings>", "appSettings"))
                 {
@@ -43,7 +43,7 @@ namespace CatFactory.EfCore
 
             Properties.Add(new PropertyDefinition("String", "ConnectionString"));
 
-            if (!project.UseDataAnnotations)
+            if (!project.Settings.UseDataAnnotations)
             {
                 Properties.Add(new PropertyDefinition("IEntityMapper", "EntityMapper"));
             }
@@ -51,7 +51,7 @@ namespace CatFactory.EfCore
             Methods.Add(GetOnConfiguringMethod());
             Methods.Add(GetOnModelCreatingMethod(project));
 
-            if (project.DeclareDbSetPropertiesInDbContext)
+            if (project.Settings.DeclareDbSetPropertiesInDbContext)
             {
                 foreach (var table in project.Database.Tables)
                 {
@@ -83,7 +83,7 @@ namespace CatFactory.EfCore
         {
             var lines = new List<ILine>();
 
-            if (project.UseDataAnnotations)
+            if (project.Settings.UseDataAnnotations)
             {
                 foreach (var table in project.Database.Tables)
                 {

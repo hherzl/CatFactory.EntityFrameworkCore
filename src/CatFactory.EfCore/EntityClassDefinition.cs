@@ -13,7 +13,7 @@ namespace CatFactory.EfCore
         {
             Namespaces.Add("System");
 
-            if (project.UseDataAnnotations)
+            if (project.Settings.UseDataAnnotations)
             {
                 Namespaces.Add("System.ComponentModel.DataAnnotations");
                 Namespaces.Add("System.ComponentModel.DataAnnotations.Schema");
@@ -58,7 +58,7 @@ namespace CatFactory.EfCore
                     Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), column.GetPropertyName()));
                 }
 
-                if (project.AuditEntity == null)
+                if (project.Settings.AuditEntity == null)
                 {
                     Implements.Add("IEntity");
                 }
@@ -68,15 +68,15 @@ namespace CatFactory.EfCore
 
                     foreach (var column in columns)
                     {
-                        if (project.AuditEntity.Names.Contains(column.Name))
+                        if (project.Settings.AuditEntity.Names.Contains(column.Name))
                         {
                             count += 1;
                         }
                     }
 
-                    if (count == project.AuditEntity.Names.Length)
+                    if (count == project.Settings.AuditEntity.Names.Length)
                     {
-                        Implements.Add(project.EntityInterfaceName);
+                        Implements.Add(project.Settings.EntityInterfaceName);
                     }
                     else
                     {
@@ -105,9 +105,9 @@ namespace CatFactory.EfCore
                     {
                         if (fk.References == tableCast.FullName)
                         {
-                            if (!Namespaces.Contains(project.NavigationPropertyEnumerableNamespace))
+                            if (!Namespaces.Contains(project.Settings.NavigationPropertyEnumerableNamespace))
                             {
-                                Namespaces.Add(project.NavigationPropertyEnumerableNamespace);
+                                Namespaces.Add(project.Settings.NavigationPropertyEnumerableNamespace);
                             }
 
                             Properties.Add(project.GetChildNavigationProperty(child, fk));

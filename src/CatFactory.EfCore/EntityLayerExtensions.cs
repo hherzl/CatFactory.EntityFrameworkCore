@@ -20,7 +20,7 @@ namespace CatFactory.EfCore
 
             codeBuilder.CreateFile(project.GetEntityLayerDirectory());
 
-            if (project.AuditEntity != null)
+            if (project.Settings.AuditEntity != null)
             {
                 codeBuilder.ObjectDefinition = new AuditEntityInterfaceDefinition(project)
                 {
@@ -46,7 +46,7 @@ namespace CatFactory.EfCore
                     OutputDirectory = project.OutputDirectory
                 };
 
-                if (project.UseDataAnnotations)
+                if (project.Settings.UseDataAnnotations)
                 {
                     codeBuilder.ObjectDefinition.Attributes.Add(new MetadataAttribute("Table", String.Format("\"{0}\"", table.Name))
                     {

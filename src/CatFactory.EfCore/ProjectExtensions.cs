@@ -37,13 +37,13 @@ namespace CatFactory.EfCore
 
         public static PropertyDefinition GetChildNavigationProperty(this EfCoreProject project, Table table, ForeignKey fk)
         {
-            var propertyType = String.Format("{0}<{1}>", project.NavigationPropertyEnumerableType, table.GetSingularName());
+            var propertyType = String.Format("{0}<{1}>", project.Settings.NavigationPropertyEnumerableType, table.GetSingularName());
             var propertyName = table.GetPluralName();
 
             return new PropertyDefinition(propertyType, propertyName)
             {
-                IsVirtual = project.DeclareNavigationPropertiesAsVirtual,
-                Attributes = project.UseDataAnnotations ? new List<MetadataAttribute>() { new MetadataAttribute("ForeignKey", String.Format("\"{0}\"", String.Join(",", fk.Key))) } : null
+                IsVirtual = project.Settings.DeclareNavigationPropertiesAsVirtual,
+                Attributes = project.Settings.UseDataAnnotations ? new List<MetadataAttribute>() { new MetadataAttribute("ForeignKey", String.Format("\"{0}\"", String.Join(",", fk.Key))) } : null
             };
         }
     }

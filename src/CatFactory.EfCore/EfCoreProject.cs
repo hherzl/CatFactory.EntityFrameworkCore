@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using CatFactory.Mapping;
-using CatFactory.SqlServer;
 
 namespace CatFactory.EfCore
 {
@@ -12,50 +10,6 @@ namespace CatFactory.EfCore
         {
         }
 
-        private ProjectNamespaces m_namespaces;
-
-        public ProjectNamespaces Namespaces
-        {
-            get
-            {
-                return m_namespaces ?? (m_namespaces = new ProjectNamespaces());
-            }
-            set
-            {
-                m_namespaces = value;
-            }
-        }
-
-        public Boolean UseDataAnnotations { get; set; }
-
-        public Boolean DeclareDbSetPropertiesInDbContext { get; set; }
-
-        public Boolean DeclareNavigationPropertiesAsVirtual { get; set; }
-
-        public String NavigationPropertyEnumerableNamespace { get; set; } = "System.Collections.ObjectModel";
-
-        public String NavigationPropertyEnumerableType { get; set; } = "Collection";
-
-        public String ConcurrencyToken { get; set; }
-
-        public String EntityInterfaceName { get; set; } = "IEntity";
-
-        public AuditEntity AuditEntity { get; set; }
-
-        private List<String> m_entitiesWithDataContracts;
-
-        public List<String> EntitiesWithDataContracts
-        {
-            get
-            {
-                return m_entitiesWithDataContracts ?? (m_entitiesWithDataContracts = new List<String>());
-            }
-            set
-            {
-                m_entitiesWithDataContracts = value;
-            }
-        }
-
         public override void BuildFeatures()
         {
             if (Database == null)
@@ -63,9 +17,9 @@ namespace CatFactory.EfCore
                 return;
             }
 
-            if (AuditEntity != null)
+            if (Settings.AuditEntity != null)
             {
-                EntityInterfaceName = "IAuditEntity";
+                Settings.EntityInterfaceName = "IAuditEntity";
             }
 
             Features = Database
@@ -82,6 +36,25 @@ namespace CatFactory.EfCore
                     return new ProjectFeature(item, dbObjects, Database);
                 })
                 .ToList();
+        }
+
+        private ProjectNamespaces m_namespaces;
+        private EfCoreProjectSettings m_settings;
+
+        public ProjectNamespaces Namespaces
+        {
+            get
+            {
+                return m_namespaces ?? (m_namespaces = new ProjectNamespaces());
+            }
+        }
+
+        public EfCoreProjectSettings Settings
+        {
+            get
+            {
+                return m_settings ?? (m_settings = new EfCoreProjectSettings());
+            }
         }
     }
 }

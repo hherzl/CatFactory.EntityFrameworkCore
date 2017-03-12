@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using CatFactory.DotNetCore;
+using CatFactory.Mapping;
+using CatFactory.OOP;
 
 namespace CatFactory.EfCore
 {
@@ -12,6 +15,7 @@ namespace CatFactory.EfCore
             GenerateMappingDependencies(project);
             GenerateMappings(project);
             GenerateDbContext(project);
+            GenerateDataContracts(project);
             GenerateDataRepositories(project);
 
             return project;
@@ -33,7 +37,7 @@ namespace CatFactory.EfCore
 
         private static void GenerateMappingDependencies(EfCoreProject project)
         {
-            if (!project.UseDataAnnotations)
+            if (!project.Settings.UseDataAnnotations)
             {
                 var codeBuilders = new List<DotNetCodeBuilder>()
                 {
@@ -80,7 +84,7 @@ namespace CatFactory.EfCore
 
         private static void GenerateMappings(EfCoreProject project)
         {
-            if (!project.UseDataAnnotations)
+            if (!project.Settings.UseDataAnnotations)
             {
                 foreach (var table in project.Database.Tables)
                 {
@@ -129,7 +133,7 @@ namespace CatFactory.EfCore
                     OutputDirectory = project.OutputDirectory
                 };
 
-                if (project.UseDataAnnotations)
+                if (project.Settings.UseDataAnnotations)
                 {
                     codeBuilder.ObjectDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
                 }
@@ -142,7 +146,7 @@ namespace CatFactory.EfCore
             }
         }
 
-        private static void GenerateDataLayerContracts(EfCoreProject project, CSharpInterfaceDefinition interfaceDefinition)
+        private static void GenerateDataLayerContract(EfCoreProject project, CSharpInterfaceDefinition interfaceDefinition)
         {
             var codeBuilder = new CSharpInterfaceBuilder
             {
@@ -152,7 +156,18 @@ namespace CatFactory.EfCore
 
             codeBuilder.CreateFile(project.GetDataLayerContractsDirectory());
         }
+        
+        private static void GenerateRepositoryTest(EfCoreProject project, CSharpClassDefinition classDefinition)
+        {
+            var codeBuilder = new CSharpClassBuilder
+            {
+                ObjectDefinition = classDefinition,
+                OutputDirectory = project.OutputDirectory
+            };
 
+            codeBuilder.CreateFile(project.GetDataLayerRepositoriesDirectory());
+        }
+        
         private static void GenerateRepositoryInterface(EfCoreProject project)
         {
             var codeBuilder = new CSharpInterfaceBuilder
@@ -181,11 +196,61 @@ namespace CatFactory.EfCore
             codeBuilder.CreateFile(project.GetDataLayerRepositoriesDirectory());
         }
 
+        private static void GenerateDataContracts(EfCoreProject project)
+        {
+            foreach (var table in project.Database.Tables)
+            {
+                if (project.Settings.EntitiesWithDataContracts.Contains(table.FullName))
+                {
+                    var resolver = new ClrTypeResolver() as ITypeResolver;
+
+                    var classDef = new CSharpClassDefinition()
+                    {
+                        Namespaces = new List<String>() { "System" },
+                        Namespace = project.GetDataLayerDataContractsNamespace(),
+                        Name = String.Format("{0}DataContract", table.GetEntityName())
+                    };
+
+                    foreach (var column in table.Columns)
+                    {
+                        var propertyName = column.GetPropertyName();
+
+                        classDef.Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), propertyName));
+                    }
+
+                    foreach (var foreignKey in table.ForeignKeys)
+                    {
+                        var foreignTable = project.Database.Tables.FirstOrDefault(item => item.FullName == foreignKey.References);
+
+                        var foreignKeyAlias = CatFactory.NamingConvention.GetCamelCase(foreignTable.GetEntityName());
+
+                        foreach (var column in foreignTable?.GetColumnsWithOutKey())
+                        {
+                            var target = String.Format("{0}{1}", foreignTable.GetEntityName(), column.GetPropertyName());
+
+                            if (classDef.Properties.Where(item => item.Name == column.GetPropertyName()).Count() == 0)
+                            {
+                                classDef.Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), target));
+                            }
+                        }
+                    }
+
+                    var codeBuilder = new CSharpClassBuilder
+                    {
+                        ObjectDefinition = classDef,
+                        OutputDirectory = project.OutputDirectory
+                    };
+
+                    codeBuilder.CreateFile(project.GetDataLayerDataContractsDirectory());
+                }
+            }
+        }
+
         private static void GenerateDataRepositories(EfCoreProject project)
         {
-            if (!String.IsNullOrEmpty(project.ConcurrencyToken))
+            if (!String.IsNullOrEmpty(project.Settings.ConcurrencyToken))
             {
-                project.UpdateExclusions.Add(project.ConcurrencyToken);
+                project.UpdateExclusions.Add(project.Settings.ConcurrencyToken);
             }
 
             GenerateRepositoryInterface(project);
@@ -193,26 +258,33 @@ namespace CatFactory.EfCore
 
             foreach (var projectFeature in project.Features)
             {
+                var repositoryClassDefinition = new RepositoryClassDefinition(project, projectFeature)
+                {
+                    Namespace = project.GetDataLayerRepositoriesNamespace(),
+                    Project = project
+                };
+
+                repositoryClassDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
+                repositoryClassDefinition.Namespaces.Add(project.GetDataLayerContractsNamespace());
+
                 var codeBuilder = new CSharpClassBuilder
                 {
-                    ObjectDefinition = new RepositoryClassDefinition(project, projectFeature)
-                    {
-                        Namespace = project.GetDataLayerRepositoriesNamespace(),
-                        Project = project
-                    },
+                    ObjectDefinition = repositoryClassDefinition,
                     OutputDirectory = project.OutputDirectory
                 };
 
-                codeBuilder.ObjectDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
-                codeBuilder.ObjectDefinition.Namespaces.Add(project.GetDataLayerContractsNamespace());
+                if (project.Settings.GenerateTestsForRepositories)
+                {
+                    GenerateRepositoryTest(project, repositoryClassDefinition.GetTestClass());
+                }
 
-                var interfaceDef = (codeBuilder.ObjectDefinition as CSharpClassDefinition).RefactInterface();
+                var interfaceDef = repositoryClassDefinition.RefactInterface();
 
                 interfaceDef.Implements.Add("IRepository");
 
                 interfaceDef.Namespace = project.GetDataLayerContractsNamespace();
 
-                GenerateDataLayerContracts(project, interfaceDef);
+                GenerateDataLayerContract(project, interfaceDef);
 
                 codeBuilder.CreateFile(project.GetDataLayerRepositoriesDirectory());
             }

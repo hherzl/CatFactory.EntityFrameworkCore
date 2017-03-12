@@ -199,7 +199,7 @@ namespace CatFactory.EfCore.Tests
                     new Column { Name = "Timestamp", Type = "rowversion", Nullable = true }
                 };
 
-                db.AddColumnForAllTables(columns, "dbo.EventLog", "dbo.ChangeLog");
+                db.AddColumnsForAllTables(columns, "dbo.EventLog", "dbo.ChangeLog");
 
                 return db;
             }
