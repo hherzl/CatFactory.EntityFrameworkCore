@@ -41,11 +41,11 @@ namespace CatFactory.EfCore
                 });
             }
 
-            Properties.Add(new PropertyDefinition("String", "ConnectionString"));
+            Properties.Add(new PropertyDefinition("String", "ConnectionString") { IsReadOnly = true });
 
             if (!project.Settings.UseDataAnnotations)
             {
-                Properties.Add(new PropertyDefinition("IEntityMapper", "EntityMapper"));
+                Properties.Add(new PropertyDefinition("IEntityMapper", "EntityMapper") { IsReadOnly = true });
             }
 
             Methods.Add(GetOnConfiguringMethod());

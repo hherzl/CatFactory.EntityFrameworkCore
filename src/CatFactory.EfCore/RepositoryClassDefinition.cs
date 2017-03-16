@@ -114,7 +114,11 @@ namespace CatFactory.EfCore
 
                         var foreignKeyAlias = CatFactory.NamingConvention.GetCamelCase(foreignTable.GetEntityName());
 
-                        if (foreignKey.Key.Count == 1)
+                        if (foreignKey.Key.Count == 0)
+                        {
+                            lines.Add(new CommentLine(1, " There isn't definition for key in foreign key '{0}' in your current database", foreignKey.References));
+                        }
+                        else if (foreignKey.Key.Count == 1)
                         {
                             if (foreignTable == null)
                             {
@@ -122,7 +126,20 @@ namespace CatFactory.EfCore
                             }
                             else
                             {
-                                lines.Add(new CodeLine(1, "join {0} in DbContext.Set<{1}>() on {2}.{3} equals {0}.{4}", foreignKeyAlias, foreignKeyEntityName, entityAlias, foreignKey.Key[0], NamingConvention.GetPropertyName(foreignTable.PrimaryKey.Key[0])));
+                                var column = tableCast.Columns.FirstOrDefault(item => item.Name == foreignKey.Key[0]);
+
+                                var x = NamingConvention.GetPropertyName(foreignKey.Key[0]);
+                                var y = NamingConvention.GetPropertyName(foreignTable.PrimaryKey.Key[0]);
+
+                                if (column.Nullable)
+                                {
+                                    lines.Add(new CodeLine(1, "join {0}Join in DbContext.Set<{1}>() on {2}.{3} equals {0}Join.{4} into {0}Temp", foreignKeyAlias, foreignKeyEntityName, entityAlias, x, y));
+                                    lines.Add(new CodeLine(2, "from {0} in {0}Temp.Where(relation => relation.{2} == {1}.{3}).DefaultIfEmpty()", foreignKeyAlias, entityAlias, x, y));
+                                }
+                                else
+                                {
+                                    lines.Add(new CodeLine(1, "join {0} in DbContext.Set<{1}>() on {2}.{3} equals {0}.{4}", foreignKeyAlias, foreignKeyEntityName, entityAlias, x, y));
+                                }
                             }
                         }
                         else
@@ -177,9 +194,6 @@ namespace CatFactory.EfCore
                 }
                 else
                 {
-                    //lines.Add(new CodeLine("var query = DbContext.Set<{0}>().AsQueryable();", dbObject.GetSingularName()));
-                    //lines.Add(new CodeLine());
-
                     var resolver = new ClrTypeResolver() as ITypeResolver;
 
                     for (var i = 0; i < tableCast.ForeignKeys.Count; i++)

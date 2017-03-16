@@ -133,7 +133,7 @@ namespace CatFactory.EfCore.Tests
                                 new Column { Name = "OrderStatusID", Type = "smallint", Nullable = false },
                                 new Column { Name = "OrderDate", Type = "datetime", Nullable = false },
                                 new Column { Name = "CustomerID", Type = "int", Nullable = false },
-                                new Column { Name = "EmployeeID", Type = "int", Nullable = false },
+                                new Column { Name = "EmployeeID", Type = "int", Nullable = true },
                                 new Column { Name = "ShipperID", Type = "int", Nullable = false },
                                 new Column { Name = "Total", Type = "decimal", Prec = 12, Scale = 4, Nullable = false },
                                 new Column { Name = "Comments", Type = "varchar", Length = 255, Nullable = true }
