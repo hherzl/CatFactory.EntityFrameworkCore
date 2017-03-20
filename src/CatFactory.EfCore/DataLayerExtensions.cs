@@ -208,7 +208,7 @@ namespace CatFactory.EfCore
                     {
                         Namespaces = new List<String>() { "System" },
                         Namespace = project.GetDataLayerDataContractsNamespace(),
-                        Name = String.Format("{0}DataContract", table.GetEntityName())
+                        Name = table.GetDataContractName()
                     };
 
                     foreach (var column in table.Columns)
@@ -260,8 +260,7 @@ namespace CatFactory.EfCore
             {
                 var repositoryClassDefinition = new RepositoryClassDefinition(project, projectFeature)
                 {
-                    Namespace = project.GetDataLayerRepositoriesNamespace(),
-                    Project = project
+                    Namespace = project.GetDataLayerRepositoriesNamespace()
                 };
 
                 repositoryClassDefinition.Namespaces.Add(project.GetEntityLayerNamespace());

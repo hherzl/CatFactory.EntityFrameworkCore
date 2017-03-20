@@ -35,6 +35,9 @@ namespace CatFactory.EfCore
         public static String GetViewModelName(this IDbObject dbObject)
             => String.Format("{0}ViewModel", namingConvention.GetClassName(dbObject.GetSingularName()));
 
+        public static String GetDataContractName(this IDbObject dbObject)
+            => String.Format("{0}Dto", namingConvention.GetClassName(dbObject.Name));
+
         public static String GetMapName(this IDbObject dbObject)
             => namingConvention.GetClassName(String.Format("{0}Map", dbObject.GetSingularName()));
 

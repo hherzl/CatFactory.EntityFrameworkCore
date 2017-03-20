@@ -8,6 +8,14 @@ namespace CatFactory.EfCore
         {
         }
 
+        public AuditEntity(String creationUserColumnName, String creationDateTimeColumnName, String lastUpdateUserColumnName, String lastUpdateDateTimeColumnName)
+        {
+            CreationUserColumnName = creationUserColumnName;
+            CreationDateTimeColumnName = creationDateTimeColumnName;
+            LastUpdateUserColumnName = lastUpdateUserColumnName;
+            LastUpdateDateTimeColumnName = lastUpdateDateTimeColumnName;
+        }
+
         public String CreationUserColumnName { get; set; }
 
         public String CreationDateTimeColumnName { get; set; }

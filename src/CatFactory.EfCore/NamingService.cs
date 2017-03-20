@@ -10,6 +10,10 @@ namespace CatFactory.EfCore
             {
                 return String.Format("{0}y", value.Substring(0, value.Length - 3));
             }
+            else if (value.EndsWith("tus"))
+            {
+                return value;
+            }
             else if (value.EndsWith("s"))
             {
                 return String.Format("{0}", value.Substring(0, value.Length - 1));

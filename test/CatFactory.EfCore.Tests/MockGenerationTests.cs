@@ -15,13 +15,7 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store"
             };
 
-            project.Settings.AuditEntity = new AuditEntity
-            {
-                CreationUserColumnName = "CreationUser",
-                CreationDateTimeColumnName = "CreationDateTime",
-                LastUpdateUserColumnName = "LastUpdateUser",
-                LastUpdateDateTimeColumnName = "LastUpdateDateTime"
-            };
+            project.Settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
 
             project.Settings.ConcurrencyToken = "Timestamp";
 

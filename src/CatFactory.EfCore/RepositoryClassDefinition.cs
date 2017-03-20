@@ -51,7 +51,7 @@ namespace CatFactory.EfCore
             }
         }
 
-        public EfCoreProject Project { get; set; }
+        public EfCoreProject Project { get; private set; }
 
         public MethodDefinition GetGetAllMethod(ProjectFeature projectFeature, IDbObject dbObject)
         {
@@ -75,7 +75,7 @@ namespace CatFactory.EfCore
 
                     var entityAlias = CatFactory.NamingConvention.GetCamelCase(tableCast.GetEntityName());
 
-                    returnType = String.Format("{0}DataContract", tableCast.GetEntityName());
+                    returnType = tableCast.GetDataContractName();
 
                     var dataContractPropertiesSets = new[] { new { Source = String.Empty, Target = String.Empty } }.ToList();
 
@@ -182,11 +182,7 @@ namespace CatFactory.EfCore
                 new ParameterDefinition("Int32", "pageNumber", "0")
             };
 
-            if (tableCast == null)
-            {
-
-            }
-            else
+            if (tableCast != null)
             {
                 if (tableCast.ForeignKeys.Count == 0)
                 {
@@ -208,11 +204,26 @@ namespace CatFactory.EfCore
 
                             parameters.Add(new ParameterDefinition(resolver.Resolve(column.Type), parameterName, "null"));
 
-                            lines.Add(new CodeLine("if ({0}.HasValue)", NamingConvention.GetParameterName(column.Name)));
-                            lines.Add(new CodeLine("{{"));
-                            lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
-                            lines.Add(new CodeLine("}}"));
-                            lines.Add(new CodeLine());
+                            if (column.IsString())
+                            {
+                                lines.Add(new CodeLine("if (!String.IsNullOrEmpty({0}))", NamingConvention.GetParameterName(column.Name)));
+                                lines.Add(new CodeLine("{{"));
+                                lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
+                                lines.Add(new CodeLine("}}"));
+                                lines.Add(new CodeLine());
+                            }
+                            else
+                            {
+                                lines.Add(new CodeLine("if ({0}.HasValue)", NamingConvention.GetParameterName(column.Name)));
+                                lines.Add(new CodeLine("{{"));
+                                lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
+                                lines.Add(new CodeLine("}}"));
+                                lines.Add(new CodeLine());
+                            }
+                        }
+                        else
+                        {
+                            // todo: add logic for composed foreign key
                         }
                     }
 
@@ -296,7 +307,7 @@ namespace CatFactory.EfCore
             {
                 if (tableCast.IsPrimaryKeyGuid())
                 {
-                    lines.Add(new CodeLine("entity.{0} = Guid.NewGuid();"));
+                    lines.Add(new CodeLine("entity.{0} = Guid.NewGuid();", NamingConvention.GetPropertyName(tableCast.PrimaryKey.Key[0])));
                     lines.Add(new CodeLine());
                 }
             }
