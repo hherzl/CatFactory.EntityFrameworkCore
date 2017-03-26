@@ -9,6 +9,8 @@ namespace CatFactory.EfCore
         {
         }
 
+        public Boolean UseAutomaticPropertiesForEntities { get; set; } = true;
+
         public Boolean UseDataAnnotations { get; set; }
 
         public Boolean DeclareDbSetPropertiesInDbContext { get; set; }

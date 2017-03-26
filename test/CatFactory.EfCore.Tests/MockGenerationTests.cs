@@ -16,9 +16,7 @@ namespace CatFactory.EfCore.Tests
             };
 
             project.Settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
-
             project.Settings.ConcurrencyToken = "Timestamp";
-
             project.Settings.EntitiesWithDataContracts.Add("Sales.Order");
 
             project.BuildFeatures();

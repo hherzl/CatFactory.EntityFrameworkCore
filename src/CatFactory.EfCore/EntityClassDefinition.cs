@@ -55,7 +55,14 @@ namespace CatFactory.EfCore
             {
                 foreach (var column in columns)
                 {
-                    Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), column.GetPropertyName()));
+                    if (project.Settings.UseAutomaticPropertiesForEntities)
+                    {
+                        Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), column.GetPropertyName()));
+                    }
+                    else
+                    {
+                        this.AddPropertyWithField(resolver.Resolve(column.Type), column.GetPropertyName());
+                    }
                 }
 
                 if (project.Settings.AuditEntity == null)
