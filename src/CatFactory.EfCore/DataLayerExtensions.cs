@@ -220,7 +220,12 @@ namespace CatFactory.EfCore
 
                     foreach (var foreignKey in table.ForeignKeys)
                     {
-                        var foreignTable = project.Database.Tables.FirstOrDefault(item => item.FullName == foreignKey.References);
+                        var foreignTable = project.Database.Tables.FirstOrDefault(item => String.Format("{0}.{1}", project.Database.Name, item.FullName) == foreignKey.References);
+
+                        if (foreignTable == null)
+                        {
+                            continue;
+                        }
 
                         var foreignKeyAlias = CatFactory.NamingConvention.GetCamelCase(foreignTable.GetEntityName());
 

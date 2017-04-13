@@ -88,7 +88,14 @@ namespace CatFactory.EfCore
 
                     foreach (var foreignKey in tableCast.ForeignKeys)
                     {
-                        var foreignTable = projectFeature.Database.Tables.FirstOrDefault(item => item.FullName == foreignKey.References);
+                        //var foreignTable = projectFeature.Database.Tables.FirstOrDefault(item => item.FullName == foreignKey.References);
+
+                        var foreignTable = Project.Database.Tables.FirstOrDefault(item => String.Format("{0}.{1}", Project.Database.Name, item.FullName) == foreignKey.References);
+
+                        if (foreignTable == null)
+                        {
+                            continue;
+                        }
 
                         var foreignKeyAlias = CatFactory.NamingConvention.GetCamelCase(foreignTable.GetEntityName());
 
@@ -108,7 +115,14 @@ namespace CatFactory.EfCore
 
                     foreach (var foreignKey in tableCast.ForeignKeys)
                     {
-                        var foreignTable = projectFeature.Database.Tables.FirstOrDefault(item => item.FullName == foreignKey.References);
+                        //var foreignTable = projectFeature.Database.Tables.FirstOrDefault(item => item.FullName == foreignKey.References);
+
+                        var foreignTable = projectFeature.Database.Tables.FirstOrDefault(item => String.Format("{0}.{1}", projectFeature.Database.Name, item.FullName) == foreignKey.References);
+
+                        if (foreignTable == null)
+                        {
+                            continue;
+                        }
 
                         var foreignKeyEntityName = foreignTable.GetEntityName();
 
