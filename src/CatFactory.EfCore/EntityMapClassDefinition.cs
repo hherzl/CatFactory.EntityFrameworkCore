@@ -12,6 +12,13 @@ namespace CatFactory.EfCore
     {
         public EntityMapClassDefinition(IDbObject mappedObject, EfCoreProject project)
         {
+            if (project.Settings.UseMefForEntitiesMapping)
+            {
+                Namespaces.Add("System.Composition");
+
+                Attributes.Add(new MetadataAttribute("Export", "typeof(IEntityMap)"));
+            }
+
             Namespaces.Add("Microsoft.EntityFrameworkCore");
 
             Name = mappedObject.GetMapName();
@@ -109,6 +116,9 @@ namespace CatFactory.EfCore
             if (view != null)
             {
                 columns = view.Columns;
+
+                mapMethodLines.Add(new CodeLine("entity.HasKey(p => new {{ {0} }});", String.Join(", ", columns.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item.Name))))));
+                mapMethodLines.Add(new CodeLine());
             }
 
             for (var i = 0; i < columns.Count; i++)
@@ -134,22 +144,22 @@ namespace CatFactory.EfCore
                         lines.Add(String.Format("HasColumnName(\"{0}\")", column.Name));
                     }
 
-                    switch (column.Type)
+                    if (column.IsString())
                     {
-                        case "char":
-                        case "nchar":
-                        case "varchar":
-                        case "nvarchar":
-                            lines.Add(column.Length == 0 ? String.Format("HasColumnType(\"{0}(max)\")", column.Type) : String.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
-                            break;
+                        lines.Add(column.Length == 0 ? String.Format("HasColumnType(\"{0}(max)\")", column.Type) : String.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
+                    }
+                    else
+                    {
+                        switch (column.Type)
+                        {
+                            case "decimal":
+                                lines.Add(String.Format("HasColumnType(\"{0}({1}, {2})\")", column.Type, column.Prec, column.Scale));
+                                break;
 
-                        case "decimal":
-                            lines.Add(String.Format("HasColumnType(\"{0}({1}, {2})\")", column.Type, column.Prec, column.Scale));
-                            break;
-
-                        default:
-                            lines.Add(String.Format("HasColumnType(\"{0}\")", column.Type));
-                            break;
+                            default:
+                                lines.Add(String.Format("HasColumnType(\"{0}\")", column.Type));
+                                break;
+                        }
                     }
 
                     if (!column.Nullable)

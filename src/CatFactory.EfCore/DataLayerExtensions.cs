@@ -67,7 +67,7 @@ namespace CatFactory.EfCore
                     },
                     new CSharpClassBuilder()
                     {
-                        ObjectDefinition = new DbMapperClassDefinition(project.Database)
+                        ObjectDefinition = new DbMapperClassDefinition(project)
                         {
                             Namespace = project.GetDataLayerMappingNamespace()
                         },
@@ -200,54 +200,56 @@ namespace CatFactory.EfCore
         {
             foreach (var table in project.Database.Tables)
             {
-                if (project.Settings.EntitiesWithDataContracts.Contains(table.FullName))
+                if (!project.Settings.EntitiesWithDataContracts.Contains(table.FullName))
                 {
-                    var resolver = new ClrTypeResolver() as ITypeResolver;
-
-                    var classDef = new CSharpClassDefinition()
-                    {
-                        Namespaces = new List<String>() { "System" },
-                        Namespace = project.GetDataLayerDataContractsNamespace(),
-                        Name = table.GetDataContractName()
-                    };
-
-                    foreach (var column in table.Columns)
-                    {
-                        var propertyName = column.GetPropertyName();
-
-                        classDef.Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), propertyName));
-                    }
-
-                    foreach (var foreignKey in table.ForeignKeys)
-                    {
-                        var foreignTable = project.Database.Tables.FirstOrDefault(item => String.Format("{0}.{1}", project.Database.Name, item.FullName) == foreignKey.References);
-
-                        if (foreignTable == null)
-                        {
-                            continue;
-                        }
-
-                        var foreignKeyAlias = CatFactory.NamingConvention.GetCamelCase(foreignTable.GetEntityName());
-
-                        foreach (var column in foreignTable?.GetColumnsWithOutKey())
-                        {
-                            var target = String.Format("{0}{1}", foreignTable.GetEntityName(), column.GetPropertyName());
-
-                            if (classDef.Properties.Where(item => item.Name == column.GetPropertyName()).Count() == 0)
-                            {
-                                classDef.Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), target));
-                            }
-                        }
-                    }
-
-                    var codeBuilder = new CSharpClassBuilder
-                    {
-                        ObjectDefinition = classDef,
-                        OutputDirectory = project.OutputDirectory
-                    };
-
-                    codeBuilder.CreateFile(project.GetDataLayerDataContractsDirectory());
+                    continue;
                 }
+
+                var resolver = new ClrTypeResolver() as ITypeResolver;
+
+                var classDef = new CSharpClassDefinition()
+                {
+                    Namespaces = new List<String>() { "System" },
+                    Namespace = project.GetDataLayerDataContractsNamespace(),
+                    Name = table.GetDataContractName()
+                };
+
+                foreach (var column in table.Columns)
+                {
+                    var propertyName = column.GetPropertyName();
+
+                    classDef.Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), propertyName));
+                }
+
+                foreach (var foreignKey in table.ForeignKeys)
+                {
+                    var foreignTable = project.FindTable(foreignKey.References);
+
+                    if (foreignTable == null)
+                    {
+                        continue;
+                    }
+
+                    var foreignKeyAlias = NamingConvention.GetCamelCase(foreignTable.GetEntityName());
+
+                    foreach (var column in foreignTable?.GetColumnsWithOutKey())
+                    {
+                        var target = String.Format("{0}{1}", foreignTable.GetEntityName(), column.GetPropertyName());
+
+                        if (classDef.Properties.Where(item => item.Name == column.GetPropertyName()).Count() == 0)
+                        {
+                            classDef.Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), target));
+                        }
+                    }
+                }
+
+                var codeBuilder = new CSharpClassBuilder
+                {
+                    ObjectDefinition = classDef,
+                    OutputDirectory = project.OutputDirectory
+                };
+
+                codeBuilder.CreateFile(project.GetDataLayerDataContractsDirectory());
             }
         }
 

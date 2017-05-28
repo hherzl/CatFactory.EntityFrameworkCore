@@ -6,7 +6,7 @@ namespace CatFactory.EfCore
 {
     public static class ConstraintExtensions
     {
-        public static PropertyDefinition GetParentNavigationProperty(this ForeignKey foreignKey, EfCoreProject project, Table table)
+        public static PropertyDefinition GetParentNavigationProperty(this ForeignKey foreignKey, EfCoreProject project, ITable table)
         {
             var propertyType = table.GetSingularName();
             var propertyName = String.Format("{0}Fk", propertyType);

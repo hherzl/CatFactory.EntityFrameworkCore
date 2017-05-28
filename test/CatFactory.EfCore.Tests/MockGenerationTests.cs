@@ -12,9 +12,31 @@ namespace CatFactory.EfCore.Tests
             {
                 Name = "Store",
                 Database = StoreDatabase.Mock,
-                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store"
+                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store.Mock"
             };
 
+            project.Settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
+            project.Settings.ConcurrencyToken = "Timestamp";
+            project.Settings.EntitiesWithDataContracts.Add("Sales.Order");
+
+            project.BuildFeatures();
+
+            project
+                .GenerateEntityLayer()
+                .GenerateDataLayer();
+        }
+
+        [Fact]
+        public void ProjectGenerationWithDataBindingsFromMockDatabaseTest()
+        {
+            var project = new EfCoreProject
+            {
+                Name = "Store",
+                Database = StoreDatabase.Mock,
+                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store.DataBindings"
+            };
+
+            project.Settings.EnableDataBindings = true; 
             project.Settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
             project.Settings.ConcurrencyToken = "Timestamp";
             project.Settings.EntitiesWithDataContracts.Add("Sales.Order");

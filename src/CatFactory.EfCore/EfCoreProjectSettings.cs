@@ -11,7 +11,11 @@ namespace CatFactory.EfCore
 
         public Boolean UseAutomaticPropertiesForEntities { get; set; } = true;
 
+        public Boolean EnableDataBindings { get; set; }
+
         public Boolean UseDataAnnotations { get; set; }
+
+        public Boolean UseMefForEntitiesMapping { get; set; } = true;
 
         public Boolean DeclareDbSetPropertiesInDbContext { get; set; }
 
@@ -27,6 +31,7 @@ namespace CatFactory.EfCore
 
         public AuditEntity AuditEntity { get; set; }
 
+        // todo: add logic for this setting
         public Boolean GenerateTestsForRepositories { get; set; }
 
         private List<String> m_entitiesWithDataContracts;

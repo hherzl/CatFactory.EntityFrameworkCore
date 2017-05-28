@@ -1,4 +1,6 @@
-﻿using CatFactory.SqlServer;
+﻿using System;
+using System.Collections.Generic;
+using CatFactory.SqlServer;
 using Xunit;
 
 namespace CatFactory.EfCore.Tests
@@ -10,24 +12,18 @@ namespace CatFactory.EfCore.Tests
         {
             // Import database
             var db = SqlServerDatabaseFactory
-                .Import("server=(local);database=Store;integrated security=yes;", "dbo.sysdiagrams");
+                .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Store;integrated security=yes;", "dbo.sysdiagrams");
 
             // Create instance of Ef Core Project
             var project = new EfCoreProject()
             {
                 Name = "Store",
                 Database = db,
-                OutputDirectory = "C:\\Temp\\Store"
+                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store"
             };
 
             // Set audit columns
-            project.Settings.AuditEntity = new AuditEntity
-            {
-                CreationUserColumnName = "CreationUser",
-                CreationDateTimeColumnName = "CreationDateTime",
-                LastUpdateUserColumnName = "LastUpdateUser",
-                LastUpdateDateTimeColumnName = "LastUpdateDateTime"
-            };
+            project.Settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
 
             // Set concurrency token
             project.Settings.ConcurrencyToken = "Timestamp";
@@ -38,7 +34,7 @@ namespace CatFactory.EfCore.Tests
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
 
-            // Generate code :=)
+            // Generate code =D
             project
                 .GenerateEntityLayer()
                 .GenerateDataLayer();
@@ -47,7 +43,8 @@ namespace CatFactory.EfCore.Tests
         [Fact]
         public void ProjectGenerationWithModifiedNamespacesFromExistingDatabaseTest()
         {
-            var db = SqlServerDatabaseFactory.Import("server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
+            var db = SqlServerDatabaseFactory
+                .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
 
             var project = new EfCoreProject
             {
@@ -69,7 +66,8 @@ namespace CatFactory.EfCore.Tests
         [Fact]
         public void ProjectGenerationForNorthwindDatabaseTest()
         {
-            var db = SqlServerDatabaseFactory.Import("server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
+            var db = SqlServerDatabaseFactory
+                .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
 
             var project = new EfCoreProject
             {
@@ -88,13 +86,22 @@ namespace CatFactory.EfCore.Tests
         [Fact]
         public void ProjectGenerationForAdventureWorksDatabaseTest()
         {
-            var db = SqlServerDatabaseFactory.Import("server=(local);database=AdventureWorks2012;integrated security=yes;", "dbo.sysdiagrams");
+            var factory = new SqlServerDatabaseFactory(LoggerMocker.GetLogger<SqlServerDatabaseFactory>())
+            {
+                ConnectionString = "server=(local);database=AdventureWorks2012;integrated security=yes;",
+                Exclusions = new List<String>()
+                {
+                    "dbo.sysdiagrams"
+                }
+            };
+
+            var db = factory.Import();
 
             var project = new EfCoreProject
             {
                 Name = "AdventureWorks",
                 Database = db,
-                OutputDirectory = "C:\\VsCode\\AdventureWorks\\src"
+                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\AdventureWorks"
             };
 
             project.BuildFeatures();

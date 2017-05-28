@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using CatFactory.Mapping;
 
@@ -36,6 +37,11 @@ namespace CatFactory.EfCore
                     return new ProjectFeature(item, dbObjects, Database);
                 })
                 .ToList();
+        }
+
+        public override ITable FindTable(string fullName)
+        {
+            return Database.Tables.FirstOrDefault(item => String.Format("{0}.{1}", Database.Name, item.FullName) == fullName);
         }
 
         private ProjectNamespaces m_namespaces;

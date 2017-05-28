@@ -19,6 +19,15 @@ namespace CatFactory.EfCore
                 Namespaces.Add("System.ComponentModel.DataAnnotations.Schema");
             }
 
+            if (project.Settings.EnableDataBindings)
+            {
+                Namespaces.Add("System.ComponentModel");
+
+                Implements.Add("INotifyPropertyChanged");
+
+                Events.Add(new EventDefinition("PropertyChangedEventHandler", "PropertyChanged"));
+            }
+
             Name = dbObject.GetSingularName();
 
             Constructors.Add(new ClassConstructorDefinition());
@@ -55,13 +64,20 @@ namespace CatFactory.EfCore
             {
                 foreach (var column in columns)
                 {
-                    if (project.Settings.UseAutomaticPropertiesForEntities)
+                    if (project.Settings.EnableDataBindings)
                     {
-                        Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), column.GetPropertyName()));
+                        this.AddViewModelProperty(resolver.Resolve(column.Type), column.GetPropertyName());
                     }
                     else
                     {
-                        this.AddPropertyWithField(resolver.Resolve(column.Type), column.GetPropertyName());
+                        if (project.Settings.UseAutomaticPropertiesForEntities)
+                        {
+                            Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), column.GetPropertyName()));
+                        }
+                        else
+                        {
+                            this.AddPropertyWithField(resolver.Resolve(column.Type), column.GetPropertyName());
+                        }
                     }
                 }
 
@@ -96,7 +112,7 @@ namespace CatFactory.EfCore
             {
                 foreach (var foreignKey in tableCast.ForeignKeys)
                 {
-                    var foreignTable = project.Database.Tables.FirstOrDefault(item => item.FullName == foreignKey.References);
+                    var foreignTable = project.FindTable(foreignKey.References);
 
                     if (foreignTable == null)
                     {

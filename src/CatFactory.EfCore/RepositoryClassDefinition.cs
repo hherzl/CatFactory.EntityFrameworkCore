@@ -71,8 +71,6 @@ namespace CatFactory.EfCore
             {
                 if (Project.Settings.EntitiesWithDataContracts.Contains(tableCast.FullName))
                 {
-                    // todo: add logic to generate data contract
-
                     var entityAlias = CatFactory.NamingConvention.GetCamelCase(tableCast.GetEntityName());
 
                     returnType = tableCast.GetDataContractName();
@@ -88,9 +86,7 @@ namespace CatFactory.EfCore
 
                     foreach (var foreignKey in tableCast.ForeignKeys)
                     {
-                        //var foreignTable = projectFeature.Database.Tables.FirstOrDefault(item => item.FullName == foreignKey.References);
-
-                        var foreignTable = Project.Database.Tables.FirstOrDefault(item => String.Format("{0}.{1}", Project.Database.Name, item.FullName) == foreignKey.References);
+                        var foreignTable = Project.FindTable(foreignKey.References);
 
                         if (foreignTable == null)
                         {
@@ -115,9 +111,7 @@ namespace CatFactory.EfCore
 
                     foreach (var foreignKey in tableCast.ForeignKeys)
                     {
-                        //var foreignTable = projectFeature.Database.Tables.FirstOrDefault(item => item.FullName == foreignKey.References);
-
-                        var foreignTable = projectFeature.Database.Tables.FirstOrDefault(item => String.Format("{0}.{1}", projectFeature.Database.Name, item.FullName) == foreignKey.References);
+                        var foreignTable = Project.FindTable(foreignKey.References);
 
                         if (foreignTable == null)
                         {
