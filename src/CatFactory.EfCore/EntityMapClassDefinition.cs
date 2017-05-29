@@ -139,6 +139,11 @@ namespace CatFactory.EfCore
                         String.Format("entity.Property(p => p.{0})", column.GetPropertyName())
                     };
 
+                    if (project.Settings.UseBackingFields)
+                    {
+                        lines.Add(String.Format("HasField(\"{0}\")", NamingConvention.GetFieldName(column.GetPropertyName())));
+                    }
+
                     if (String.Compare(column.Name, column.GetPropertyName()) != 0)
                     {
                         lines.Add(String.Format("HasColumnName(\"{0}\")", column.Name));

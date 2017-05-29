@@ -60,7 +60,7 @@ namespace CatFactory.EfCore
                 }
             }
 
-            if (tableCast != null || viewCast != null)
+            if (tableCast != null)
             {
                 foreach (var column in columns)
                 {
@@ -105,6 +105,14 @@ namespace CatFactory.EfCore
                     {
                         Implements.Add("IEntity");
                     }
+                }
+            }
+            
+            if (viewCast != null)
+            {
+                foreach (var column in columns)
+                {
+                    Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), column.GetPropertyName()));
                 }
             }
 

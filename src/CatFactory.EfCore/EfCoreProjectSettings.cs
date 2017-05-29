@@ -11,6 +11,8 @@ namespace CatFactory.EfCore
 
         public Boolean UseAutomaticPropertiesForEntities { get; set; } = true;
 
+        public Boolean UseBackingFields { get; set; }
+
         public Boolean EnableDataBindings { get; set; }
 
         public Boolean UseDataAnnotations { get; set; }
