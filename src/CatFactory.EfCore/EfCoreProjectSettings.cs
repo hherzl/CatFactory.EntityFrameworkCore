@@ -34,7 +34,7 @@ namespace CatFactory.EfCore
         public AuditEntity AuditEntity { get; set; }
 
         // todo: add logic for this setting
-        public Boolean GenerateTestsForRepositories { get; set; }
+        // public Boolean GenerateTestsForRepositories { get; set; }
 
         private List<String> m_entitiesWithDataContracts;
 

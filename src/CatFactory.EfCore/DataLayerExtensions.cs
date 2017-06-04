@@ -279,10 +279,11 @@ namespace CatFactory.EfCore
                     OutputDirectory = project.OutputDirectory
                 };
 
-                if (project.Settings.GenerateTestsForRepositories)
-                {
-                    GenerateRepositoryTest(project, repositoryClassDefinition.GetTestClass());
-                }
+                // todo: add logic to generate unit tests
+                //if (project.Settings.GenerateTestsForRepositories)
+                //{
+                //    GenerateRepositoryTest(project, repositoryClassDefinition.GetTestClass());
+                //}
 
                 var interfaceDef = repositoryClassDefinition.RefactInterface();
 

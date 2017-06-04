@@ -74,24 +74,24 @@ namespace CatFactory.EfCore
 
                 if (table != null)
                 {
-                    foreach (var foreignKey in table.ForeignKeys)
+                    foreach (var fk in table.ForeignKeys)
                     {
-                        if (foreignKey.Key.Count == 1)
+                        var foreignTable = project.FindTable(fk.References);
+
+                        if (foreignTable == null)
                         {
-                            var foreignTable = project.Database.Tables.FirstOrDefault(item => item.FullName == foreignKey.References);
+                            continue;
+                        }
 
-                            if (foreignTable == null)
-                            {
-                                continue;
-                            }
-
-                            var foreignProperty = foreignKey.GetParentNavigationProperty(project, foreignTable);
+                        if (fk.Key.Count == 1)
+                        {
+                            var foreignProperty = fk.GetParentNavigationProperty(project, foreignTable);
 
                             mapMethodLines.Add(new CodeLine("entity"));
                             mapMethodLines.Add(new CodeLine(1, ".HasOne(p => p.{0})", foreignProperty.Name));
                             mapMethodLines.Add(new CodeLine(1, ".WithMany(b => b.{0})", table.GetPluralName()));
-                            mapMethodLines.Add(new CodeLine(1, ".HasForeignKey(p => {0})", String.Format("p.{0}", NamingConvention.GetPropertyName(foreignKey.Key[0]))));
-                            mapMethodLines.Add(new CodeLine(1, ".HasConstraintName(\"{0}\");", foreignKey.ConstraintName));
+                            mapMethodLines.Add(new CodeLine(1, ".HasForeignKey(p => {0})", String.Format("p.{0}", NamingConvention.GetPropertyName(fk.Key[0]))));
+                            mapMethodLines.Add(new CodeLine(1, ".HasConstraintName(\"{0}\");", fk.ConstraintName));
                             mapMethodLines.Add(new CodeLine());
                         }
                     }

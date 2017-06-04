@@ -115,7 +115,8 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store.Tdd",
             };
 
-            project.Settings.GenerateTestsForRepositories = true;
+            // todo: add logic to this feature
+            //project.Settings.GenerateTestsForRepositories = true;
 
             project.UpdateExclusions.AddRange(new String[] { "CreationUser", "CreationDateTime" });
 

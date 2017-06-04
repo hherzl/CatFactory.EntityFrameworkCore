@@ -107,7 +107,7 @@ namespace CatFactory.EfCore
                     }
                 }
             }
-            
+
             if (viewCast != null)
             {
                 foreach (var column in columns)
@@ -118,30 +118,40 @@ namespace CatFactory.EfCore
 
             if (tableCast != null)
             {
-                foreach (var foreignKey in tableCast.ForeignKeys)
+                foreach (var fk in tableCast.ForeignKeys)
                 {
-                    var foreignTable = project.FindTable(foreignKey.References);
+                    var foreignTable = project.FindTable(fk.References);
 
                     if (foreignTable == null)
                     {
                         continue;
                     }
 
-                    Properties.Add(foreignKey.GetParentNavigationProperty(project, foreignTable));
+                    Properties.Add(fk.GetParentNavigationProperty(project, foreignTable));
                 }
 
                 foreach (var child in project.Database.Tables)
                 {
+                    if (tableCast.FullName == child.FullName)
+                    {
+                        continue;
+                    }
+
                     foreach (var fk in child.ForeignKeys)
                     {
-                        if (fk.References == tableCast.FullName)
+                        if (fk.References.EndsWith(tableCast.FullName))
                         {
                             if (!Namespaces.Contains(project.Settings.NavigationPropertyEnumerableNamespace))
                             {
                                 Namespaces.Add(project.Settings.NavigationPropertyEnumerableNamespace);
                             }
 
-                            Properties.Add(project.GetChildNavigationProperty(child, fk));
+                            var navigationProperty = project.GetChildNavigationProperty(child, fk);
+
+                            if (Properties.FirstOrDefault(item => item.Name == navigationProperty.Name) == null)
+                            {
+                                Properties.Add(navigationProperty);
+                            }
                         }
                     }
                 }
