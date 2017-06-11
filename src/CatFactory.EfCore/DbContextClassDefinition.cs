@@ -23,7 +23,7 @@ namespace CatFactory.EfCore
             {
                 Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition("IOptions<AppSettings>", "appSettings"))
                 {
-                    Lines = new List<CodeLine>()
+                    Lines = new List<ILine>()
                     {
                         new CodeLine("ConnectionString = appSettings.Value.ConnectionString;"),
                     }
@@ -33,7 +33,7 @@ namespace CatFactory.EfCore
             {
                 Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition("IOptions<AppSettings>", "appSettings"), new ParameterDefinition("IEntityMapper", "entityMapper"))
                 {
-                    Lines = new List<CodeLine>()
+                    Lines = new List<ILine>()
                     {
                         new CodeLine("ConnectionString = appSettings.Value.ConnectionString;"),
                         new CodeLine("EntityMapper = entityMapper;")

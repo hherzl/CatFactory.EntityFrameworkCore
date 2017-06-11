@@ -14,7 +14,7 @@ namespace CatFactory.EfCore
 
             BaseClass = "EntityMapper";
 
-            var lines = new List<CodeLine>();
+            var lines = new List<ILine>();
 
             if (project.Settings.UseMefForEntitiesMapping)
             {

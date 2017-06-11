@@ -7,7 +7,7 @@ namespace CatFactory.EfCore
 {
     public class ViewModelClassDefinition : CSharpClassDefinition
     {
-        public ViewModelClassDefinition(IDbObject dbObject)
+        public ViewModelClassDefinition(EfCoreProject project, IDbObject dbObject)
         {
             Namespaces.Add("System");
             Namespaces.Add("System.ComponentModel");
@@ -44,6 +44,11 @@ namespace CatFactory.EfCore
                 {
                     this.AddViewModelProperty(resolver.Resolve(column.Type), column.GetPropertyName());
                 }
+            }
+
+            if (project.Settings.SimplifyDataTypes)
+            {
+                this.SimplifyDataTypes();
             }
         }
     }

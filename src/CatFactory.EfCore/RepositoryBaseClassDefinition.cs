@@ -27,7 +27,7 @@ namespace CatFactory.EfCore
 
             Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(project.Database.GetDbContextName(), "dbContext"))
             {
-                Lines = new List<CodeLine>()
+                Lines = new List<ILine>()
                 {
                     new CodeLine("DbContext = dbContext;")
                 }

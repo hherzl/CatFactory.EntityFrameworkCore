@@ -1,17 +1,30 @@
-﻿{
-  "version": "1.0.0-alpha-build29",
+{
+  "version": "1.0.0-alpha-build30",
+  "title": "CatFactory.EfCore",
+  "description": "CatFactory Ef Core",
+  "packOptions": {
+    "repository": {
+      "url": "https://github.com/hherzl/CatFactory.EfCore"
+    }
+  },
   "authors": [
     "C. Herzl"
   ],
 
   "dependencies": {
     "NETStandard.Library": "1.6.1",
-    "CatFactory.DotNetCore": "1.0.0-alpha-build35"
+    "CatFactory.DotNetCore": "1.0.0-alpha-build38"
   },
 
   "frameworks": {
-    "netstandard1.6": {
-      "imports": "dnxcore50"
+    "netcoreapp1.1": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.1.0"
+        }
+      },
+      "imports": "portable-net45+win8+wp8+wpa81"
     }
   }
 }

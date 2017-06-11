@@ -9,6 +9,8 @@ namespace CatFactory.EfCore
         {
         }
 
+        public Boolean SimplifyDataTypes { get; set; }
+
         public Boolean UseAutomaticPropertiesForEntities { get; set; } = true;
 
         public Boolean UseBackingFields { get; set; }

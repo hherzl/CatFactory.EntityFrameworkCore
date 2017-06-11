@@ -11,7 +11,7 @@ namespace CatFactory.EfCore
             {
                 var codeBuilder = new CSharpClassBuilder()
                 {
-                    ObjectDefinition = new ViewModelClassDefinition(table)
+                    ObjectDefinition = new ViewModelClassDefinition(project, table)
                     {
                         Namespace = project.GetDataLayerDataContractsNamespace(),
                     },

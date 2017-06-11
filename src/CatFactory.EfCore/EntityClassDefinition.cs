@@ -157,6 +157,11 @@ namespace CatFactory.EfCore
                 }
 
             }
+
+            if (project.Settings.SimplifyDataTypes)
+            {
+                this.SimplifyDataTypes();
+            }
         }
     }
 }
