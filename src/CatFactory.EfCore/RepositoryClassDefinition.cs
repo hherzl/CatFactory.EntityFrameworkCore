@@ -65,7 +65,7 @@ namespace CatFactory.EfCore
             {
                 returnType = dbObject.GetSingularName();
 
-                lines.Add(new CodeLine("return Paging<{0}>(pageSize, pageNumber);", dbObject.GetSingularName()));
+                lines.Add(new CodeLine("return query.Paging(pageSize, pageNumber);"));
             }
             else
             {
@@ -194,7 +194,7 @@ namespace CatFactory.EfCore
             {
                 if (tableCast.ForeignKeys.Count == 0)
                 {
-                    lines.Add(new CodeLine("return Paging<{0}>(pageSize, pageNumber);", dbObject.GetSingularName()));
+                    lines.Add(new CodeLine("return query.Paging(pageSize, pageNumber);"));
                 }
                 else
                 {
@@ -235,7 +235,7 @@ namespace CatFactory.EfCore
                         }
                     }
 
-                    lines.Add(new CodeLine("return Paging(query, pageSize, pageNumber);"));
+                    lines.Add(new CodeLine("return query.Paging(pageSize, pageNumber);"));
                 }
             }
 

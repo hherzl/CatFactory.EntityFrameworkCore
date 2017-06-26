@@ -196,6 +196,17 @@ namespace CatFactory.EfCore
             codeBuilder.CreateFile(project.GetDataLayerRepositoriesDirectory());
         }
 
+        private static void GenerateRepositoryExtensionsClassDefinition(EfCoreProject project)
+        {
+            var codeBuilder = new CSharpClassBuilder
+            {
+                ObjectDefinition = new RepositoryExtensionsClassDefinition(project),
+                OutputDirectory = project.OutputDirectory
+            };
+
+            codeBuilder.CreateFile(project.GetDataLayerRepositoriesDirectory());
+        }
+
         private static void GenerateDataContracts(EfCoreProject project)
         {
             foreach (var table in project.Database.Tables)
@@ -262,6 +273,7 @@ namespace CatFactory.EfCore
 
             GenerateRepositoryInterface(project);
             GenerateBaseRepositoryClassDefinition(project);
+            GenerateRepositoryExtensionsClassDefinition(project);
 
             foreach (var projectFeature in project.Features)
             {

@@ -49,34 +49,6 @@ namespace CatFactory.EfCore
                 }
             });
 
-            Methods.Add(new MethodDefinition(AccessModifier.Protected, "IQueryable<TEntity>", "Paging", new ParameterDefinition("Int32", "pageSize"), new ParameterDefinition("Int32", "pageNumber"))
-            {
-                GenericType = "TEntity",
-                WhereConstraints = new List<String>()
-                {
-                    "TEntity : class"
-                },
-                Lines = new List<ILine>()
-                {
-                    new CodeLine("var query = DbContext.Set<TEntity>();"),
-                    new CodeLine(),
-                    new CodeLine("return pageSize > 0 && pageNumber > 0 ? query.Skip((pageNumber - 1) * pageSize).Take(pageSize) : query;")
-                }
-            });
-
-            Methods.Add(new MethodDefinition(AccessModifier.Protected, "IQueryable<TEntity>", "Paging", new ParameterDefinition("IQueryable<TEntity>", "query"), new ParameterDefinition("Int32", "pageSize"), new ParameterDefinition("Int32", "pageNumber"))
-            {
-                GenericType = "TEntity",
-                WhereConstraints = new List<String>()
-                {
-                    "TEntity : class"
-                },
-                Lines = new List<ILine>()
-                {
-                    new CodeLine("return pageSize > 0 && pageNumber > 0 ? query.Skip((pageNumber - 1) * pageSize).Take(pageSize) : query;")
-                }
-            });
-
             Methods.Add(GetAddMethod(project));
 
             Methods.Add(GetUpdateMethod(project));
