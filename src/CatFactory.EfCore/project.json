@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-alpha-build31",
+  "version": "1.0.0-alpha-build32",
   "title": "CatFactory.EfCore",
   "description": "CatFactory Ef Core",
   "packOptions": {
@@ -13,7 +13,7 @@
 
   "dependencies": {
     "NETStandard.Library": "1.6.1",
-    "CatFactory.DotNetCore": "1.0.0-alpha-build39"
+    "CatFactory.DotNetCore": "1.0.0-alpha-build40"
   },
 
   "frameworks": {
