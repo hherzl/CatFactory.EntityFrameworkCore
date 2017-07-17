@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using CatFactory.Mapping;
+using CatFactory.SqlServer;
 
 namespace CatFactory.EfCore
 {

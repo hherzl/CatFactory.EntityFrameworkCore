@@ -5,6 +5,7 @@ using CatFactory.CodeFactory;
 using CatFactory.DotNetCore;
 using CatFactory.Mapping;
 using CatFactory.OOP;
+using CatFactory.SqlServer;
 
 namespace CatFactory.EfCore
 {
