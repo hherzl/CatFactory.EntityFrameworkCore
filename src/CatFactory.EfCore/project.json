@@ -1,7 +1,7 @@
 {
-  "version": "2.0.0-alpha-build00",
+  "version": "2.0.0-alpha-build01",
   "title": "CatFactory.EfCore",
-  "description": "CatFactory EF Core",
+  "description": "CatFactory package for EF Core code generation",
   "packOptions": {
     "repository": {
       "url": "https://github.com/hherzl/CatFactory.EfCore"

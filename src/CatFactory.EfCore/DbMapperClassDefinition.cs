@@ -21,10 +21,22 @@ namespace CatFactory.EfCore
                 Namespaces.Add("System.Composition.Hosting");
                 Namespaces.Add("System.Reflection");
 
-                lines.Add(new CodeLine("var configuration = new ContainerConfiguration().WithAssembly(typeof(StoreDbContext).GetTypeInfo().Assembly);"));
+                lines.Add(new CommentLine("// Get current assembly"));
+                lines.Add(new CodeLine("var currentAssembly = typeof(StoreDbContext).GetTypeInfo().Assembly;"));
                 lines.Add(new CodeLine());
+
+                lines.Add(new CommentLine("// Create assemblies array"));
+                lines.Add(new CodeLine("var assemblies = new[] {{ currentAssembly }};"));
+                lines.Add(new CodeLine());
+
+                lines.Add(new CommentLine("// Get configuration for container from current assembly"));
+                lines.Add(new CodeLine("var configuration = new ContainerConfiguration().WithAssembly(currentAssembly);"));
+                lines.Add(new CodeLine());
+
+                lines.Add(new CommentLine("// Create container for exports"));
                 lines.Add(new CodeLine("using (var container = configuration.CreateContainer())"));
                 lines.Add(new CodeLine("{{"));
+                lines.Add(new CommentLine(1, "// Get all definitions that implement IEntityMap interface"));
                 lines.Add(new CodeLine(1, "Mappings = container.GetExports<IEntityMap>();"));
                 lines.Add(new CodeLine("}}"));
             }

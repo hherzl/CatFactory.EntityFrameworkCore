@@ -27,16 +27,16 @@ namespace CatFactory.EfCore
 
             var mapMethodLines = new List<ILine>();
 
-            mapMethodLines.Add(new CodeLine("var entity = modelBuilder.Entity<{0}>();", mappedObject.GetSingularName()));
-            mapMethodLines.Add(new CodeLine());
+            mapMethodLines.Add(new CodeLine("modelBuilder.Entity<{0}>(entity =>", mappedObject.GetSingularName()));
+            mapMethodLines.Add(new CodeLine("{{"));
 
             if (String.IsNullOrEmpty(mappedObject.Schema))
             {
-                mapMethodLines.Add(new CodeLine("entity.ToTable(\"{0}\");", mappedObject.Name));
+                mapMethodLines.Add(new CodeLine(1, "entity.ToTable(\"{0}\");", mappedObject.Name));
             }
             else
             {
-                mapMethodLines.Add(new CodeLine("entity.ToTable(\"{0}\", \"{1}\");", mappedObject.Name, mappedObject.Schema));
+                mapMethodLines.Add(new CodeLine(1, "entity.ToTable(\"{0}\", \"{1}\");", mappedObject.Name, mappedObject.Schema));
             }
 
             mapMethodLines.Add(new CodeLine());
@@ -49,26 +49,26 @@ namespace CatFactory.EfCore
             {
                 if (table.PrimaryKey == null || table.PrimaryKey.Key.Count == 0)
                 {
-                    mapMethodLines.Add(new CodeLine("entity.HasKey(p => new {{ {0} }});", String.Join(", ", table.Columns.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item.Name))))));
+                    mapMethodLines.Add(new CodeLine(1, "entity.HasKey(p => new {{ {0} }});", String.Join(", ", table.Columns.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item.Name))))));
                     mapMethodLines.Add(new CodeLine());
                 }
                 else
                 {
                     if (table.PrimaryKey.Key.Count == 1)
                     {
-                        mapMethodLines.Add(new CodeLine("entity.HasKey(p => p.{0});", NamingConvention.GetPropertyName(table.PrimaryKey.Key[0])));
+                        mapMethodLines.Add(new CodeLine(1, "entity.HasKey(p => p.{0});", NamingConvention.GetPropertyName(table.PrimaryKey.Key[0])));
                         mapMethodLines.Add(new CodeLine());
                     }
                     else if (table.PrimaryKey.Key.Count > 1)
                     {
-                        mapMethodLines.Add(new CodeLine("entity.HasKey(p => new {{ {0} }});", String.Join(", ", table.PrimaryKey.Key.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item))))));
+                        mapMethodLines.Add(new CodeLine(1, "entity.HasKey(p => new {{ {0} }});", String.Join(", ", table.PrimaryKey.Key.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item))))));
                         mapMethodLines.Add(new CodeLine());
                     }
                 }
 
                 if (table.Identity != null)
                 {
-                    mapMethodLines.Add(new CodeLine("entity.Property(p => p.{0}).UseSqlServerIdentityColumn();", NamingConvention.GetPropertyName(table.Identity.Name)));
+                    mapMethodLines.Add(new CodeLine(1, "entity.Property(p => p.{0}).UseSqlServerIdentityColumn();", NamingConvention.GetPropertyName(table.Identity.Name)));
                     mapMethodLines.Add(new CodeLine());
                 }
 
@@ -87,24 +87,30 @@ namespace CatFactory.EfCore
                         {
                             var foreignProperty = fk.GetParentNavigationProperty(project, foreignTable);
 
-                            mapMethodLines.Add(new CodeLine("entity"));
-                            mapMethodLines.Add(new CodeLine(1, ".HasOne(p => p.{0})", foreignProperty.Name));
-                            mapMethodLines.Add(new CodeLine(1, ".WithMany(b => b.{0})", table.GetPluralName()));
-                            mapMethodLines.Add(new CodeLine(1, ".HasForeignKey(p => {0})", String.Format("p.{0}", NamingConvention.GetPropertyName(fk.Key[0]))));
-                            mapMethodLines.Add(new CodeLine(1, ".HasConstraintName(\"{0}\");", fk.ConstraintName));
+                            mapMethodLines.Add(new CodeLine(1, "entity"));
+                            mapMethodLines.Add(new CodeLine(2, ".HasOne(p => p.{0})", foreignProperty.Name));
+                            mapMethodLines.Add(new CodeLine(2, ".WithMany(b => b.{0})", table.GetPluralName()));
+                            mapMethodLines.Add(new CodeLine(2, ".HasForeignKey(p => {0})", String.Format("p.{0}", NamingConvention.GetPropertyName(fk.Key[0]))));
+                            mapMethodLines.Add(new CodeLine(2, ".HasConstraintName(\"{0}\");", fk.ConstraintName));
                             mapMethodLines.Add(new CodeLine());
                         }
                     }
 
                     foreach (var unique in table.Uniques)
                     {
+                        mapMethodLines.Add(new CodeLine(1, "entity"));
+
                         if (unique.Key.Count == 1)
                         {
-                            mapMethodLines.Add(new CodeLine("entity"));
-                            mapMethodLines.Add(new CodeLine(1, ".HasAlternateKey(p => new {{ {0} }})", String.Join(", ", unique.Key.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item))))));
-                            mapMethodLines.Add(new CodeLine(1, ".HasName(\"{0}\");", unique.ConstraintName));
-                            mapMethodLines.Add(new CodeLine());
+                            mapMethodLines.Add(new CodeLine(2, ".HasAlternateKey(p => new {{ {0} }})", String.Join(", ", unique.Key.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item))))));
                         }
+                        else
+                        {
+                            mapMethodLines.Add(new CodeLine(2, ".HasAlternateKey(p => new {{ {0} }})", String.Join(", ", table.PrimaryKey.Key.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item))))));
+                        }
+
+                        mapMethodLines.Add(new CodeLine(2, ".HasName(\"{0}\");", unique.ConstraintName));
+                        mapMethodLines.Add(new CodeLine());
                     }
                 }
 
@@ -117,7 +123,7 @@ namespace CatFactory.EfCore
             {
                 columns = view.Columns;
 
-                mapMethodLines.Add(new CodeLine("entity.HasKey(p => new {{ {0} }});", String.Join(", ", columns.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item.Name))))));
+                mapMethodLines.Add(new CodeLine(1, "entity.HasKey(p => new {{ {0} }});", String.Join(", ", columns.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item.Name))))));
                 mapMethodLines.Add(new CodeLine());
             }
 
@@ -125,18 +131,18 @@ namespace CatFactory.EfCore
             {
                 var column = columns[i];
 
-                if (!String.IsNullOrEmpty(project.Settings.ConcurrencyToken) && column.Name == project.Settings.ConcurrencyToken)
+                if (!String.IsNullOrEmpty(project.Settings.ConcurrencyToken) && String.Compare(column.Name, project.Settings.ConcurrencyToken) == 0)
                 {
-                    mapMethodLines.Add(new CodeLine("entity"));
-                    mapMethodLines.Add(new CodeLine(1, ".Property(p => p.{0})", column.GetPropertyName()));
-                    mapMethodLines.Add(new CodeLine(1, ".ValueGeneratedOnAddOrUpdate()"));
-                    mapMethodLines.Add(new CodeLine(1, ".IsConcurrencyToken();"));
+                    mapMethodLines.Add(new CodeLine(1, "entity"));
+                    mapMethodLines.Add(new CodeLine(2, ".Property(p => p.{0})", column.GetPropertyName()));
+                    mapMethodLines.Add(new CodeLine(2, ".ValueGeneratedOnAddOrUpdate()"));
+                    mapMethodLines.Add(new CodeLine(2, ".IsConcurrencyToken();"));
                 }
                 else
                 {
                     var lines = new List<String>()
                     {
-                        String.Format("entity.Property(p => p.{0})", column.GetPropertyName())
+                        String.Format("entity.Property(p => p.{0})" , column.GetPropertyName())
                     };
 
                     if (project.Settings.UseBackingFields)
@@ -153,18 +159,17 @@ namespace CatFactory.EfCore
                     {
                         lines.Add(column.Length == 0 ? String.Format("HasColumnType(\"{0}(max)\")", column.Type) : String.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
                     }
+                    else if (column.IsDecimal())
+                    {
+                        lines.Add(String.Format("HasColumnType(\"{0}({1}, {2})\")", column.Type, column.Prec, column.Scale));
+                    }
+                    else if (column.IsDouble() || column.IsSingle())
+                    {
+                        lines.Add(String.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Prec));
+                    }
                     else
                     {
-                        switch (column.Type)
-                        {
-                            case "decimal":
-                                lines.Add(String.Format("HasColumnType(\"{0}({1}, {2})\")", column.Type, column.Prec, column.Scale));
-                                break;
-
-                            default:
-                                lines.Add(String.Format("HasColumnType(\"{0}\")", column.Type));
-                                break;
-                        }
+                        lines.Add(String.Format("HasColumnType(\"{0}\")", column.Type));
                     }
 
                     if (!column.Nullable)
@@ -172,7 +177,7 @@ namespace CatFactory.EfCore
                         lines.Add("IsRequired()");
                     }
 
-                    mapMethodLines.Add(new CodeLine("{0};", String.Join(".", lines)));
+                    mapMethodLines.Add(new CodeLine(1, "{0};", String.Join(".", lines)));
 
                     if (i < columns.Count - 1)
                     {
@@ -180,7 +185,9 @@ namespace CatFactory.EfCore
                     }
                 }
             }
-            
+
+            mapMethodLines.Add(new CodeLine("}});"));
+
             var mapMethod = new MethodDefinition("void", "Map", new ParameterDefinition("ModelBuilder", "modelBuilder"))
             {
                 Lines = mapMethodLines
