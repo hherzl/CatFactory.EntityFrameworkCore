@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0-alpha-build02",
+  "version": "2.0.0-alpha-build03",
   "title": "CatFactory.EfCore",
   "description": "CatFactory package for EF Core code generation",
   "packOptions": {

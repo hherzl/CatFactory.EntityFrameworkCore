@@ -43,7 +43,8 @@ namespace CatFactory.EfCore
             return new PropertyDefinition(propertyType, propertyName)
             {
                 IsVirtual = project.Settings.DeclareNavigationPropertiesAsVirtual,
-                Attributes = project.Settings.UseDataAnnotations ? new List<MetadataAttribute>() { new MetadataAttribute("ForeignKey", String.Format("\"{0}\"", String.Join(",", fk.Key))) } : null
+                Attributes = project.Settings.UseDataAnnotations ?
+                    new List<MetadataAttribute>() { new MetadataAttribute("ForeignKey", String.Format("\"{0}\"", String.Join(",", fk.Key))) } : null
             };
         }
     }

@@ -9,9 +9,9 @@ namespace CatFactory.EfCore
     {
         private static void GenerateEntityInterface(EfCoreProject project)
         {
-            var codeBuilder = new CSharpInterfaceBuilder()
+            var codeBuilder = new CSharpInterfaceBuilder
             {
-                ObjectDefinition = new EntityInterfaceDefinition()
+                ObjectDefinition = new EntityInterfaceDefinition
                 {
                     Namespace = project.GetEntityLayerNamespace()
                 },
@@ -37,7 +37,7 @@ namespace CatFactory.EfCore
 
             foreach (var table in project.Database.Tables)
             {
-                var codeBuilder = new CSharpClassBuilder()
+                var codeBuilder = new CSharpClassBuilder
                 {
                     ObjectDefinition = new EntityClassDefinition(table, project)
                     {
@@ -95,7 +95,7 @@ namespace CatFactory.EfCore
 
             foreach (var view in project.Database.Views)
             {
-                var codeBuilder = new CSharpClassBuilder()
+                var codeBuilder = new CSharpClassBuilder
                 {
                     ObjectDefinition = new EntityClassDefinition(view, project)
                     {
