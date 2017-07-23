@@ -67,7 +67,7 @@ namespace CatFactory.EfCore
                     },
                     new CSharpClassBuilder()
                     {
-                        ObjectDefinition = new DbMapperClassDefinition(project)
+                        ObjectDefinition = new DatabaseMapperClassDefinition(project)
                         {
                             Namespace = project.GetDataLayerMappingNamespace()
                         },

@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0-alpha-build01",
+  "version": "2.0.0-alpha-build02",
   "title": "CatFactory.EfCore",
   "description": "CatFactory package for EF Core code generation",
   "packOptions": {
@@ -14,7 +14,7 @@
   "dependencies": {
     "NETStandard.Library": "1.6.1",
     "CatFactory.SqlServer": "2.0.0-alpha-build00",
-    "CatFactory.DotNetCore": "2.0.0-alpha-build00"
+    "CatFactory.DotNetCore": "2.0.0-alpha-build01"
   },
 
   "frameworks": {

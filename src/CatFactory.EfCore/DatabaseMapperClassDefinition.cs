@@ -6,9 +6,9 @@ using CatFactory.OOP;
 
 namespace CatFactory.EfCore
 {
-    public class DbMapperClassDefinition : CSharpClassDefinition
+    public class DatabaseMapperClassDefinition : CSharpClassDefinition
     {
-        public DbMapperClassDefinition(EfCoreProject project)
+        public DatabaseMapperClassDefinition(EfCoreProject project)
         {
             Name = project.Database.GetDbEntityMapperName();
 
@@ -23,10 +23,6 @@ namespace CatFactory.EfCore
 
                 lines.Add(new CommentLine("// Get current assembly"));
                 lines.Add(new CodeLine("var currentAssembly = typeof(StoreDbContext).GetTypeInfo().Assembly;"));
-                lines.Add(new CodeLine());
-
-                lines.Add(new CommentLine("// Create assemblies array"));
-                lines.Add(new CodeLine("var assemblies = new[] {{ currentAssembly }};"));
                 lines.Add(new CodeLine());
 
                 lines.Add(new CommentLine("// Get configuration for container from current assembly"));
