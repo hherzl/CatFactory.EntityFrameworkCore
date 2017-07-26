@@ -39,7 +39,7 @@ namespace CatFactory.EfCore
         {
             if (!project.Settings.UseDataAnnotations)
             {
-                var codeBuilders = new List<DotNetCodeBuilder>()
+                var codeBuilders = new List<CSharpCodeBuilder>()
                 {
                     new CSharpInterfaceBuilder
                     {
@@ -156,7 +156,7 @@ namespace CatFactory.EfCore
 
             codeBuilder.CreateFile(project.GetDataLayerContractsDirectory());
         }
-        
+
         private static void GenerateRepositoryTest(EfCoreProject project, CSharpClassDefinition classDefinition)
         {
             var codeBuilder = new CSharpClassBuilder
@@ -167,7 +167,7 @@ namespace CatFactory.EfCore
 
             codeBuilder.CreateFile(project.GetDataLayerRepositoriesDirectory());
         }
-        
+
         private static void GenerateRepositoryInterface(EfCoreProject project)
         {
             var codeBuilder = new CSharpInterfaceBuilder
@@ -218,7 +218,7 @@ namespace CatFactory.EfCore
 
                 var resolver = new ClrTypeResolver() as ITypeResolver;
 
-                var classDef = new CSharpClassDefinition()
+                var classDef = new CSharpClassDefinition
                 {
                     Namespaces = new List<String>() { "System" },
                     Namespace = project.GetDataLayerDataContractsNamespace(),
@@ -290,12 +290,6 @@ namespace CatFactory.EfCore
                     ObjectDefinition = repositoryClassDefinition,
                     OutputDirectory = project.OutputDirectory
                 };
-
-                // todo: add logic to generate unit tests
-                //if (project.Settings.GenerateTestsForRepositories)
-                //{
-                //    GenerateRepositoryTest(project, repositoryClassDefinition.GetTestClass());
-                //}
 
                 var interfaceDef = repositoryClassDefinition.RefactInterface();
 

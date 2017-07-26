@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace CatFactory.EfCore
 {
-    public class EfCoreProjectSettings
+    public class EfCoreProjectSettings : ProjectSettings
     {
         public EfCoreProjectSettings()
         {
