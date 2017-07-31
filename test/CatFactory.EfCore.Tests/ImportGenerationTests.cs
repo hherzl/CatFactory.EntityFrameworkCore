@@ -11,14 +11,14 @@ namespace CatFactory.EfCore.Tests
         public void ProjectGenerationFromExistingDatabaseTest()
         {
             // Import database
-            var db = SqlServerDatabaseFactory
+            var database = SqlServerDatabaseFactory
                 .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Store;integrated security=yes;", "dbo.sysdiagrams");
 
             // Create instance of Ef Core Project
-            var project = new EfCoreProject()
+            var project = new EfCoreProject
             {
                 Name = "Store",
-                Database = db,
+                Database = database,
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store"
             };
 
@@ -43,21 +43,29 @@ namespace CatFactory.EfCore.Tests
         [Fact]
         public void ProjectGenerationWithModifiedNamespacesFromExistingDatabaseTest()
         {
-            var db = SqlServerDatabaseFactory
+            // Import database
+            var database = SqlServerDatabaseFactory
                 .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
 
+            // Create instance of Ef Core Project
             var project = new EfCoreProject
             {
                 Name = "Northwind",
-                Database = db,
+                Database = database,
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\ModifiedNorthwind"
             };
 
+            // Set custom namespaces
             project.Namespaces.EntityLayer = "EL";
             project.Namespaces.DataLayer = "DL";
+            project.Namespaces.Contracts = "Interfaces";
+            project.Namespaces.DataContracts = "Dtos";
+            project.Namespaces.Repositories = "Implementations";
 
+            // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
 
+            // Generate code =D
             project
                 .GenerateEntityLayer()
                 .GenerateDataLayer();
@@ -66,13 +74,13 @@ namespace CatFactory.EfCore.Tests
         [Fact]
         public void ProjectGenerationForNorthwindDatabaseTest()
         {
-            var db = SqlServerDatabaseFactory
+            var database = SqlServerDatabaseFactory
                 .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
 
             var project = new EfCoreProject
             {
                 Name = "Northwind",
-                Database = db,
+                Database = database,
                 OutputDirectory = "C:\\VsCode\\Northwind\\src"
             };
 
@@ -95,12 +103,12 @@ namespace CatFactory.EfCore.Tests
                 }
             };
 
-            var db = factory.Import();
+            var database = factory.Import();
 
             var project = new EfCoreProject
             {
                 Name = "AdventureWorks",
-                Database = db,
+                Database = database,
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\AdventureWorks"
             };
 

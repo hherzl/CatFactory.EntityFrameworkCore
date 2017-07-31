@@ -8,24 +8,34 @@ namespace CatFactory.EfCore
 {
     public class RepositoryBaseClassDefinition : CSharpClassDefinition
     {
+        
         public RepositoryBaseClassDefinition(EfCoreProject project)
+        {
+            Project = project;
+
+            Init();
+        }
+
+        public EfCoreProject Project { get; }
+
+        public override void Init()
         {
             Namespaces.Add("System");
             Namespaces.Add("System.Linq");
             Namespaces.Add("System.Threading.Tasks");
             Namespaces.Add("Microsoft.EntityFrameworkCore");
 
-            if (project.Settings.AuditEntity != null)
+            if (Project.Settings.AuditEntity != null)
             {
-                Namespaces.Add(project.GetEntityLayerNamespace());
+                Namespaces.Add(Project.GetEntityLayerNamespace());
             }
 
             Name = "Repository";
 
             Fields.Add(new FieldDefinition(AccessModifier.Protected, "Boolean", "Disposed"));
-            Fields.Add(new FieldDefinition(AccessModifier.Protected, project.Database.GetDbContextName(), "DbContext"));
+            Fields.Add(new FieldDefinition(AccessModifier.Protected, Project.Database.GetDbContextName(), "DbContext"));
 
-            Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(project.Database.GetDbContextName(), "dbContext"))
+            Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(Project.Database.GetDbContextName(), "dbContext"))
             {
                 Lines = new List<ILine>()
                 {
@@ -49,9 +59,9 @@ namespace CatFactory.EfCore
                 }
             });
 
-            Methods.Add(GetAddMethod(project));
+            Methods.Add(GetAddMethod(Project));
 
-            Methods.Add(GetUpdateMethod(project));
+            Methods.Add(GetUpdateMethod(Project));
 
             Methods.Add(new MethodDefinition(AccessModifier.Protected, "void", "Remove", new ParameterDefinition("TEntity", "entity"))
             {

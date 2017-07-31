@@ -7,6 +7,11 @@ namespace CatFactory.EfCore
     {
         public AppSettingsClassDefinition()
         {
+            Init();
+        }
+
+        public override void Init()
+        {
             Namespaces.Add("System");
 
             Name = "AppSettings";

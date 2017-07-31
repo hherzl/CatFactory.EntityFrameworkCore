@@ -246,7 +246,7 @@ namespace CatFactory.EfCore.Tests
                     db.DbObjects.Add(new DbObject { Schema = item.Schema, Name = item.Name, Type = "VIEW" });
                 }
 
-                db.AddPrimaryKeyToTables();
+                db.SetPrimaryKeyToTables();
 
                 db.LinkTables();
 

@@ -13,8 +13,6 @@ namespace CatFactory.EfCore
 
         public Boolean UseAutomaticPropertiesForEntities { get; set; } = true;
 
-        public Boolean UseBackingFields { get; set; }
-
         public Boolean EnableDataBindings { get; set; }
 
         public Boolean UseDataAnnotations { get; set; }
@@ -35,6 +33,7 @@ namespace CatFactory.EfCore
 
         public AuditEntity AuditEntity { get; set; }
 
+        private List<String> m_backingFields;
         private List<String> m_entitiesWithDataContracts;
 
         public List<String> EntitiesWithDataContracts
@@ -46,6 +45,18 @@ namespace CatFactory.EfCore
             set
             {
                 m_entitiesWithDataContracts = value;
+            }
+        }
+
+        public List<String> BackingFields
+        {
+            get
+            {
+                return m_backingFields ?? (m_backingFields = new List<String>());
+            }
+            set
+            {
+                m_backingFields = value;
             }
         }
     }

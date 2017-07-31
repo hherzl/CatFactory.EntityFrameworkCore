@@ -8,6 +8,9 @@ namespace CatFactory.EfCore
 {
     public static class ProjectExtensions
     {
+        public static EfCoreProject GetProject(this ProjectFeature projectFeature)
+            => projectFeature.Project as EfCoreProject;
+
         public static String GetEntityLayerDirectory(this EfCoreProject project)
             => Path.Combine(project.OutputDirectory, project.Namespaces.EntityLayer);
 
@@ -43,8 +46,7 @@ namespace CatFactory.EfCore
             return new PropertyDefinition(propertyType, propertyName)
             {
                 IsVirtual = project.Settings.DeclareNavigationPropertiesAsVirtual,
-                Attributes = project.Settings.UseDataAnnotations ?
-                    new List<MetadataAttribute>() { new MetadataAttribute("ForeignKey", String.Format("\"{0}\"", String.Join(",", fk.Key))) } : null
+                Attributes = project.Settings.UseDataAnnotations ? new List<MetadataAttribute>() { new MetadataAttribute("ForeignKey", String.Format("\"{0}\"", String.Join(",", fk.Key))) } : null
             };
         }
     }

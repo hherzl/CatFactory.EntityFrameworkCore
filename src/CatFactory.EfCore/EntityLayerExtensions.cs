@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using CatFactory.DotNetCore;
 using CatFactory.OOP;
 
@@ -11,10 +10,7 @@ namespace CatFactory.EfCore
         {
             var codeBuilder = new CSharpInterfaceBuilder
             {
-                ObjectDefinition = new EntityInterfaceDefinition
-                {
-                    Namespace = project.GetEntityLayerNamespace()
-                },
+                ObjectDefinition = new EntityInterfaceDefinition(project),
                 OutputDirectory = project.OutputDirectory
             };
 
@@ -22,10 +18,7 @@ namespace CatFactory.EfCore
 
             if (project.Settings.AuditEntity != null)
             {
-                codeBuilder.ObjectDefinition = new AuditEntityInterfaceDefinition(project)
-                {
-                    Namespace = project.GetEntityLayerNamespace(),
-                };
+                codeBuilder.ObjectDefinition = new AuditEntityInterfaceDefinition(project);
 
                 codeBuilder.CreateFile(project.GetEntityLayerDirectory());
             }
@@ -39,22 +32,13 @@ namespace CatFactory.EfCore
             {
                 var codeBuilder = new CSharpClassBuilder
                 {
-                    ObjectDefinition = new EntityClassDefinition(table, project)
-                    {
-                        Namespace = project.GetEntityLayerNamespace(),
-                    },
+                    ObjectDefinition = new EntityClassDefinition(table, project),
                     OutputDirectory = project.OutputDirectory
                 };
 
                 if (project.Settings.UseDataAnnotations)
                 {
-                    codeBuilder.ObjectDefinition.Attributes.Add(new MetadataAttribute("Table", String.Format("\"{0}\"", table.Name))
-                    {
-                        Sets = new List<MetadataAttributeSet>()
-                        {
-                            new MetadataAttributeSet("Schema", String.Format("\"{0}\"", table.Schema))
-                        }
-                    });
+                    codeBuilder.ObjectDefinition.AddTableAttribute(table);
 
                     for (var i = 0; i < table.Columns.Count; i++)
                     {
@@ -97,10 +81,7 @@ namespace CatFactory.EfCore
             {
                 var codeBuilder = new CSharpClassBuilder
                 {
-                    ObjectDefinition = new EntityClassDefinition(view, project)
-                    {
-                        Namespace = project.GetEntityLayerNamespace()
-                    },
+                    ObjectDefinition = new EntityClassDefinition(view, project),
                     OutputDirectory = project.OutputDirectory
                 };
 

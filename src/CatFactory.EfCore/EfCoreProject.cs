@@ -35,14 +35,12 @@ namespace CatFactory.EfCore
                     dbObjects.AddRange(Database.GetTables().Where(t => t.Schema == item));
                     dbObjects.AddRange(Database.GetViews().Where(v => v.Schema == item));
 
-                    return new ProjectFeature(item, dbObjects, Database);
+                    return new ProjectFeature(item, dbObjects)
+                    {
+                        Project = this
+                    };
                 })
                 .ToList();
-        }
-
-        public override ITable FindTable(string fullName)
-        {
-            return Database.Tables.FirstOrDefault(item => String.Format("{0}.{1}", Database.Name, item.FullName) == fullName);
         }
 
         private ProjectNamespaces m_namespaces;

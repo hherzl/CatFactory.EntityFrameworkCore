@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using CatFactory.CodeFactory;
+using CatFactory.Collections;
 using CatFactory.DotNetCore;
 using CatFactory.Mapping;
 using CatFactory.OOP;
@@ -12,6 +13,18 @@ namespace CatFactory.EfCore
     {
         public EntityMapClassDefinition(IDbObject mappedObject, EfCoreProject project)
         {
+            this.mappedObject = mappedObject;
+            this.project = project;
+            
+            Init();
+        }
+
+        public IDbObject mappedObject { get; }
+
+        public EfCoreProject project { get; }
+
+        public override void Init()
+        {
             if (project.Settings.UseMefForEntitiesMapping)
             {
                 Namespaces.Add("System.Composition");
@@ -20,6 +33,17 @@ namespace CatFactory.EfCore
             }
 
             Namespaces.Add("Microsoft.EntityFrameworkCore");
+
+            if (mappedObject.HasDefaultSchema())
+            {
+                Namespaces.AddUnique(project.GetEntityLayerNamespace());
+            }
+            else
+            {
+                Namespaces.AddUnique(project.GetEntityLayerNamespace(mappedObject.Schema));
+            }
+
+            Namespace = project.GetDataLayerMappingNamespace();
 
             Name = mappedObject.GetMapName();
 
@@ -76,14 +100,18 @@ namespace CatFactory.EfCore
                 {
                     foreach (var fk in table.ForeignKeys)
                     {
-                        var foreignTable = project.FindTable(fk.References);
+                        var foreignTable = project.Database.FindTableByFullName(fk.References);
 
                         if (foreignTable == null)
                         {
                             continue;
                         }
 
-                        if (fk.Key.Count == 1)
+                        if (fk.Key.Count == 0)
+                        {
+                            continue;
+                        }
+                        else if (fk.Key.Count == 1)
                         {
                             var foreignProperty = fk.GetParentNavigationProperty(project, foreignTable);
 
@@ -93,6 +121,10 @@ namespace CatFactory.EfCore
                             mapMethodLines.Add(new CodeLine(2, ".HasForeignKey(p => {0})", String.Format("p.{0}", NamingConvention.GetPropertyName(fk.Key[0]))));
                             mapMethodLines.Add(new CodeLine(2, ".HasConstraintName(\"{0}\");", fk.ConstraintName));
                             mapMethodLines.Add(new CodeLine());
+                        }
+                        else
+                        {
+                            // todo: add logic for key with multiple columns
                         }
                     }
 
@@ -145,9 +177,12 @@ namespace CatFactory.EfCore
                         String.Format("entity.Property(p => p.{0})" , column.GetPropertyName())
                     };
 
-                    if (project.Settings.UseBackingFields)
+                    if (table != null)
                     {
-                        lines.Add(String.Format("HasField(\"{0}\")", NamingConvention.GetFieldName(column.GetPropertyName())));
+                        if (project.Settings.BackingFields.Contains(table.GetFullColumnName(column)))
+                        {
+                            lines.Add(String.Format("HasField(\"{0}\")", NamingConvention.GetFieldName(column.GetPropertyName())));
+                        }
                     }
 
                     if (String.Compare(column.Name, column.GetPropertyName()) != 0)

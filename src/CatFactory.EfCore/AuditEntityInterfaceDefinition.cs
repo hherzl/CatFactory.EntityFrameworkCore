@@ -14,6 +14,7 @@ namespace CatFactory.EfCore
 
             Namespaces.Add("System");
 
+            Namespace = project.GetEntityLayerNamespace();
             Name = "IAuditEntity";
 
             Implements.Add("IEntity");

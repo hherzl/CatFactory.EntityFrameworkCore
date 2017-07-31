@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using CatFactory.CodeFactory;
 using CatFactory.DotNetCore;
 using CatFactory.Mapping;
@@ -59,8 +60,11 @@ namespace CatFactory.EfCore
         public static String GetDbEntityMapperName(this Database db)
             => namingConvention.GetClassName(String.Format("{0}EntityMapper", db.Name));
 
-        public static String GetEntityLayerNamespace(this EfCoreProject project)
-            => namingConvention.GetClassName(String.Format("{0}.{1}", project.Name, project.Namespaces.EntityLayer));
+        public static String GetEntityLayerNamespace(this Project project)
+            => namingConvention.GetClassName(String.Format("{0}.{1}", project.Name, (project as EfCoreProject).Namespaces.EntityLayer));
+
+        public static String GetEntityLayerNamespace(this EfCoreProject project, String ns)
+            => String.Join(".", project.Name, project.Namespaces.EntityLayer, ns);
 
         public static String GetDataLayerNamespace(this EfCoreProject project)
             => namingConvention.GetClassName(String.Format("{0}.{1}", project.Name, project.Namespaces.DataLayer));
@@ -85,5 +89,23 @@ namespace CatFactory.EfCore
 
         public static String GetBusinessLayerResponsesNamespace(this EfCoreProject project)
             => namingConvention.GetClassName(String.Join(".", project.Name, project.Namespaces.BusinessLayer, project.Namespaces.Responses));
+
+        public static String GetGetAllMethodName(this IDbObject dbObject)
+            => String.Format("Get{0}", dbObject.GetPluralName());
+
+        public static String GetGetByUniqueMethodName(this IDbObject dbObject, Unique unique, ICodeNamingConvention namingConvention)
+            => String.Format("Get{0}By{1}Async", dbObject.GetSingularName(), String.Join("And", unique.Key.Select(item => namingConvention.GetPropertyName(item))));
+
+        public static String GetGetMethodName(this IDbObject dbObject)
+            => String.Format("Get{0}Async", dbObject.GetSingularName());
+
+        public static String GetAddMethodName(this IDbObject dbObject)
+            => String.Format("Add{0}Async", dbObject.GetSingularName());
+
+        public static String GetUpdateMethodName(this IDbObject dbObject)
+            => String.Format("Update{0}Async", dbObject.GetSingularName());
+
+        public static String GetRemoveMethodName(this IDbObject dbObject)
+            => String.Format("Remove{0}Async", dbObject.GetSingularName());
     }
 }

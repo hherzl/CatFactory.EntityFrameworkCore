@@ -90,14 +90,9 @@ namespace CatFactory.EfCore
                 {
                     var codeBuilder = new CSharpClassBuilder
                     {
-                        ObjectDefinition = new EntityMapClassDefinition(table, project)
-                        {
-                            Namespace = project.GetDataLayerMappingNamespace()
-                        },
+                        ObjectDefinition = new EntityMapClassDefinition(table, project),
                         OutputDirectory = project.OutputDirectory
                     };
-
-                    codeBuilder.ObjectDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
 
                     codeBuilder.CreateFile(project.GetDataLayerMappingDirectory());
                 }
@@ -106,14 +101,9 @@ namespace CatFactory.EfCore
                 {
                     var codeBuilder = new CSharpClassBuilder
                     {
-                        ObjectDefinition = new EntityMapClassDefinition(view, project)
-                        {
-                            Namespace = project.GetDataLayerMappingNamespace()
-                        },
+                        ObjectDefinition = new EntityMapClassDefinition(view, project),
                         OutputDirectory = project.OutputDirectory
                     };
-
-                    codeBuilder.ObjectDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
 
                     codeBuilder.CreateFile(project.GetDataLayerMappingDirectory());
                 }
@@ -172,10 +162,7 @@ namespace CatFactory.EfCore
         {
             var codeBuilder = new CSharpInterfaceBuilder
             {
-                ObjectDefinition = new IRepositoryInterfaceDefinition
-                {
-                    Namespace = project.GetDataLayerContractsNamespace()
-                },
+                ObjectDefinition = new IRepositoryInterfaceDefinition(project),
                 OutputDirectory = project.OutputDirectory
             };
 
@@ -218,7 +205,7 @@ namespace CatFactory.EfCore
 
                 var resolver = new ClrTypeResolver() as ITypeResolver;
 
-                var classDef = new CSharpClassDefinition
+                var classDefinition = new CSharpClassDefinition
                 {
                     Namespaces = new List<String>() { "System" },
                     Namespace = project.GetDataLayerDataContractsNamespace(),
@@ -229,12 +216,12 @@ namespace CatFactory.EfCore
                 {
                     var propertyName = column.GetPropertyName();
 
-                    classDef.Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), propertyName));
+                    classDefinition.Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), propertyName));
                 }
 
                 foreach (var foreignKey in table.ForeignKeys)
                 {
-                    var foreignTable = project.FindTable(foreignKey.References);
+                    var foreignTable = project.Database.FindTableByFullName(foreignKey.References);
 
                     if (foreignTable == null)
                     {
@@ -247,16 +234,16 @@ namespace CatFactory.EfCore
                     {
                         var target = String.Format("{0}{1}", foreignTable.GetEntityName(), column.GetPropertyName());
 
-                        if (classDef.Properties.Where(item => item.Name == column.GetPropertyName()).Count() == 0)
+                        if (classDefinition.Properties.Where(item => item.Name == column.GetPropertyName()).Count() == 0)
                         {
-                            classDef.Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), target));
+                            classDefinition.Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), target));
                         }
                     }
                 }
 
                 var codeBuilder = new CSharpClassBuilder
                 {
-                    ObjectDefinition = classDef,
+                    ObjectDefinition = classDefinition,
                     OutputDirectory = project.OutputDirectory
                 };
 
@@ -277,13 +264,7 @@ namespace CatFactory.EfCore
 
             foreach (var projectFeature in project.Features)
             {
-                var repositoryClassDefinition = new RepositoryClassDefinition(project, projectFeature)
-                {
-                    Namespace = project.GetDataLayerRepositoriesNamespace()
-                };
-
-                repositoryClassDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
-                repositoryClassDefinition.Namespaces.Add(project.GetDataLayerContractsNamespace());
+                var repositoryClassDefinition = new RepositoryClassDefinition(projectFeature);
 
                 var codeBuilder = new CSharpClassBuilder
                 {

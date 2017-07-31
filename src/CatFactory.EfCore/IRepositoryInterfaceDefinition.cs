@@ -5,11 +5,12 @@ namespace CatFactory.EfCore
 {
     public class IRepositoryInterfaceDefinition : CSharpInterfaceDefinition
     {
-        public IRepositoryInterfaceDefinition()
+        public IRepositoryInterfaceDefinition(EfCoreProject project)
         {
             Namespaces.Add("System");
             Namespaces.Add("System.Threading.Tasks");
 
+            Namespace = project.GetDataLayerContractsNamespace();
             Name = "IRepository";
 
             Implements.Add("IDisposable");
