@@ -4,19 +4,30 @@ using CatFactory.CodeFactory;
 using CatFactory.DotNetCore;
 using CatFactory.OOP;
 
-namespace CatFactory.EfCore
+namespace CatFactory.EfCore.Definitions
 {
     public class DatabaseMapperClassDefinition : CSharpClassDefinition
     {
         public DatabaseMapperClassDefinition(EfCoreProject project)
         {
-            Name = project.Database.GetDbEntityMapperName();
+            Project = project;
+
+            Init();
+        }
+
+        public EfCoreProject Project { get; }
+
+        public override void Init()
+        {
+            Namespace = Project.GetDataLayerMappingNamespace();
+
+            Name = Project.Database.GetDbEntityMapperName();
 
             BaseClass = "EntityMapper";
 
             var lines = new List<ILine>();
 
-            if (project.Settings.UseMefForEntitiesMapping)
+            if (Project.Settings.UseMefForEntitiesMapping)
             {
                 Namespaces.Add("System.Composition.Hosting");
                 Namespaces.Add("System.Reflection");
@@ -44,11 +55,11 @@ namespace CatFactory.EfCore
 
                 lines.Add(new CodeLine("{{"));
 
-                for (var i = 0; i < project.Database.Tables.Count; i++)
+                for (var i = 0; i < Project.Database.Tables.Count; i++)
                 {
-                    var item = project.Database.Tables[i];
+                    var item = Project.Database.Tables[i];
 
-                    lines.Add(new CodeLine(1, "new {0}(){1}", item.GetMapName(), i == project.Database.Tables.Count - 1 ? String.Empty : ","));
+                    lines.Add(new CodeLine(1, "new {0}(){1}", item.GetMapName(), i == Project.Database.Tables.Count - 1 ? String.Empty : ","));
                 }
 
                 lines.Add(new CodeLine("}};"));

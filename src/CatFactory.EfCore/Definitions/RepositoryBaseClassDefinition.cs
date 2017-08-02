@@ -4,11 +4,10 @@ using CatFactory.CodeFactory;
 using CatFactory.DotNetCore;
 using CatFactory.OOP;
 
-namespace CatFactory.EfCore
+namespace CatFactory.EfCore.Definitions
 {
     public class RepositoryBaseClassDefinition : CSharpClassDefinition
     {
-        
         public RepositoryBaseClassDefinition(EfCoreProject project)
         {
             Project = project;

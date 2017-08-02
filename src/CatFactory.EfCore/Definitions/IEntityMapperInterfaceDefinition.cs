@@ -1,14 +1,25 @@
 ﻿using CatFactory.DotNetCore;
 using CatFactory.OOP;
 
-namespace CatFactory.EfCore
+namespace CatFactory.EfCore.Definitions
 {
     public class IEntityMapperInterfaceDefinition : CSharpInterfaceDefinition
     {
-        public IEntityMapperInterfaceDefinition()
+        public IEntityMapperInterfaceDefinition(EfCoreProject project)
+        {
+            Project = project;
+
+            Init();
+        }
+
+        public EfCoreProject Project { get; }
+
+        public override void Init()
         {
             Namespaces.Add("System.Collections.Generic");
             Namespaces.Add("Microsoft.EntityFrameworkCore");
+
+            Namespace = Project.GetDataLayerMappingNamespace();
 
             Name = "IEntityMapper";
 

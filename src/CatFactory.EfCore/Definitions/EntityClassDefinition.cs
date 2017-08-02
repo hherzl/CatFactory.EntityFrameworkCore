@@ -6,14 +6,14 @@ using CatFactory.DotNetCore;
 using CatFactory.Mapping;
 using CatFactory.OOP;
 
-namespace CatFactory.EfCore
+namespace CatFactory.EfCore.Definitions
 {
     public class EntityClassDefinition : CSharpClassDefinition
     {
         public EntityClassDefinition(IDbObject dbObject, EfCoreProject project)
         {
-            this.DbObject = dbObject;
-            this.Project = project;
+            DbObject = dbObject;
+            Project = project;
 
             Init();
         }

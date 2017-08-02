@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using CatFactory.DotNetCore;
+using CatFactory.EfCore.Definitions;
 using CatFactory.Mapping;
 using CatFactory.OOP;
 
@@ -25,10 +26,7 @@ namespace CatFactory.EfCore
         {
             var codeBuilder = new CSharpClassBuilder
             {
-                ObjectDefinition = new AppSettingsClassDefinition
-                {
-                    Namespace = project.GetDataLayerNamespace()
-                },
+                ObjectDefinition = new AppSettingsClassDefinition(project),
                 OutputDirectory = project.OutputDirectory
             };
 
@@ -43,34 +41,22 @@ namespace CatFactory.EfCore
                 {
                     new CSharpInterfaceBuilder
                     {
-                        ObjectDefinition = new IEntityMapperInterfaceDefinition
-                        {
-                            Namespace = project.GetDataLayerMappingNamespace()
-                        },
+                        ObjectDefinition = new IEntityMapperInterfaceDefinition(project),
                         OutputDirectory = project.OutputDirectory
                     },
                     new CSharpClassBuilder
                     {
-                        ObjectDefinition = new EntityMapperClassDefinition
-                        {
-                            Namespace = project.GetDataLayerMappingNamespace()
-                        },
+                        ObjectDefinition = new EntityMapperClassDefinition(project),
                         OutputDirectory = project.OutputDirectory
                     },
                     new CSharpInterfaceBuilder
                     {
-                        ObjectDefinition = new IEntityMapInterfaceDefinition
-                        {
-                            Namespace = project.GetDataLayerMappingNamespace()
-                        },
+                        ObjectDefinition = new IEntityMapInterfaceDefinition(project),
                         OutputDirectory = project.OutputDirectory
                     },
                     new CSharpClassBuilder()
                     {
-                        ObjectDefinition = new DatabaseMapperClassDefinition(project)
-                        {
-                            Namespace = project.GetDataLayerMappingNamespace()
-                        },
+                        ObjectDefinition = new DatabaseMapperClassDefinition(project),
                         OutputDirectory = project.OutputDirectory
                     },
                 };
@@ -116,10 +102,7 @@ namespace CatFactory.EfCore
             {
                 var codeBuilder = new CSharpClassBuilder
                 {
-                    ObjectDefinition = new DbContextClassDefinition(project, projectFeature)
-                    {
-                        Namespace = project.GetDataLayerNamespace()
-                    },
+                    ObjectDefinition = new DbContextClassDefinition(projectFeature),
                     OutputDirectory = project.OutputDirectory
                 };
 
@@ -203,8 +186,6 @@ namespace CatFactory.EfCore
                     continue;
                 }
 
-                var resolver = new ClrTypeResolver() as ITypeResolver;
-
                 var classDefinition = new CSharpClassDefinition
                 {
                     Namespaces = new List<String>() { "System" },
@@ -216,7 +197,7 @@ namespace CatFactory.EfCore
                 {
                     var propertyName = column.GetPropertyName();
 
-                    classDefinition.Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), propertyName));
+                    classDefinition.Properties.Add(new PropertyDefinition(classDefinition.TypeResolver.Resolve(column.Type), propertyName));
                 }
 
                 foreach (var foreignKey in table.ForeignKeys)
@@ -236,7 +217,7 @@ namespace CatFactory.EfCore
 
                         if (classDefinition.Properties.Where(item => item.Name == column.GetPropertyName()).Count() == 0)
                         {
-                            classDefinition.Properties.Add(new PropertyDefinition(resolver.Resolve(column.Type), target));
+                            classDefinition.Properties.Add(new PropertyDefinition(classDefinition.TypeResolver.Resolve(column.Type), target));
                         }
                     }
                 }

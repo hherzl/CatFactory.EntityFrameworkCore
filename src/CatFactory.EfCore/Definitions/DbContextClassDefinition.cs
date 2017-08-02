@@ -5,21 +5,31 @@ using CatFactory.CodeFactory;
 using CatFactory.DotNetCore;
 using CatFactory.OOP;
 
-namespace CatFactory.EfCore
+namespace CatFactory.EfCore.Definitions
 {
     public class DbContextClassDefinition : CSharpClassDefinition
     {
-        public DbContextClassDefinition(EfCoreProject project, ProjectFeature projectFeature)
+        public DbContextClassDefinition(ProjectFeature projectFeature)
+        {
+            ProjectFeature = projectFeature;
+
+            Init();
+        }
+
+        public ProjectFeature ProjectFeature { get; }
+
+        public override void Init()
         {
             Namespaces.Add("System");
             Namespaces.Add("Microsoft.EntityFrameworkCore");
             Namespaces.Add("Microsoft.Extensions.Options");
 
-            Name = project.Database.GetDbContextName();
+            Namespace = ProjectFeature.GetProject().GetDataLayerNamespace();
+            Name = ProjectFeature.GetProject().Database.GetDbContextName();
 
             BaseClass = "Microsoft.EntityFrameworkCore.DbContext";
 
-            if (project.Settings.UseDataAnnotations)
+            if (ProjectFeature.GetProject().Settings.UseDataAnnotations)
             {
                 Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition("IOptions<AppSettings>", "appSettings"))
                 {
@@ -43,22 +53,22 @@ namespace CatFactory.EfCore
 
             Properties.Add(new PropertyDefinition("String", "ConnectionString") { IsReadOnly = true });
 
-            if (!project.Settings.UseDataAnnotations)
+            if (!ProjectFeature.GetProject().Settings.UseDataAnnotations)
             {
                 Properties.Add(new PropertyDefinition("IEntityMapper", "EntityMapper") { IsReadOnly = true });
             }
 
             Methods.Add(GetOnConfiguringMethod());
-            Methods.Add(GetOnModelCreatingMethod(project));
+            Methods.Add(GetOnModelCreatingMethod(ProjectFeature.GetProject()));
 
-            if (project.Settings.DeclareDbSetPropertiesInDbContext)
+            if (ProjectFeature.GetProject().Settings.DeclareDbSetPropertiesInDbContext)
             {
-                foreach (var table in project.Database.Tables)
+                foreach (var table in ProjectFeature.GetProject().Database.Tables)
                 {
                     Properties.Add(new PropertyDefinition(String.Format("DbSet<{0}>", table.GetEntityName()), table.GetPluralName()));
                 }
 
-                foreach (var view in project.Database.Views)
+                foreach (var view in ProjectFeature.GetProject().Database.Views)
                 {
                     Properties.Add(new PropertyDefinition(String.Format("DbSet<{0}>", view.GetEntityName()), view.GetPluralName()));
                 }

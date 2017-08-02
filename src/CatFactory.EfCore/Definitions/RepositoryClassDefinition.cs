@@ -8,7 +8,7 @@ using CatFactory.Mapping;
 using CatFactory.OOP;
 using CatFactory.SqlServer;
 
-namespace CatFactory.EfCore
+namespace CatFactory.EfCore.Definitions
 {
     public class RepositoryClassDefinition : CSharpClassDefinition
     {
@@ -19,7 +19,7 @@ namespace CatFactory.EfCore
             Init();
         }
 
-        public ProjectFeature ProjectFeature { get; set; }
+        public ProjectFeature ProjectFeature { get; }
 
         public override void Init()
         {
@@ -84,11 +84,6 @@ namespace CatFactory.EfCore
                         if (child != null)
                         {
                             Namespaces.AddUnique(ProjectFeature.GetProject().GetDataLayerDataContractsNamespace());
-
-                            //if (!Namespaces.Contains(String.Format("{0}.{1}", child.Schema, child.Name)))
-                            //{
-                                
-                            //}
                         }
                     }
                 }
@@ -143,9 +138,7 @@ namespace CatFactory.EfCore
                         {
                             continue;
                         }
-
                         
-
                         var foreignKeyAlias = CatFactory.NamingConvention.GetCamelCase(foreignTable.GetEntityName());
 
                         foreach (var column in foreignTable?.GetColumnsWithOutKey())
@@ -179,13 +172,13 @@ namespace CatFactory.EfCore
 
                         if (foreignKey.Key.Count == 0)
                         {
-                            lines.Add(new CommentLine(1, " There isn't definition for key in foreign key '{0}' in your current database", foreignKey.References));
+                            lines.Add(new WarningLine(1, " There isn't definition for key in foreign key '{0}' in your current database", foreignKey.References));
                         }
                         else if (foreignKey.Key.Count == 1)
                         {
                             if (foreignTable == null)
                             {
-                                lines.Add(new CommentLine(1, " There isn't definition for '{0}' in your current database", foreignKey.References));
+                                lines.Add(new WarningLine(1, " There isn't definition for '{0}' in your current database", foreignKey.References));
                             }
                             else
                             {
@@ -208,8 +201,7 @@ namespace CatFactory.EfCore
                         else
                         {
                             // todo: add logic for foreign key with multiple key
-
-                            lines.Add(new WarningLine(1, "// todo: add logic for foreignkey with multiple key"));
+                            lines.Add(new WarningLine(1, "// todo: add logic for foreign key with multiple key"));
                         }
                     }
 
@@ -289,6 +281,7 @@ namespace CatFactory.EfCore
                         else
                         {
                             // todo: add logic for composed foreign key
+                            lines.Add(new WarningLine(1, "// todo: add logic for foreign key with multiple key"));
                         }
                     }
 
@@ -320,7 +313,7 @@ namespace CatFactory.EfCore
             {
                 var expression = String.Format("item => {0}", String.Join(" && ", unique.Key.Select(item => String.Format("item.{0} == entity.{0}", NamingConvention.GetPropertyName(item)))));
 
-                Methods.Add(new MethodDefinition(String.Format("Task<{0}>", dbObject.GetSingularName()), dbObject.GetGetByUniqueMethodName(unique, NamingConvention), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
+                Methods.Add(new MethodDefinition(String.Format("Task<{0}>", dbObject.GetSingularName()), dbObject.GetGetByUniqueMethodName(unique), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
                 {
                     IsAsync = true,
                     Lines = new List<ILine>()
@@ -333,9 +326,8 @@ namespace CatFactory.EfCore
 
         public MethodDefinition GetGetMethod(ProjectFeature projectFeature, IDbObject dbObject)
         {
-            var table = projectFeature.Project.Database.FindTableBySchemaAndName(dbObject.FullName);
-
             var expression = String.Empty;
+            var table = projectFeature.Project.Database.FindTableBySchemaAndName(dbObject.FullName);
 
             if (table != null)
             {
@@ -362,33 +354,28 @@ namespace CatFactory.EfCore
             };
         }
 
-        public MethodDefinition GetAddMethod(ProjectFeature projectFeature, IDbObject dbObject)
+        public MethodDefinition GetAddMethod(ProjectFeature projectFeature, Table table)
         {
             var lines = new List<ILine>();
 
-            var tableCast = dbObject as Table;
-
-            if (tableCast != null)
+            if (table.IsPrimaryKeyGuid())
             {
-                if (tableCast.IsPrimaryKeyGuid())
-                {
-                    lines.Add(new CodeLine("entity.{0} = Guid.NewGuid();", NamingConvention.GetPropertyName(tableCast.PrimaryKey.Key[0])));
-                    lines.Add(new CodeLine());
-                }
+                lines.Add(new CodeLine("entity.{0} = Guid.NewGuid();", NamingConvention.GetPropertyName(table.PrimaryKey.Key[0])));
+                lines.Add(new CodeLine());
             }
 
             lines.Add(new CodeLine("Add(entity);"));
             lines.Add(new CodeLine());
             lines.Add(new CodeLine("return await CommitChangesAsync();"));
 
-            return new MethodDefinition("Task<Int32>", dbObject.GetAddMethodName(), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
+            return new MethodDefinition("Task<Int32>", table.GetAddMethodName(), new ParameterDefinition(table.GetSingularName(), "entity"))
             {
                 IsAsync = true,
                 Lines = lines
             };
         }
 
-        public MethodDefinition GetUpdateMethod(ProjectFeature projectFeature, IDbObject dbObject)
+        public MethodDefinition GetUpdateMethod(ProjectFeature projectFeature, Table table)
         {
             var lines = new List<ILine>();
 
@@ -396,16 +383,16 @@ namespace CatFactory.EfCore
             lines.Add(new CodeLine());
             lines.Add(new CodeLine("return await CommitChangesAsync();"));
 
-            return new MethodDefinition("Task<Int32>", dbObject.GetUpdateMethodName(), new ParameterDefinition(dbObject.GetSingularName(), "changes"))
+            return new MethodDefinition("Task<Int32>", table.GetUpdateMethodName(), new ParameterDefinition(table.GetSingularName(), "changes"))
             {
                 IsAsync = true,
                 Lines = lines
             };
         }
 
-        public MethodDefinition GetRemoveMethod(ProjectFeature projectFeature, IDbObject dbObject)
+        public MethodDefinition GetRemoveMethod(ProjectFeature projectFeature, Table table)
         {
-            return new MethodDefinition("Task<Int32>", dbObject.GetRemoveMethodName(), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
+            return new MethodDefinition("Task<Int32>", table.GetRemoveMethodName(), new ParameterDefinition(table.GetSingularName(), "entity"))
             {
                 IsAsync = true,
                 Lines = new List<ILine>()

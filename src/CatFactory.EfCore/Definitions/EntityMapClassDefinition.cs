@@ -7,25 +7,25 @@ using CatFactory.DotNetCore;
 using CatFactory.Mapping;
 using CatFactory.OOP;
 
-namespace CatFactory.EfCore
+namespace CatFactory.EfCore.Definitions
 {
     public class EntityMapClassDefinition : CSharpClassDefinition
     {
         public EntityMapClassDefinition(IDbObject mappedObject, EfCoreProject project)
         {
-            this.mappedObject = mappedObject;
-            this.project = project;
-            
+            MappedObject = mappedObject;
+            Project = project;
+
             Init();
         }
 
-        public IDbObject mappedObject { get; }
+        public IDbObject MappedObject { get; }
 
-        public EfCoreProject project { get; }
+        public EfCoreProject Project { get; }
 
         public override void Init()
         {
-            if (project.Settings.UseMefForEntitiesMapping)
+            if (Project.Settings.UseMefForEntitiesMapping)
             {
                 Namespaces.Add("System.Composition");
 
@@ -34,40 +34,40 @@ namespace CatFactory.EfCore
 
             Namespaces.Add("Microsoft.EntityFrameworkCore");
 
-            if (mappedObject.HasDefaultSchema())
+            if (MappedObject.HasDefaultSchema())
             {
-                Namespaces.AddUnique(project.GetEntityLayerNamespace());
+                Namespaces.AddUnique(Project.GetEntityLayerNamespace());
             }
             else
             {
-                Namespaces.AddUnique(project.GetEntityLayerNamespace(mappedObject.Schema));
+                Namespaces.AddUnique(Project.GetEntityLayerNamespace(MappedObject.Schema));
             }
 
-            Namespace = project.GetDataLayerMappingNamespace();
+            Namespace = Project.GetDataLayerMappingNamespace();
 
-            Name = mappedObject.GetMapName();
+            Name = MappedObject.GetMapName();
 
             Implements.Add("IEntityMap");
 
             var mapMethodLines = new List<ILine>();
 
-            mapMethodLines.Add(new CodeLine("modelBuilder.Entity<{0}>(entity =>", mappedObject.GetSingularName()));
+            mapMethodLines.Add(new CodeLine("modelBuilder.Entity<{0}>(entity =>", MappedObject.GetSingularName()));
             mapMethodLines.Add(new CodeLine("{{"));
 
-            if (String.IsNullOrEmpty(mappedObject.Schema))
+            if (String.IsNullOrEmpty(MappedObject.Schema))
             {
-                mapMethodLines.Add(new CodeLine(1, "entity.ToTable(\"{0}\");", mappedObject.Name));
+                mapMethodLines.Add(new CodeLine(1, "entity.ToTable(\"{0}\");", MappedObject.Name));
             }
             else
             {
-                mapMethodLines.Add(new CodeLine(1, "entity.ToTable(\"{0}\", \"{1}\");", mappedObject.Name, mappedObject.Schema));
+                mapMethodLines.Add(new CodeLine(1, "entity.ToTable(\"{0}\", \"{1}\");", MappedObject.Name, MappedObject.Schema));
             }
 
             mapMethodLines.Add(new CodeLine());
 
             var columns = default(List<Column>);
 
-            var table = mappedObject as ITable;
+            var table = MappedObject as ITable;
 
             if (table != null)
             {
@@ -100,7 +100,7 @@ namespace CatFactory.EfCore
                 {
                     foreach (var fk in table.ForeignKeys)
                     {
-                        var foreignTable = project.Database.FindTableByFullName(fk.References);
+                        var foreignTable = Project.Database.FindTableByFullName(fk.References);
 
                         if (foreignTable == null)
                         {
@@ -113,7 +113,7 @@ namespace CatFactory.EfCore
                         }
                         else if (fk.Key.Count == 1)
                         {
-                            var foreignProperty = fk.GetParentNavigationProperty(project, foreignTable);
+                            var foreignProperty = fk.GetParentNavigationProperty(Project, foreignTable);
 
                             mapMethodLines.Add(new CodeLine(1, "entity"));
                             mapMethodLines.Add(new CodeLine(2, ".HasOne(p => p.{0})", foreignProperty.Name));
@@ -149,7 +149,7 @@ namespace CatFactory.EfCore
                 columns = table.GetColumnsWithOutKey().ToList();
             }
 
-            var view = mappedObject as IView;
+            var view = MappedObject as IView;
 
             if (view != null)
             {
@@ -163,7 +163,7 @@ namespace CatFactory.EfCore
             {
                 var column = columns[i];
 
-                if (!String.IsNullOrEmpty(project.Settings.ConcurrencyToken) && String.Compare(column.Name, project.Settings.ConcurrencyToken) == 0)
+                if (!String.IsNullOrEmpty(Project.Settings.ConcurrencyToken) && String.Compare(column.Name, Project.Settings.ConcurrencyToken) == 0)
                 {
                     mapMethodLines.Add(new CodeLine(1, "entity"));
                     mapMethodLines.Add(new CodeLine(2, ".Property(p => p.{0})", column.GetPropertyName()));
@@ -179,7 +179,7 @@ namespace CatFactory.EfCore
 
                     if (table != null)
                     {
-                        if (project.Settings.BackingFields.Contains(table.GetFullColumnName(column)))
+                        if (Project.Settings.BackingFields.Contains(table.GetFullColumnName(column)))
                         {
                             lines.Add(String.Format("HasField(\"{0}\")", NamingConvention.GetFieldName(column.GetPropertyName())));
                         }

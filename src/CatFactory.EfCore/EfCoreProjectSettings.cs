@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace CatFactory.EfCore
 {
     public class EfCoreProjectSettings : ProjectSettings
     {
-        public EfCoreProjectSettings()
-        {
-        }
-
         public Boolean SimplifyDataTypes { get; set; }
 
         public Boolean UseAutomaticPropertiesForEntities { get; set; } = true;
@@ -33,8 +30,8 @@ namespace CatFactory.EfCore
 
         public AuditEntity AuditEntity { get; set; }
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private List<String> m_backingFields;
-        private List<String> m_entitiesWithDataContracts;
 
         public List<String> EntitiesWithDataContracts
         {
@@ -47,6 +44,9 @@ namespace CatFactory.EfCore
                 m_entitiesWithDataContracts = value;
             }
         }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private List<String> m_entitiesWithDataContracts;
 
         public List<String> BackingFields
         {

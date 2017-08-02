@@ -24,12 +24,13 @@ namespace CatFactory.EfCore
 
         public String LastUpdateDateTimeColumnName { get; set; }
 
-        public String[] Names => new String[]
-        {
-            CreationUserColumnName,
-            CreationDateTimeColumnName,
-            LastUpdateUserColumnName,
-            LastUpdateDateTimeColumnName
-        };
+        public String[] Names
+            => new String[]
+            {
+                CreationUserColumnName,
+                CreationDateTimeColumnName,
+                LastUpdateUserColumnName,
+                LastUpdateDateTimeColumnName
+            };
     }
 }

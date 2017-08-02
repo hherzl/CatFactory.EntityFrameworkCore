@@ -1,20 +1,29 @@
 ﻿using CatFactory.DotNetCore;
 using CatFactory.OOP;
 
-namespace CatFactory.EfCore
+namespace CatFactory.EfCore.Definitions
 {
     public class AuditEntityInterfaceDefinition : CSharpInterfaceDefinition
     {
         public AuditEntityInterfaceDefinition(EfCoreProject project)
         {
-            if (project.Settings.AuditEntity == null)
+            Project = project;
+
+            Init();
+        }
+
+        public EfCoreProject Project { get; }
+
+        public override void Init()
+        {
+            if (Project.Settings.AuditEntity == null)
             {
                 return;
             }
 
             Namespaces.Add("System");
 
-            Namespace = project.GetEntityLayerNamespace();
+            Namespace = Project.GetEntityLayerNamespace();
             Name = "IAuditEntity";
 
             Implements.Add("IEntity");

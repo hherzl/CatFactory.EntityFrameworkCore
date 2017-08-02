@@ -3,15 +3,26 @@ using CatFactory.CodeFactory;
 using CatFactory.DotNetCore;
 using CatFactory.OOP;
 
-namespace CatFactory.EfCore
+namespace CatFactory.EfCore.Definitions
 {
     public class EntityMapperClassDefinition : CSharpClassDefinition
     {
-        public EntityMapperClassDefinition()
+        public EntityMapperClassDefinition(EfCoreProject project)
+        {
+            Project = project;
+
+            Init();
+        }
+
+        public EfCoreProject Project { get; }
+
+        public override void Init()
         {
             Namespaces.Add("System");
             Namespaces.Add("System.Collections.Generic");
             Namespaces.Add("Microsoft.EntityFrameworkCore");
+
+            Namespace = Project.GetDataLayerMappingNamespace();
 
             Name = "EntityMapper";
 

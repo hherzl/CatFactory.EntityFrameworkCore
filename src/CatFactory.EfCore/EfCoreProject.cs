@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using CatFactory.Mapping;
 using CatFactory.SqlServer;
@@ -43,23 +43,16 @@ namespace CatFactory.EfCore
                 .ToList();
         }
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private ProjectNamespaces m_namespaces;
-        private EfCoreProjectSettings m_settings;
 
         public ProjectNamespaces Namespaces
-        {
-            get
-            {
-                return m_namespaces ?? (m_namespaces = new ProjectNamespaces());
-            }
-        }
+            => m_namespaces ?? (m_namespaces = new ProjectNamespaces());
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private EfCoreProjectSettings m_settings;
 
         public EfCoreProjectSettings Settings
-        {
-            get
-            {
-                return m_settings ?? (m_settings = new EfCoreProjectSettings());
-            }
-        }
+            => m_settings ?? (m_settings = new EfCoreProjectSettings());
     }
 }

@@ -1,17 +1,23 @@
 ﻿using CatFactory.DotNetCore;
 using CatFactory.OOP;
 
-namespace CatFactory.EfCore
+namespace CatFactory.EfCore.Definitions
 {
     public class AppSettingsClassDefinition : CSharpClassDefinition
     {
-        public AppSettingsClassDefinition()
+        public AppSettingsClassDefinition(EfCoreProject project)
         {
+            Project = project;
+
             Init();
         }
 
+        public EfCoreProject Project { get; }
+
         public override void Init()
         {
+            Namespace = Project.GetDataLayerNamespace();
+
             Namespaces.Add("System");
 
             Name = "AppSettings";
