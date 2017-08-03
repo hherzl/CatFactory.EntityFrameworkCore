@@ -3,9 +3,9 @@ using CatFactory.OOP;
 
 namespace CatFactory.EfCore.Definitions
 {
-    public class IRepositoryInterfaceDefinition : CSharpInterfaceDefinition
+    public class RepositoryInterfaceDefinition : CSharpInterfaceDefinition
     {
-        public IRepositoryInterfaceDefinition(EfCoreProject project)
+        public RepositoryInterfaceDefinition(EfCoreProject project)
         {
             Project = project;
 

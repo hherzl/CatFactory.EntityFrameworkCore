@@ -75,11 +75,11 @@ namespace CatFactory.EfCore.Definitions
                     }
                 }
 
-                foreach (var fk in table.ForeignKeys)
+                foreach (var foreignKey in table.ForeignKeys)
                 {
-                    if (String.IsNullOrEmpty(fk.Child))
+                    if (String.IsNullOrEmpty(foreignKey.Child))
                     {
-                        var child = ProjectFeature.Project.Database.FindTableBySchemaAndName(fk.Child);
+                        var child = ProjectFeature.Project.Database.FindTableBySchemaAndName(foreignKey.Child);
 
                         if (child != null)
                         {
@@ -121,13 +121,32 @@ namespace CatFactory.EfCore.Definitions
 
                     returnType = tableCast.GetDataContractName();
 
-                    var dataContractPropertiesSets = new[] { new { Source = String.Empty, Target = String.Empty } }.ToList();
+                    var dataContractPropertiesSets = new[]
+                    {
+                        new
+                        {
+                            IsForeign = false,
+                            Type = String.Empty,
+                            Nullable = false,
+                            ObjectSource = String.Empty,
+                            PropertySource = String.Empty,
+                            Target = String.Empty
+                        }
+                    }.ToList();
 
                     foreach (var column in tableCast.Columns)
                     {
                         var propertyName = column.GetPropertyName();
 
-                        dataContractPropertiesSets.Add(new { Source = String.Format("{0}.{1}", entityAlias, propertyName), Target = propertyName });
+                        dataContractPropertiesSets.Add(new
+                        {
+                            IsForeign = false,
+                            Type = column.Type,
+                            Nullable = column.Nullable,
+                            ObjectSource = entityAlias,
+                            PropertySource = propertyName,
+                            Target = propertyName
+                        });
                     }
 
                     foreach (var foreignKey in tableCast.ForeignKeys)
@@ -143,12 +162,19 @@ namespace CatFactory.EfCore.Definitions
 
                         foreach (var column in foreignTable?.GetColumnsWithOutKey())
                         {
-                            if (dataContractPropertiesSets.Where(item => item.Source == String.Format("{0}.{1}", entityAlias, column.GetPropertyName())).Count() == 0)
+                            if (dataContractPropertiesSets.Where(item => String.Format("{0}.{1}", item.ObjectSource, item.PropertySource) == String.Format("{0}.{1}", entityAlias, column.GetPropertyName())).Count() == 0)
                             {
-                                var source = String.Format("{0}.{1}", foreignKeyAlias, column.GetPropertyName());
                                 var target = String.Format("{0}{1}", foreignTable.GetEntityName(), column.GetPropertyName());
 
-                                dataContractPropertiesSets.Add(new { Source = source, Target = target });
+                                dataContractPropertiesSets.Add(new
+                                {
+                                    IsForeign = true,
+                                    Type = column.Type,
+                                    Nullable = column.Nullable,
+                                    ObjectSource = foreignKeyAlias,
+                                    PropertySource = column.GetPropertyName(),
+                                    Target = target
+                                });
                             }
                         }
                     }
@@ -212,12 +238,45 @@ namespace CatFactory.EfCore.Definitions
                     {
                         var property = dataContractPropertiesSets[i];
 
-                        if (String.IsNullOrEmpty(property.Source) && String.IsNullOrEmpty(property.Target))
+                        if (String.IsNullOrEmpty(property.ObjectSource) && String.IsNullOrEmpty(property.Target))
                         {
                             continue;
                         }
 
-                        lines.Add(new CodeLine(2, "{0} = {1}{2}", property.Target, property.Source, i < dataContractPropertiesSets.Count - 1 ? "," : String.Empty));
+                        if (property.IsForeign)
+                        {
+                            if (property.Nullable)
+                            {
+                                if (property.Type.Contains("char"))
+                                {
+                                    lines.Add(new CodeLine(2, "{0} = {1} == null ? String.Empty : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                                }
+                                else if (property.Type.Contains("date"))
+                                {
+                                    lines.Add(new CodeLine(2, "{0} = {1} == null ? default(DateTime?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                                }
+                                else if (property.Type.Contains("smallint"))
+                                {
+                                    lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Int16?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                                }
+                                else if (property.Type.Contains("bigint"))
+                                {
+                                    lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Int64?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                                }
+                                else if (property.Type.Contains("int"))
+                                {
+                                    lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Int32?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                                }
+                            }
+                            else
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                        }
+                        else
+                        {
+                            lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                        }
                     }
 
                     lines.Add(new CodeLine(1, "}};"));
@@ -247,8 +306,6 @@ namespace CatFactory.EfCore.Definitions
                 }
                 else
                 {
-                    var resolver = new ClrTypeResolver() as ITypeResolver;
-
                     for (var i = 0; i < tableCast.ForeignKeys.Count; i++)
                     {
                         var foreignKey = tableCast.ForeignKeys[i];
@@ -259,7 +316,7 @@ namespace CatFactory.EfCore.Definitions
 
                             var parameterName = NamingConvention.GetParameterName(column.Name);
 
-                            parameters.Add(new ParameterDefinition(resolver.Resolve(column.Type), parameterName, "null"));
+                            parameters.Add(new ParameterDefinition(TypeResolver.Resolve(column.Type), parameterName, "null"));
 
                             if (column.IsString())
                             {

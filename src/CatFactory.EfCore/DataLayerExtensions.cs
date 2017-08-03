@@ -41,7 +41,7 @@ namespace CatFactory.EfCore
                 {
                     new CSharpInterfaceBuilder
                     {
-                        ObjectDefinition = new IEntityMapperInterfaceDefinition(project),
+                        ObjectDefinition = new EntityMapperInterfaceDefinition(project),
                         OutputDirectory = project.OutputDirectory
                     },
                     new CSharpClassBuilder
@@ -51,7 +51,7 @@ namespace CatFactory.EfCore
                     },
                     new CSharpInterfaceBuilder
                     {
-                        ObjectDefinition = new IEntityMapInterfaceDefinition(project),
+                        ObjectDefinition = new EntityMapInterfaceDefinition(project),
                         OutputDirectory = project.OutputDirectory
                     },
                     new CSharpClassBuilder()
@@ -145,7 +145,7 @@ namespace CatFactory.EfCore
         {
             var codeBuilder = new CSharpInterfaceBuilder
             {
-                ObjectDefinition = new IRepositoryInterfaceDefinition(project),
+                ObjectDefinition = new RepositoryInterfaceDefinition(project),
                 OutputDirectory = project.OutputDirectory
             };
 

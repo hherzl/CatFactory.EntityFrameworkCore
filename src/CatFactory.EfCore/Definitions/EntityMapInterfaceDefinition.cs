@@ -3,9 +3,9 @@ using CatFactory.OOP;
 
 namespace CatFactory.EfCore.Definitions
 {
-    public class IEntityMapInterfaceDefinition : CSharpInterfaceDefinition
+    public class EntityMapInterfaceDefinition : CSharpInterfaceDefinition
     {
-        public IEntityMapInterfaceDefinition(EfCoreProject project)
+        public EntityMapInterfaceDefinition(EfCoreProject project)
         {
             Project = project;
 

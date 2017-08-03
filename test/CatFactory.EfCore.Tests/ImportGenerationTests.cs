@@ -74,9 +74,11 @@ namespace CatFactory.EfCore.Tests
         [Fact]
         public void ProjectGenerationForNorthwindDatabaseTest()
         {
+            // Import database
             var database = SqlServerDatabaseFactory
                 .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
 
+            // Create instance of Ef Core Project
             var project = new EfCoreProject
             {
                 Name = "Northwind",
@@ -84,8 +86,10 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\VsCode\\Northwind\\src"
             };
 
+            // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
 
+            // Generate code =D
             project
                 .GenerateEntityLayer()
                 .GenerateDataLayer();
@@ -94,6 +98,7 @@ namespace CatFactory.EfCore.Tests
         [Fact]
         public void ProjectGenerationForAdventureWorksDatabaseTest()
         {
+            // Create instance of factory for SQL Server
             var factory = new SqlServerDatabaseFactory(LoggerMocker.GetLogger<SqlServerDatabaseFactory>())
             {
                 ConnectionString = "server=(local);database=AdventureWorks2012;integrated security=yes;",
@@ -103,8 +108,10 @@ namespace CatFactory.EfCore.Tests
                 }
             };
 
+            // Import database
             var database = factory.Import();
 
+            // Create instance of Ef Core Project
             var project = new EfCoreProject
             {
                 Name = "AdventureWorks",
@@ -112,8 +119,10 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\AdventureWorks"
             };
 
+            // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
 
+            // Generate code =D
             project
                 .GenerateEntityLayer()
                 .GenerateDataLayer();

@@ -49,21 +49,23 @@ namespace CatFactory.EfCore.Definitions
 
             Implements.Add("IEntityMap");
 
-            var mapMethodLines = new List<ILine>();
+            var mapLines = new List<ILine>();
 
-            mapMethodLines.Add(new CodeLine("modelBuilder.Entity<{0}>(entity =>", MappedObject.GetSingularName()));
-            mapMethodLines.Add(new CodeLine("{{"));
+            mapLines.Add(new CodeLine("modelBuilder.Entity<{0}>(entity =>", MappedObject.GetSingularName()));
+            mapLines.Add(new CodeLine("{{"));
+
+            mapLines.Add(new CommentLine(1, " Mapping for table"));
 
             if (String.IsNullOrEmpty(MappedObject.Schema))
             {
-                mapMethodLines.Add(new CodeLine(1, "entity.ToTable(\"{0}\");", MappedObject.Name));
+                mapLines.Add(new CodeLine(1, "entity.ToTable(\"{0}\");", MappedObject.Name));
             }
             else
             {
-                mapMethodLines.Add(new CodeLine(1, "entity.ToTable(\"{0}\", \"{1}\");", MappedObject.Name, MappedObject.Schema));
+                mapLines.Add(new CodeLine(1, "entity.ToTable(\"{0}\", \"{1}\");", MappedObject.Name, MappedObject.Schema));
             }
 
-            mapMethodLines.Add(new CodeLine());
+            mapLines.Add(new CodeLine());
 
             var columns = default(List<Column>);
 
@@ -73,80 +75,33 @@ namespace CatFactory.EfCore.Definitions
             {
                 if (table.PrimaryKey == null || table.PrimaryKey.Key.Count == 0)
                 {
-                    mapMethodLines.Add(new CodeLine(1, "entity.HasKey(p => new {{ {0} }});", String.Join(", ", table.Columns.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item.Name))))));
-                    mapMethodLines.Add(new CodeLine());
+                    mapLines.Add(new CodeLine(1, "entity.HasKey(p => new {{ {0} }});", String.Join(", ", table.Columns.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item.Name))))));
+                    mapLines.Add(new CodeLine());
                 }
                 else
                 {
+                    mapLines.Add(new CommentLine(1, " Set key for entity"));
+
                     if (table.PrimaryKey.Key.Count == 1)
                     {
-                        mapMethodLines.Add(new CodeLine(1, "entity.HasKey(p => p.{0});", NamingConvention.GetPropertyName(table.PrimaryKey.Key[0])));
-                        mapMethodLines.Add(new CodeLine());
+                        mapLines.Add(new CodeLine(1, "entity.HasKey(p => p.{0});", NamingConvention.GetPropertyName(table.PrimaryKey.Key[0])));
+                        mapLines.Add(new CodeLine());
                     }
                     else if (table.PrimaryKey.Key.Count > 1)
                     {
-                        mapMethodLines.Add(new CodeLine(1, "entity.HasKey(p => new {{ {0} }});", String.Join(", ", table.PrimaryKey.Key.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item))))));
-                        mapMethodLines.Add(new CodeLine());
+                        mapLines.Add(new CodeLine(1, "entity.HasKey(p => new {{ {0} }});", String.Join(", ", table.PrimaryKey.Key.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item))))));
+                        mapLines.Add(new CodeLine());
                     }
                 }
 
                 if (table.Identity != null)
                 {
-                    mapMethodLines.Add(new CodeLine(1, "entity.Property(p => p.{0}).UseSqlServerIdentityColumn();", NamingConvention.GetPropertyName(table.Identity.Name)));
-                    mapMethodLines.Add(new CodeLine());
+                    mapLines.Add(new CommentLine(1, " Set identity for entity (auto increment)"));
+                    mapLines.Add(new CodeLine(1, "entity.Property(p => p.{0}).UseSqlServerIdentityColumn();", NamingConvention.GetPropertyName(table.Identity.Name)));
+                    mapLines.Add(new CodeLine());
                 }
 
-                if (table != null)
-                {
-                    foreach (var fk in table.ForeignKeys)
-                    {
-                        var foreignTable = Project.Database.FindTableByFullName(fk.References);
-
-                        if (foreignTable == null)
-                        {
-                            continue;
-                        }
-
-                        if (fk.Key.Count == 0)
-                        {
-                            continue;
-                        }
-                        else if (fk.Key.Count == 1)
-                        {
-                            var foreignProperty = fk.GetParentNavigationProperty(Project, foreignTable);
-
-                            mapMethodLines.Add(new CodeLine(1, "entity"));
-                            mapMethodLines.Add(new CodeLine(2, ".HasOne(p => p.{0})", foreignProperty.Name));
-                            mapMethodLines.Add(new CodeLine(2, ".WithMany(b => b.{0})", table.GetPluralName()));
-                            mapMethodLines.Add(new CodeLine(2, ".HasForeignKey(p => {0})", String.Format("p.{0}", NamingConvention.GetPropertyName(fk.Key[0]))));
-                            mapMethodLines.Add(new CodeLine(2, ".HasConstraintName(\"{0}\");", fk.ConstraintName));
-                            mapMethodLines.Add(new CodeLine());
-                        }
-                        else
-                        {
-                            // todo: add logic for key with multiple columns
-                        }
-                    }
-
-                    foreach (var unique in table.Uniques)
-                    {
-                        mapMethodLines.Add(new CodeLine(1, "entity"));
-
-                        if (unique.Key.Count == 1)
-                        {
-                            mapMethodLines.Add(new CodeLine(2, ".HasAlternateKey(p => new {{ {0} }})", String.Join(", ", unique.Key.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item))))));
-                        }
-                        else
-                        {
-                            mapMethodLines.Add(new CodeLine(2, ".HasAlternateKey(p => new {{ {0} }})", String.Join(", ", table.PrimaryKey.Key.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item))))));
-                        }
-
-                        mapMethodLines.Add(new CodeLine(2, ".HasName(\"{0}\");", unique.ConstraintName));
-                        mapMethodLines.Add(new CodeLine());
-                    }
-                }
-
-                columns = table.GetColumnsWithOutKey().ToList();
+                columns = table.Columns;
             }
 
             var view = MappedObject as IView;
@@ -155,77 +110,133 @@ namespace CatFactory.EfCore.Definitions
             {
                 columns = view.Columns;
 
-                mapMethodLines.Add(new CodeLine(1, "entity.HasKey(p => new {{ {0} }});", String.Join(", ", columns.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item.Name))))));
-                mapMethodLines.Add(new CodeLine());
+                mapLines.Add(new CodeLine(1, "entity.HasKey(p => new {{ {0} }});", String.Join(", ", columns.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item.Name))))));
+                mapLines.Add(new CodeLine());
             }
+
+            mapLines.Add(new CommentLine(1, " Set mapping for columns"));
 
             for (var i = 0; i < columns.Count; i++)
             {
                 var column = columns[i];
 
-                if (!String.IsNullOrEmpty(Project.Settings.ConcurrencyToken) && String.Compare(column.Name, Project.Settings.ConcurrencyToken) == 0)
+                var lines = new List<String>()
                 {
-                    mapMethodLines.Add(new CodeLine(1, "entity"));
-                    mapMethodLines.Add(new CodeLine(2, ".Property(p => p.{0})", column.GetPropertyName()));
-                    mapMethodLines.Add(new CodeLine(2, ".ValueGeneratedOnAddOrUpdate()"));
-                    mapMethodLines.Add(new CodeLine(2, ".IsConcurrencyToken();"));
+                    String.Format("entity.Property(p => p.{0})" , column.GetPropertyName())
+                };
+
+                if (String.Compare(column.Name, column.GetPropertyName()) != 0)
+                {
+                    lines.Add(String.Format("HasColumnName(\"{0}\")", column.Name));
+                }
+
+                if (column.IsString())
+                {
+                    lines.Add(column.Length == 0 ? String.Format("HasColumnType(\"{0}(max)\")", column.Type) : String.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
+                }
+                else if (column.IsDecimal())
+                {
+                    lines.Add(String.Format("HasColumnType(\"{0}({1}, {2})\")", column.Type, column.Prec, column.Scale));
+                }
+                else if (column.IsDouble() || column.IsSingle())
+                {
+                    lines.Add(String.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Prec));
                 }
                 else
                 {
-                    var lines = new List<String>()
-                    {
-                        String.Format("entity.Property(p => p.{0})" , column.GetPropertyName())
-                    };
+                    lines.Add(String.Format("HasColumnType(\"{0}\")", column.Type));
+                }
 
-                    if (table != null)
-                    {
-                        if (Project.Settings.BackingFields.Contains(table.GetFullColumnName(column)))
-                        {
-                            lines.Add(String.Format("HasField(\"{0}\")", NamingConvention.GetFieldName(column.GetPropertyName())));
-                        }
-                    }
+                if (!column.Nullable)
+                {
+                    lines.Add("IsRequired()");
+                }
 
-                    if (String.Compare(column.Name, column.GetPropertyName()) != 0)
-                    {
-                        lines.Add(String.Format("HasColumnName(\"{0}\")", column.Name));
-                    }
+                mapLines.Add(new CodeLine(1, "{0};", String.Join(".", lines)));
+            }
 
-                    if (column.IsString())
+            mapLines.Add(new CodeLine());
+            
+            if (columns != null)
+            {
+                for (var i = 0; i < columns.Count; i++)
+                {
+                    var column = columns[i];
+
+                    if (!String.IsNullOrEmpty(Project.Settings.ConcurrencyToken) && String.Compare(column.Name, Project.Settings.ConcurrencyToken) == 0)
                     {
-                        lines.Add(column.Length == 0 ? String.Format("HasColumnType(\"{0}(max)\")", column.Type) : String.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
+                        mapLines.Add(new CommentLine(1, " Set concurrency token for entity"));
+                        mapLines.Add(new CodeLine(1, "entity"));
+                        mapLines.Add(new CodeLine(2, ".Property(p => p.{0})", column.GetPropertyName()));
+                        mapLines.Add(new CodeLine(2, ".ValueGeneratedOnAddOrUpdate()"));
+                        mapLines.Add(new CodeLine(2, ".IsConcurrencyToken();"));
+                        mapLines.Add(new CodeLine());
                     }
-                    else if (column.IsDecimal())
+                }
+            }
+            
+            if (table != null && table.Uniques.Count > 0)
+            {
+                mapLines.Add(new CommentLine(1, " Add configuration for uniques"));
+
+                foreach (var unique in table.Uniques)
+                {
+                    mapLines.Add(new CodeLine(1, "entity"));
+
+                    if (unique.Key.Count == 1)
                     {
-                        lines.Add(String.Format("HasColumnType(\"{0}({1}, {2})\")", column.Type, column.Prec, column.Scale));
-                    }
-                    else if (column.IsDouble() || column.IsSingle())
-                    {
-                        lines.Add(String.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Prec));
+                        mapLines.Add(new CodeLine(2, ".HasAlternateKey(p => new {{ {0} }})", String.Join(", ", unique.Key.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item))))));
                     }
                     else
                     {
-                        lines.Add(String.Format("HasColumnType(\"{0}\")", column.Type));
+                        mapLines.Add(new CodeLine(2, ".HasAlternateKey(p => new {{ {0} }})", String.Join(", ", table.PrimaryKey.Key.Select(item => String.Format("p.{0}", NamingConvention.GetPropertyName(item))))));
                     }
 
-                    if (!column.Nullable)
+                    mapLines.Add(new CodeLine(2, ".HasName(\"{0}\");", unique.ConstraintName));
+                    mapLines.Add(new CodeLine());
+                }
+            }
+
+            if (table != null && table.ForeignKeys.Count > 0)
+            {
+                mapLines.Add(new CommentLine(1, " Add configuration for foreign keys"));
+
+                foreach (var foreignKey in table.ForeignKeys)
+                {
+                    var foreignTable = Project.Database.FindTableByFullName(foreignKey.References);
+
+                    if (foreignTable == null)
                     {
-                        lines.Add("IsRequired()");
+                        continue;
                     }
 
-                    mapMethodLines.Add(new CodeLine(1, "{0};", String.Join(".", lines)));
-
-                    if (i < columns.Count - 1)
+                    if (foreignKey.Key.Count == 0)
                     {
-                        mapMethodLines.Add(new CodeLine());
+                        continue;
+                    }
+                    else if (foreignKey.Key.Count == 1)
+                    {
+                        var foreignProperty = foreignKey.GetParentNavigationProperty(Project, foreignTable);
+
+                        mapLines.Add(new CodeLine(1, "entity"));
+                        mapLines.Add(new CodeLine(2, ".HasOne(p => p.{0})", foreignProperty.Name));
+                        mapLines.Add(new CodeLine(2, ".WithMany(b => b.{0})", table.GetPluralName()));
+                        mapLines.Add(new CodeLine(2, ".HasForeignKey(p => {0})", String.Format("p.{0}", NamingConvention.GetPropertyName(foreignKey.Key[0]))));
+                        mapLines.Add(new CodeLine(2, ".HasConstraintName(\"{0}\");", foreignKey.ConstraintName));
+                        mapLines.Add(new CodeLine());
+                    }
+                    else
+                    {
+                        // todo: add logic for key with multiple columns
                     }
                 }
             }
 
-            mapMethodLines.Add(new CodeLine("}});"));
+            mapLines.Add(new CodeLine("}});"));
 
             var mapMethod = new MethodDefinition("void", "Map", new ParameterDefinition("ModelBuilder", "modelBuilder"))
             {
-                Lines = mapMethodLines
+                Lines = mapLines
             };
 
             Methods.Add(mapMethod);

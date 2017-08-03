@@ -6,7 +6,7 @@ using CatFactory.OOP;
 
 namespace CatFactory.EfCore
 {
-    public static class ClassDefinitionExtensions
+    public static class IDotNetClassDefinitionExtensions
     {
         public static void AddTableAttribute(this IDotNetClassDefinition classDefinition, ITable table)
         {
