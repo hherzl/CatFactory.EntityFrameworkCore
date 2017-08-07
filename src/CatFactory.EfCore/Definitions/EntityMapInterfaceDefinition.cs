@@ -6,6 +6,7 @@ namespace CatFactory.EfCore.Definitions
     public class EntityMapInterfaceDefinition : CSharpInterfaceDefinition
     {
         public EntityMapInterfaceDefinition(EfCoreProject project)
+            : base()
         {
             Project = project;
 

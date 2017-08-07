@@ -9,6 +9,7 @@ namespace CatFactory.EfCore.Definitions
     public class RepositoryExtensionsClassDefinition : CSharpClassDefinition
     {
         public RepositoryExtensionsClassDefinition(EfCoreProject project)
+            : base()
         {
             Project = project;
 

@@ -6,6 +6,7 @@ namespace CatFactory.EfCore.Definitions
     public class AppSettingsClassDefinition : CSharpClassDefinition
     {
         public AppSettingsClassDefinition(EfCoreProject project)
+            : base()
         {
             Project = project;
 

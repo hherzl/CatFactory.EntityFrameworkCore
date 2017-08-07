@@ -6,13 +6,13 @@ using CatFactory.Collections;
 using CatFactory.DotNetCore;
 using CatFactory.Mapping;
 using CatFactory.OOP;
-using CatFactory.SqlServer;
 
 namespace CatFactory.EfCore.Definitions
 {
     public class RepositoryClassDefinition : CSharpClassDefinition
     {
         public RepositoryClassDefinition(ProjectFeature projectFeature)
+            : base()
         {
             ProjectFeature = projectFeature;
 
@@ -194,7 +194,15 @@ namespace CatFactory.EfCore.Definitions
 
                         var foreignKeyAlias = CatFactory.NamingConvention.GetCamelCase(foreignTable.GetEntityName());
 
-                        Namespaces.AddUnique(projectFeature.GetProject().GetEntityLayerNamespace(foreignTable.Schema));
+                        if (foreignTable.HasDefaultSchema())
+                        {
+                            Namespaces.AddUnique(projectFeature.GetProject().GetEntityLayerNamespace());
+                        }
+                        else
+                        {
+                            Namespaces.AddUnique(projectFeature.GetProject().GetEntityLayerNamespace(foreignTable.Schema));
+                        }
+                            
 
                         if (foreignKey.Key.Count == 0)
                         {
@@ -306,6 +314,8 @@ namespace CatFactory.EfCore.Definitions
                 }
                 else
                 {
+                    var typeResolver = new ClrTypeResolver();
+
                     for (var i = 0; i < tableCast.ForeignKeys.Count; i++)
                     {
                         var foreignKey = tableCast.ForeignKeys[i];
@@ -316,7 +326,7 @@ namespace CatFactory.EfCore.Definitions
 
                             var parameterName = NamingConvention.GetParameterName(column.Name);
 
-                            parameters.Add(new ParameterDefinition(TypeResolver.Resolve(column.Type), parameterName, "null"));
+                            parameters.Add(new ParameterDefinition(typeResolver.Resolve(column.Type), parameterName, "null"));
 
                             if (column.IsString())
                             {

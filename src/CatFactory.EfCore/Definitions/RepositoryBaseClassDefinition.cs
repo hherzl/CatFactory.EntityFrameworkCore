@@ -9,6 +9,7 @@ namespace CatFactory.EfCore.Definitions
     public class RepositoryBaseClassDefinition : CSharpClassDefinition
     {
         public RepositoryBaseClassDefinition(EfCoreProject project)
+            : base()
         {
             Project = project;
 
@@ -28,6 +29,8 @@ namespace CatFactory.EfCore.Definitions
             {
                 Namespaces.Add(Project.GetEntityLayerNamespace());
             }
+
+            Namespace = Project.GetDataLayerContractsNamespace();
 
             Name = "Repository";
 

@@ -6,6 +6,7 @@ namespace CatFactory.EfCore.Definitions
     public class AuditEntityInterfaceDefinition : CSharpInterfaceDefinition
     {
         public AuditEntityInterfaceDefinition(EfCoreProject project)
+            : base()
         {
             Project = project;
 

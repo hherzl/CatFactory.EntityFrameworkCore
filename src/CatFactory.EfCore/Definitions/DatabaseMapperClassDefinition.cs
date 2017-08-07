@@ -9,6 +9,7 @@ namespace CatFactory.EfCore.Definitions
     public class DatabaseMapperClassDefinition : CSharpClassDefinition
     {
         public DatabaseMapperClassDefinition(EfCoreProject project)
+            : base()
         {
             Project = project;
 

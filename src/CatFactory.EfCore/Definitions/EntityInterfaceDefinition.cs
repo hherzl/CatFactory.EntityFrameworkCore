@@ -5,6 +5,7 @@ namespace CatFactory.EfCore.Definitions
     public class EntityInterfaceDefinition : CSharpInterfaceDefinition
     {
         public EntityInterfaceDefinition(EfCoreProject project)
+            : base()
         {
             Project = project;
 

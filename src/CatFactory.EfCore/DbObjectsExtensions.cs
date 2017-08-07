@@ -71,5 +71,8 @@ namespace CatFactory.EfCore
 
         public static Boolean HasDefaultSchema(this IDbObject table)
             => String.IsNullOrEmpty(table.Schema) || String.Compare(table.Schema, "dbo", true) == 0;
+
+        public static Boolean IsPrimaryKeyGuid(this Table table)
+            => table.PrimaryKey != null && table.PrimaryKey.Key.Count == 1 && table.Columns[0].Type == "uniqueidentifier" ? true : false;
     }
 }

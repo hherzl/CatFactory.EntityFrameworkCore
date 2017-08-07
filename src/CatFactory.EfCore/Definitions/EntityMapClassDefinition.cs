@@ -12,6 +12,7 @@ namespace CatFactory.EfCore.Definitions
     public class EntityMapClassDefinition : CSharpClassDefinition
     {
         public EntityMapClassDefinition(IDbObject mappedObject, EfCoreProject project)
+            : base()
         {
             MappedObject = mappedObject;
             Project = project;
@@ -34,14 +35,7 @@ namespace CatFactory.EfCore.Definitions
 
             Namespaces.Add("Microsoft.EntityFrameworkCore");
 
-            if (MappedObject.HasDefaultSchema())
-            {
-                Namespaces.AddUnique(Project.GetEntityLayerNamespace());
-            }
-            else
-            {
-                Namespaces.AddUnique(Project.GetEntityLayerNamespace(MappedObject.Schema));
-            }
+            Namespaces.AddUnique(Project.GetEntityLayerNamespace(MappedObject.HasDefaultSchema() ? String.Empty : MappedObject.Schema));
 
             Namespace = Project.GetDataLayerMappingNamespace();
 

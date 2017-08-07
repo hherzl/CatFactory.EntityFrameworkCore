@@ -8,6 +8,7 @@ namespace CatFactory.EfCore.Definitions
     public class EntityMapperClassDefinition : CSharpClassDefinition
     {
         public EntityMapperClassDefinition(EfCoreProject project)
+            : base()
         {
             Project = project;
 

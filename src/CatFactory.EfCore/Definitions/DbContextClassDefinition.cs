@@ -10,6 +10,7 @@ namespace CatFactory.EfCore.Definitions
     public class DbContextClassDefinition : CSharpClassDefinition
     {
         public DbContextClassDefinition(ProjectFeature projectFeature)
+            : base()
         {
             ProjectFeature = projectFeature;
 

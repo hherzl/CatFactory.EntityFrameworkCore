@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using CatFactory.Mapping;
-using CatFactory.SqlServer;
 
 namespace CatFactory.EfCore
 {
@@ -30,17 +30,32 @@ namespace CatFactory.EfCore
                 .Distinct()
                 .Select(item =>
                 {
-                    var dbObjects = new List<DbObject>();
-
-                    dbObjects.AddRange(Database.GetTables().Where(t => t.Schema == item));
-                    dbObjects.AddRange(Database.GetViews().Where(v => v.Schema == item));
+                    var dbObjects = GetDbObjects(Database, item);
 
                     return new ProjectFeature(item, dbObjects)
                     {
-                        Project = this
+                        Project = this,
+                        Database = Database
                     };
                 })
                 .ToList();
+        }
+
+        private IEnumerable<DbObject> GetDbObjects(Database database, String schema)
+        {
+            var result = new List<DbObject>();
+
+            result.AddRange(Database
+                .Tables
+                .Where(x => x.Schema == schema)
+                .Select(y => new DbObject { Schema = y.Schema, Name = y.Name, Type = "USER_TABLE" }));
+
+            result.AddRange(Database
+                .Views
+                .Where(x => x.Schema == schema)
+                .Select(y => new DbObject { Schema = y.Schema, Name = y.Name, Type = "VIEW" }));
+
+            return result;
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]

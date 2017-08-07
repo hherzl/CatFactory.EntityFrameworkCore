@@ -6,6 +6,7 @@ namespace CatFactory.EfCore.Definitions
     public class RepositoryInterfaceDefinition : CSharpInterfaceDefinition
     {
         public RepositoryInterfaceDefinition(EfCoreProject project)
+            : base()
         {
             Project = project;
 

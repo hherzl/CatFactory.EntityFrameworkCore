@@ -21,7 +21,7 @@ namespace CatFactory.EfCore
             => namingConvention.GetClassName(String.Format("{0}.{1}", project.Name, (project as EfCoreProject).Namespaces.EntityLayer));
 
         public static String GetEntityLayerNamespace(this EfCoreProject project, String ns)
-            => String.Join(".", project.Name, project.Namespaces.EntityLayer, ns);
+            => String.IsNullOrEmpty(ns) ? GetEntityLayerNamespace(project) : String.Join(".", project.Name, project.Namespaces.EntityLayer, ns);
 
         public static String GetDataLayerNamespace(this EfCoreProject project)
             => namingConvention.GetClassName(String.Format("{0}.{1}", project.Name, project.Namespaces.DataLayer));

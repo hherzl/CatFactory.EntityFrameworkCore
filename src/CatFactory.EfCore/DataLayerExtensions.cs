@@ -156,10 +156,7 @@ namespace CatFactory.EfCore
         {
             var codeBuilder = new CSharpClassBuilder
             {
-                ObjectDefinition = new RepositoryBaseClassDefinition(project)
-                {
-                    Namespace = project.GetDataLayerContractsNamespace()
-                },
+                ObjectDefinition = new RepositoryBaseClassDefinition(project),
                 OutputDirectory = project.OutputDirectory
             };
 
@@ -193,11 +190,13 @@ namespace CatFactory.EfCore
                     Name = table.GetDataContractName()
                 };
 
+                var typeResolver = new ClrTypeResolver();
+
                 foreach (var column in table.Columns)
                 {
                     var propertyName = column.GetPropertyName();
 
-                    classDefinition.Properties.Add(new PropertyDefinition(classDefinition.TypeResolver.Resolve(column.Type), propertyName));
+                    classDefinition.Properties.Add(new PropertyDefinition(typeResolver.Resolve(column.Type), propertyName));
                 }
 
                 foreach (var foreignKey in table.ForeignKeys)
@@ -217,7 +216,7 @@ namespace CatFactory.EfCore
 
                         if (classDefinition.Properties.Where(item => item.Name == column.GetPropertyName()).Count() == 0)
                         {
-                            classDefinition.Properties.Add(new PropertyDefinition(classDefinition.TypeResolver.Resolve(column.Type), target));
+                            classDefinition.Properties.Add(new PropertyDefinition(typeResolver.Resolve(column.Type), target));
                         }
                     }
                 }
