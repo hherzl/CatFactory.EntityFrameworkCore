@@ -157,7 +157,7 @@ namespace CatFactory.EfCore.Definitions
                         {
                             continue;
                         }
-                        
+
                         var foreignKeyAlias = CatFactory.NamingConvention.GetCamelCase(foreignTable.GetEntityName());
 
                         foreach (var column in foreignTable?.GetColumnsWithOutKey())
@@ -179,6 +179,7 @@ namespace CatFactory.EfCore.Definitions
                         }
                     }
 
+                    lines.Add(new CommentLine(" Get query from DbSet"));
                     lines.Add(new CodeLine("var query = from {0} in DbContext.Set<{1}>()", entityAlias, tableCast.GetEntityName()));
 
                     foreach (var foreignKey in tableCast.ForeignKeys)
@@ -202,7 +203,7 @@ namespace CatFactory.EfCore.Definitions
                         {
                             Namespaces.AddUnique(projectFeature.GetProject().GetEntityLayerNamespace(foreignTable.Schema));
                         }
-                            
+
 
                         if (foreignKey.Key.Count == 0)
                         {
@@ -294,6 +295,7 @@ namespace CatFactory.EfCore.Definitions
                 {
                     returnType = dbObject.GetSingularName();
 
+                    lines.Add(new CommentLine(" Get query from DbSet"));
                     lines.Add(new CodeLine("var query = DbContext.Set<{0}>().AsQueryable();", dbObject.GetSingularName()));
                     lines.Add(new CodeLine());
 
@@ -303,7 +305,7 @@ namespace CatFactory.EfCore.Definitions
             var parameters = new List<ParameterDefinition>()
             {
                 new ParameterDefinition("Int32", "pageSize", "10"),
-                new ParameterDefinition("Int32", "pageNumber", "0")
+                new ParameterDefinition("Int32", "pageNumber", "1")
             };
 
             if (tableCast != null)
@@ -332,6 +334,7 @@ namespace CatFactory.EfCore.Definitions
                             {
                                 lines.Add(new CodeLine("if (!String.IsNullOrEmpty({0}))", NamingConvention.GetParameterName(column.Name)));
                                 lines.Add(new CodeLine("{{"));
+                                lines.Add(new CommentLine(1, " Filter by: '{0}'", column.Name));
                                 lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
                                 lines.Add(new CodeLine("}}"));
                                 lines.Add(new CodeLine());
@@ -340,6 +343,7 @@ namespace CatFactory.EfCore.Definitions
                             {
                                 lines.Add(new CodeLine("if ({0}.HasValue)", NamingConvention.GetParameterName(column.Name)));
                                 lines.Add(new CodeLine("{{"));
+                                lines.Add(new CommentLine(1, " Filter by: '{0}'", column.Name));
                                 lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
                                 lines.Add(new CodeLine("}}"));
                                 lines.Add(new CodeLine());
@@ -427,12 +431,15 @@ namespace CatFactory.EfCore.Definitions
 
             if (table.IsPrimaryKeyGuid())
             {
+                lines.Add(new CommentLine(" Set value for GUID"));
                 lines.Add(new CodeLine("entity.{0} = Guid.NewGuid();", NamingConvention.GetPropertyName(table.PrimaryKey.Key[0])));
                 lines.Add(new CodeLine());
             }
 
+            lines.Add(new CommentLine(" Add entity in DbSet"));
             lines.Add(new CodeLine("Add(entity);"));
             lines.Add(new CodeLine());
+            lines.Add(new CommentLine(" Save changes through DbContext"));
             lines.Add(new CodeLine("return await CommitChangesAsync();"));
 
             return new MethodDefinition("Task<Int32>", table.GetAddMethodName(), new ParameterDefinition(table.GetSingularName(), "entity"))
@@ -446,8 +453,10 @@ namespace CatFactory.EfCore.Definitions
         {
             var lines = new List<ILine>();
 
+            lines.Add(new CommentLine(" Update entity in DbSet"));
             lines.Add(new CodeLine("Update(changes);"));
             lines.Add(new CodeLine());
+            lines.Add(new CommentLine(" Save changes through DbContext"));
             lines.Add(new CodeLine("return await CommitChangesAsync();"));
 
             return new MethodDefinition("Task<Int32>", table.GetUpdateMethodName(), new ParameterDefinition(table.GetSingularName(), "changes"))
@@ -464,8 +473,10 @@ namespace CatFactory.EfCore.Definitions
                 IsAsync = true,
                 Lines = new List<ILine>()
                 {
+                    new CommentLine(" Remove entity from DbSet"),
                     new CodeLine("Remove(entity);"),
                     new CodeLine(),
+                    new CommentLine(" Save changes through DbContext"),
                     new CodeLine("return await CommitChangesAsync();")
                 }
             };

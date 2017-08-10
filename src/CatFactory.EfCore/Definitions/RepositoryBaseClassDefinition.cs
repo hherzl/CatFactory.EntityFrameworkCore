@@ -65,31 +65,7 @@ namespace CatFactory.EfCore.Definitions
 
             Methods.Add(GetUpdateMethod(Project));
 
-            Methods.Add(new MethodDefinition(AccessModifier.Protected, "void", "Remove", new ParameterDefinition("TEntity", "entity"))
-            {
-                IsVirtual = true,
-                GenericType = "TEntity",
-                WhereConstraints = new List<String>()
-                {
-                    "TEntity : class"
-                },
-                Lines = new List<ILine>()
-                {
-                    new CodeLine("var dbSet = DbContext.Set<TEntity>();"),
-                    new CodeLine(),
-                    new CodeLine("var entry = DbContext.Entry(entity);"),
-                    new CodeLine(),
-                    new CodeLine("if (entry.State == EntityState.Deleted)"),
-                    new CodeLine("{{"),
-                    new CodeLine(1, "dbSet.Attach(entity);"),
-                    new CodeLine(1, "dbSet.Remove(entity);"),
-                    new CodeLine("}}"),
-                    new CodeLine("else"),
-                    new CodeLine("{{"),
-                    new CodeLine(1, "entry.State = EntityState.Deleted;"),
-                    new CodeLine("}}"),
-                }
-            });
+            Methods.Add(GetRemoveMethod(Project));
 
             Methods.Add(new MethodDefinition("Int32", "CommitChanges")
             {
@@ -184,13 +160,15 @@ namespace CatFactory.EfCore.Definitions
                 new CodeLine(),
                 new CodeLine("if (entry.State == EntityState.Detached)"),
                 new CodeLine("{{"),
-                new CodeLine(1, "dbSet?.Attach(entity);"),
+                new CodeLine(1, "var dbSet = DbContext.Set<TEntity>();"),
+                new CodeLine(),
+                new CodeLine(1, "dbSet.Attach(entity);"),
                 new CodeLine("}}"),
                 new CodeLine(),
                 new CodeLine("entry.State = EntityState.Modified;")
             });
 
-            return new MethodDefinition(AccessModifier.Protected, "void", "Update", new ParameterDefinition("TEntity", "entity"), new ParameterDefinition("DbSet<TEntity>", "dbSet", "null"))
+            return new MethodDefinition(AccessModifier.Protected, "void", "Update", new ParameterDefinition("TEntity", "entity"))
             {
                 IsVirtual = true,
                 GenericType = "TEntity",
@@ -199,6 +177,35 @@ namespace CatFactory.EfCore.Definitions
                     "TEntity : class"
                 },
                 Lines = lines
+            };
+        }
+
+        protected virtual MethodDefinition GetRemoveMethod(EfCoreProject project)
+        {
+            return new MethodDefinition(AccessModifier.Protected, "void", "Remove", new ParameterDefinition("TEntity", "entity"))
+            {
+                IsVirtual = true,
+                GenericType = "TEntity",
+                WhereConstraints = new List<String>()
+                {
+                    "TEntity : class"
+                },
+                Lines = new List<ILine>()
+                {
+                    new CodeLine("var entry = DbContext.Entry(entity);"),
+                    new CodeLine(),
+                    new CodeLine("if (entry.State == EntityState.Deleted)"),
+                    new CodeLine("{{"),
+                    new CodeLine(1, "var dbSet = DbContext.Set<TEntity>();"),
+                    new CodeLine(),
+                    new CodeLine(1, "dbSet.Attach(entity);"),
+                    new CodeLine(1, "dbSet.Remove(entity);"),
+                    new CodeLine("}}"),
+                    new CodeLine("else"),
+                    new CodeLine("{{"),
+                    new CodeLine(1, "entry.State = EntityState.Deleted;"),
+                    new CodeLine("}}"),
+                }
             };
         }
     }
