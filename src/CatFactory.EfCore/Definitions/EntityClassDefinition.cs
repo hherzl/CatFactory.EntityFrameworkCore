@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using CatFactory.CodeFactory;
 using CatFactory.Collections;
 using CatFactory.DotNetCore;
 using CatFactory.Mapping;
@@ -52,8 +53,23 @@ namespace CatFactory.EfCore.Definitions
 
             var tableCast = DbObject as ITable;
 
+            var typeResolver = new ClrTypeResolver();
+
             if (tableCast != null)
             {
+                if (tableCast.PrimaryKey != null && tableCast.PrimaryKey.Key.Count == 1)
+                {
+                    var column = tableCast.PrimaryKey.GetColumns(tableCast).First();
+
+                    Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(typeResolver.Resolve(column.Type), column.GetParameterName()))
+                    {
+                        Lines = new List<ILine>()
+                        {
+                            new CodeLine("{0} = {1};", column.GetPropertyName(), column.GetParameterName())
+                        }
+                    });
+                }
+
                 columns = tableCast.Columns;
 
                 if (!String.IsNullOrEmpty(tableCast.Description))
@@ -73,8 +89,6 @@ namespace CatFactory.EfCore.Definitions
                     Documentation.Summary = viewCast.Description;
                 }
             }
-
-            var typeResolver = new ClrTypeResolver();
 
             if (tableCast != null)
             {

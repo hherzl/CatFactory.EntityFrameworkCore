@@ -254,32 +254,29 @@ namespace CatFactory.EfCore.Definitions
 
                         if (property.IsForeign)
                         {
-                            if (property.Nullable)
+                            if (property.Type.Contains("char"))
                             {
-                                if (property.Type.Contains("char"))
-                                {
-                                    lines.Add(new CodeLine(2, "{0} = {1} == null ? String.Empty : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                                }
-                                else if (property.Type.Contains("date"))
-                                {
-                                    lines.Add(new CodeLine(2, "{0} = {1} == null ? default(DateTime?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                                }
-                                else if (property.Type.Contains("smallint"))
-                                {
-                                    lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Int16?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                                }
-                                else if (property.Type.Contains("bigint"))
-                                {
-                                    lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Int64?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                                }
-                                else if (property.Type.Contains("int"))
-                                {
-                                    lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Int32?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                                }
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? String.Empty : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
                             }
-                            else
+                            else if (property.Type.Contains("date"))
                             {
-                                lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(DateTime?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                            else if (property.Type.Contains("smallint"))
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Int16?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                            else if (property.Type.Contains("bigint"))
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Int64?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                            else if (property.Type.Contains("int"))
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Int32?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                            else if (property.Type.Contains("decimal"))
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Decimal?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
                             }
                         }
                         else

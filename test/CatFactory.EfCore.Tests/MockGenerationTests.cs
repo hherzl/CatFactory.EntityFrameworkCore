@@ -33,7 +33,7 @@ namespace CatFactory.EfCore.Tests
             {
                 Name = "Store",
                 Database = StoreDatabase.Mock,
-                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store.DataBindings"
+                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store.Mock.DataBindings"
             };
 
             project.Settings.EnableDataBindings = true; 
@@ -55,7 +55,7 @@ namespace CatFactory.EfCore.Tests
             {
                 Name = "School",
                 Database = SchoolDatabase.Mock,
-                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\School"
+                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\School.Mock"
             };
 
             project.BuildFeatures();
@@ -72,7 +72,7 @@ namespace CatFactory.EfCore.Tests
             {
                 Name = "Store",
                 Database = StoreDatabase.Mock,
-                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\StoreWithDbSetPropertiesAndDataAnnotations"
+                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\StoreWithDbSetPropertiesAndDataAnnotations.Mock"
             };
 
             project.Settings.UseDataAnnotations = true;
@@ -92,7 +92,7 @@ namespace CatFactory.EfCore.Tests
             {
                 Name = "Store",
                 Database = StoreDatabase.Mock,
-                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\ModifiedStore"
+                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\ModifiedStore.Mock"
             };
 
             project.Namespaces.EntityLayer = "EL";
@@ -112,7 +112,7 @@ namespace CatFactory.EfCore.Tests
             {
                 Name = "Store",
                 Database = StoreDatabase.Mock,
-                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store.Tdd",
+                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store.Tdd.Mock",
             };
 
             // todo: add logic to this feature
