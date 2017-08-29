@@ -59,5 +59,8 @@ namespace CatFactory.EfCore
                 m_backingFields = value;
             }
         }
+
+        // todo: add logic to show author's info
+        public AuthorInfo AuthorInfo { get; set; }
     }
 }

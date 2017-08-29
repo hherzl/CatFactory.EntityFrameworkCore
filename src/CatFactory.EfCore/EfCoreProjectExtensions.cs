@@ -14,7 +14,7 @@ namespace CatFactory.EfCore
         
         static EfCoreProjectExtensions()
         {
-            namingConvention = new DotNetNamingConvention() as ICodeNamingConvention;
+            namingConvention = new DotNetNamingConvention();
         }
 
         public static String GetEntityLayerNamespace(this Project project)
