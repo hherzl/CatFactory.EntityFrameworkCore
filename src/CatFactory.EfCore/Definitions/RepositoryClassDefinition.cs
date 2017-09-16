@@ -21,7 +21,7 @@ namespace CatFactory.EfCore.Definitions
 
         public ProjectFeature ProjectFeature { get; }
 
-        public override void Init()
+        public void Init()
         {
             Namespaces.Add("System");
             Namespaces.Add("System.Linq");
@@ -43,13 +43,13 @@ namespace CatFactory.EfCore.Definitions
                 }
                 else
                 {
-                    Namespaces.AddUnique(ProjectFeature.GetProject().GetEntityLayerNamespace(table.Schema));
+                    Namespaces.AddUnique(ProjectFeature.GetEfCoreProject().GetEntityLayerNamespace(table.Schema));
                 }
 
-                Namespaces.AddUnique(ProjectFeature.GetProject().GetDataLayerContractsNamespace());
+                Namespaces.AddUnique(ProjectFeature.GetEfCoreProject().GetDataLayerContractsNamespace());
             }
 
-            Namespace = ProjectFeature.GetProject().GetDataLayerRepositoriesNamespace();
+            Namespace = ProjectFeature.GetEfCoreProject().GetDataLayerRepositoriesNamespace();
 
             Name = ProjectFeature.GetClassRepositoryName();
 
@@ -67,11 +67,11 @@ namespace CatFactory.EfCore.Definitions
 
             foreach (var table in tables)
             {
-                if (!Namespaces.Contains(ProjectFeature.GetProject().GetDataLayerDataContractsNamespace()))
+                if (!Namespaces.Contains(ProjectFeature.GetEfCoreProject().GetDataLayerDataContractsNamespace()))
                 {
-                    if (ProjectFeature.GetProject().Settings.EntitiesWithDataContracts.Contains(table.FullName) && !Namespaces.Contains(ProjectFeature.GetProject().GetDataLayerDataContractsNamespace()))
+                    if (ProjectFeature.GetEfCoreProject().Settings.EntitiesWithDataContracts.Contains(table.FullName) && !Namespaces.Contains(ProjectFeature.GetEfCoreProject().GetDataLayerDataContractsNamespace()))
                     {
-                        Namespaces.Add(ProjectFeature.GetProject().GetDataLayerDataContractsNamespace());
+                        Namespaces.Add(ProjectFeature.GetEfCoreProject().GetDataLayerDataContractsNamespace());
                     }
                 }
 
@@ -83,7 +83,7 @@ namespace CatFactory.EfCore.Definitions
 
                         if (child != null)
                         {
-                            Namespaces.AddUnique(ProjectFeature.GetProject().GetDataLayerDataContractsNamespace());
+                            Namespaces.AddUnique(ProjectFeature.GetEfCoreProject().GetDataLayerDataContractsNamespace());
                         }
                     }
                 }
@@ -115,7 +115,7 @@ namespace CatFactory.EfCore.Definitions
             }
             else
             {
-                if (ProjectFeature.GetProject().Settings.EntitiesWithDataContracts.Contains(tableCast.FullName))
+                if (ProjectFeature.GetEfCoreProject().Settings.EntitiesWithDataContracts.Contains(tableCast.FullName))
                 {
                     var entityAlias = CatFactory.NamingConvention.GetCamelCase(tableCast.GetEntityName());
 
@@ -197,11 +197,11 @@ namespace CatFactory.EfCore.Definitions
 
                         if (foreignTable.HasDefaultSchema())
                         {
-                            Namespaces.AddUnique(projectFeature.GetProject().GetEntityLayerNamespace());
+                            Namespaces.AddUnique(projectFeature.GetEfCoreProject().GetEntityLayerNamespace());
                         }
                         else
                         {
-                            Namespaces.AddUnique(projectFeature.GetProject().GetEntityLayerNamespace(foreignTable.Schema));
+                            Namespaces.AddUnique(projectFeature.GetEfCoreProject().GetEntityLayerNamespace(foreignTable.Schema));
                         }
 
 
@@ -241,7 +241,7 @@ namespace CatFactory.EfCore.Definitions
                     }
 
                     lines.Add(new CodeLine(1, "select new {0}", returnType));
-                    lines.Add(new CodeLine(1, "{{"));
+                    lines.Add(new CodeLine(1, "{"));
 
                     for (var i = 0; i < dataContractPropertiesSets.Count; i++)
                     {
@@ -285,7 +285,7 @@ namespace CatFactory.EfCore.Definitions
                         }
                     }
 
-                    lines.Add(new CodeLine(1, "}};"));
+                    lines.Add(new CodeLine(1, "};"));
                     lines.Add(new CodeLine());
                 }
                 else
@@ -330,19 +330,19 @@ namespace CatFactory.EfCore.Definitions
                             if (column.IsString())
                             {
                                 lines.Add(new CodeLine("if (!String.IsNullOrEmpty({0}))", NamingConvention.GetParameterName(column.Name)));
-                                lines.Add(new CodeLine("{{"));
+                                lines.Add(new CodeLine("{"));
                                 lines.Add(new CommentLine(1, " Filter by: '{0}'", column.Name));
                                 lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
-                                lines.Add(new CodeLine("}}"));
+                                lines.Add(new CodeLine("}"));
                                 lines.Add(new CodeLine());
                             }
                             else
                             {
                                 lines.Add(new CodeLine("if ({0}.HasValue)", NamingConvention.GetParameterName(column.Name)));
-                                lines.Add(new CodeLine("{{"));
+                                lines.Add(new CodeLine("{"));
                                 lines.Add(new CommentLine(1, " Filter by: '{0}'", column.Name));
                                 lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
-                                lines.Add(new CodeLine("}}"));
+                                lines.Add(new CodeLine("}"));
                                 lines.Add(new CodeLine());
                             }
                         }
@@ -386,7 +386,7 @@ namespace CatFactory.EfCore.Definitions
                     IsAsync = true,
                     Lines = new List<ILine>()
                     {
-                        new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", ProjectFeature.GetProject().Settings.DeclareDbSetPropertiesInDbContext ? dbObject.GetPluralName() : String.Format("Set<{0}>()", dbObject.GetSingularName()), expression)
+                        new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", ProjectFeature.GetEfCoreProject().Settings.DeclareDbSetPropertiesInDbContext ? dbObject.GetPluralName() : String.Format("Set<{0}>()", dbObject.GetSingularName()), expression)
                     }
                 });
             }
@@ -417,7 +417,7 @@ namespace CatFactory.EfCore.Definitions
                 IsAsync = true,
                 Lines = new List<ILine>()
                 {
-                    new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", ProjectFeature.GetProject().Settings.DeclareDbSetPropertiesInDbContext ? dbObject.GetPluralName() : String.Format("Set<{0}>()", dbObject.GetSingularName()), expression)
+                    new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", ProjectFeature.GetEfCoreProject().Settings.DeclareDbSetPropertiesInDbContext ? dbObject.GetPluralName() : String.Format("Set<{0}>()", dbObject.GetSingularName()), expression)
                 }
             };
         }

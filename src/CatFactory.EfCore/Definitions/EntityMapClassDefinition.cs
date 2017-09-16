@@ -24,7 +24,7 @@ namespace CatFactory.EfCore.Definitions
 
         public EfCoreProject Project { get; }
 
-        public override void Init()
+        public void Init()
         {
             if (Project.Settings.UseMefForEntitiesMapping)
             {
@@ -46,7 +46,7 @@ namespace CatFactory.EfCore.Definitions
             var mapLines = new List<ILine>();
 
             mapLines.Add(new CodeLine("modelBuilder.Entity<{0}>(entity =>", MappedObject.GetSingularName()));
-            mapLines.Add(new CodeLine("{{"));
+            mapLines.Add(new CodeLine("{"));
 
             mapLines.Add(new CommentLine(1, " Mapping for table"));
 
@@ -226,7 +226,7 @@ namespace CatFactory.EfCore.Definitions
                 }
             }
 
-            mapLines.Add(new CodeLine("}});"));
+            mapLines.Add(new CodeLine("});"));
 
             var mapMethod = new MethodDefinition("void", "Map", new ParameterDefinition("ModelBuilder", "modelBuilder"))
             {

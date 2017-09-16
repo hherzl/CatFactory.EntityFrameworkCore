@@ -15,7 +15,7 @@ namespace CatFactory.EfCore.Definitions
 
         public EfCoreProject Project { get; }
 
-        public override void Init()
+        public void Init()
         {
             Namespaces.Add("System");
             Namespaces.Add("System.Threading.Tasks");

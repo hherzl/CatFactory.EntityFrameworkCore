@@ -25,7 +25,7 @@ namespace CatFactory.EfCore
         public static String GetBusinessClassName(this ProjectFeature projectFeature)
             => namingConvention.GetClassName(String.Format("{0}BusinessObject", projectFeature.Name));
 
-        public static EfCoreProject GetProject(this ProjectFeature projectFeature)
+        public static EfCoreProject GetEfCoreProject(this ProjectFeature projectFeature)
             => projectFeature.Project as EfCoreProject;
     }
 }

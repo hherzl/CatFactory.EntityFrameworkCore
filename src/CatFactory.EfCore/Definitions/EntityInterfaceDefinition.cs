@@ -14,7 +14,7 @@ namespace CatFactory.EfCore.Definitions
 
         public EfCoreProject Project { get; }
 
-        public override void Init()
+        public void Init()
         {
             Namespace = Project.GetEntityLayerNamespace();
             Name = "IEntity";
