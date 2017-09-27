@@ -12,8 +12,6 @@ namespace CatFactory.EfCore
             Contracts = "Contracts";
             DataContracts = "DataContracts";
             Repositories = "Repositories";
-            BusinessLayer = "BusinessLayer";
-            Responses = "Responses";
         }
 
         public String EntityLayer { get; set; }
@@ -27,9 +25,5 @@ namespace CatFactory.EfCore
         public String DataContracts { get; set; }
 
         public String Repositories { get; set; }
-
-        public String BusinessLayer { get; set; }
-
-        public String Responses { get; set; }
     }
 }

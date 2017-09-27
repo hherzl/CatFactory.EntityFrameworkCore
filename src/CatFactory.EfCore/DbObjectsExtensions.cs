@@ -48,22 +48,22 @@ namespace CatFactory.EfCore
         public static String GetDbEntityMapperName(this Database db)
             => namingConvention.GetClassName(String.Format("{0}EntityMapper", db.Name));
 
-        public static String GetGetAllMethodName(this IDbObject dbObject)
+        public static String GetGetAllRepositoryMethodName(this IDbObject dbObject)
             => String.Format("Get{0}", dbObject.GetPluralName());
 
-        public static String GetGetByUniqueMethodName(this IDbObject dbObject, Unique unique)
+        public static String GetGetByUniqueRepositoryMethodName(this IDbObject dbObject, Unique unique)
             => String.Format("Get{0}By{1}Async", dbObject.GetSingularName(), String.Join("And", unique.Key.Select(item => namingConvention.GetPropertyName(item))));
 
-        public static String GetGetMethodName(this IDbObject dbObject)
+        public static String GetGetRepositoryMethodName(this IDbObject dbObject)
             => String.Format("Get{0}Async", dbObject.GetSingularName());
 
-        public static String GetAddMethodName(this ITable dbObject)
+        public static String GetAddRepositoryMethodName(this ITable dbObject)
             => String.Format("Add{0}Async", dbObject.GetSingularName());
 
-        public static String GetUpdateMethodName(this ITable dbObject)
+        public static String GetUpdateRepositoryMethodName(this ITable dbObject)
             => String.Format("Update{0}Async", dbObject.GetSingularName());
 
-        public static String GetRemoveMethodName(this ITable dbObject)
+        public static String GetRemoveRepositoryMethodName(this ITable dbObject)
             => String.Format("Remove{0}Async", dbObject.GetSingularName());
 
         public static String GetFullColumnName(this ITable table, Column column)

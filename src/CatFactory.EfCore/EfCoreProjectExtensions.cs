@@ -11,7 +11,7 @@ namespace CatFactory.EfCore
     public static class EfCoreProjectExtensions
     {
         private static ICodeNamingConvention namingConvention;
-        
+
         static EfCoreProjectExtensions()
         {
             namingConvention = new DotNetNamingConvention();
@@ -38,15 +38,6 @@ namespace CatFactory.EfCore
         public static String GetDataLayerRepositoriesNamespace(this EfCoreProject project)
             => namingConvention.GetClassName(String.Join(".", project.Name, project.Namespaces.DataLayer, project.Namespaces.Repositories));
 
-        public static String GetBusinessLayerNamespace(this EfCoreProject project)
-            => namingConvention.GetClassName(String.Join(".", project.Name, project.Namespaces.BusinessLayer));
-
-        public static String GetBusinessLayerContractsNamespace(this EfCoreProject project)
-            => namingConvention.GetClassName(String.Join(".", project.Name, project.Namespaces.BusinessLayer, project.Namespaces.Contracts));
-
-        public static String GetBusinessLayerResponsesNamespace(this EfCoreProject project)
-            => namingConvention.GetClassName(String.Join(".", project.Name, project.Namespaces.BusinessLayer, project.Namespaces.Responses));
-
         public static String GetEntityLayerDirectory(this EfCoreProject project)
             => Path.Combine(project.OutputDirectory, project.Namespaces.EntityLayer);
 
@@ -64,15 +55,6 @@ namespace CatFactory.EfCore
 
         public static String GetDataLayerRepositoriesDirectory(this EfCoreProject project)
             => Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer, project.Namespaces.Repositories);
-
-        public static String GetBusinessLayerDirectory(this EfCoreProject project)
-            => Path.Combine(project.OutputDirectory, project.Namespaces.BusinessLayer);
-
-        public static String GetBusinessLayerContractsDirectory(this EfCoreProject project)
-            => Path.Combine(project.OutputDirectory, project.Namespaces.BusinessLayer, project.Namespaces.Contracts);
-
-        public static String GetBusinessLayerResponsesDirectory(this EfCoreProject project)
-            => Path.Combine(project.OutputDirectory, project.Namespaces.BusinessLayer, project.Namespaces.Responses);
 
         public static PropertyDefinition GetChildNavigationProperty(this EfCoreProject project, Table table, ForeignKey fk)
         {

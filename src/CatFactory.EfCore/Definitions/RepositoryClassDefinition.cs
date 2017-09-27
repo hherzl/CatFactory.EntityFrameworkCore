@@ -357,7 +357,7 @@ namespace CatFactory.EfCore.Definitions
                 }
             }
 
-            return new MethodDefinition(String.Format("IQueryable<{0}>", returnType), dbObject.GetGetAllMethodName(), parameters.ToArray())
+            return new MethodDefinition(String.Format("IQueryable<{0}>", returnType), dbObject.GetGetAllRepositoryMethodName(), parameters.ToArray())
             {
                 Lines = lines
             };
@@ -381,7 +381,7 @@ namespace CatFactory.EfCore.Definitions
             {
                 var expression = String.Format("item => {0}", String.Join(" && ", unique.Key.Select(item => String.Format("item.{0} == entity.{0}", NamingConvention.GetPropertyName(item)))));
 
-                Methods.Add(new MethodDefinition(String.Format("Task<{0}>", dbObject.GetSingularName()), dbObject.GetGetByUniqueMethodName(unique), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
+                Methods.Add(new MethodDefinition(String.Format("Task<{0}>", dbObject.GetSingularName()), dbObject.GetGetByUniqueRepositoryMethodName(unique), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
                 {
                     IsAsync = true,
                     Lines = new List<ILine>()
@@ -412,7 +412,7 @@ namespace CatFactory.EfCore.Definitions
                 }
             }
 
-            return new MethodDefinition(String.Format("Task<{0}>", dbObject.GetSingularName()), dbObject.GetGetMethodName(), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
+            return new MethodDefinition(String.Format("Task<{0}>", dbObject.GetSingularName()), dbObject.GetGetRepositoryMethodName(), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
             {
                 IsAsync = true,
                 Lines = new List<ILine>()
@@ -439,7 +439,7 @@ namespace CatFactory.EfCore.Definitions
             lines.Add(new CommentLine(" Save changes through DbContext"));
             lines.Add(new CodeLine("return await CommitChangesAsync();"));
 
-            return new MethodDefinition("Task<Int32>", table.GetAddMethodName(), new ParameterDefinition(table.GetSingularName(), "entity"))
+            return new MethodDefinition("Task<Int32>", table.GetAddRepositoryMethodName(), new ParameterDefinition(table.GetSingularName(), "entity"))
             {
                 IsAsync = true,
                 Lines = lines
@@ -456,7 +456,7 @@ namespace CatFactory.EfCore.Definitions
             lines.Add(new CommentLine(" Save changes through DbContext"));
             lines.Add(new CodeLine("return await CommitChangesAsync();"));
 
-            return new MethodDefinition("Task<Int32>", table.GetUpdateMethodName(), new ParameterDefinition(table.GetSingularName(), "changes"))
+            return new MethodDefinition("Task<Int32>", table.GetUpdateRepositoryMethodName(), new ParameterDefinition(table.GetSingularName(), "changes"))
             {
                 IsAsync = true,
                 Lines = lines
@@ -465,7 +465,7 @@ namespace CatFactory.EfCore.Definitions
 
         public MethodDefinition GetRemoveMethod(ProjectFeature projectFeature, Table table)
         {
-            return new MethodDefinition("Task<Int32>", table.GetRemoveMethodName(), new ParameterDefinition(table.GetSingularName(), "entity"))
+            return new MethodDefinition("Task<Int32>", table.GetRemoveRepositoryMethodName(), new ParameterDefinition(table.GetSingularName(), "entity"))
             {
                 IsAsync = true,
                 Lines = new List<ILine>()

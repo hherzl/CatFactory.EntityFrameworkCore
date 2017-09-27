@@ -34,7 +34,7 @@ namespace CatFactory.EfCore.Definitions
                 Namespaces.Add("System.Reflection");
 
                 lines.Add(new CommentLine(" Get current assembly"));
-                lines.Add(new CodeLine("var currentAssembly = typeof(StoreDbContext).GetTypeInfo().Assembly;"));
+                lines.Add(new CodeLine("var currentAssembly = typeof({0}).GetTypeInfo().Assembly;", Project.Database.GetDbContextName()));
                 lines.Add(new CodeLine());
 
                 lines.Add(new CommentLine(" Get configuration for container from current assembly"));
