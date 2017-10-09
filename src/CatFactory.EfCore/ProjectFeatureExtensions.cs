@@ -19,12 +19,6 @@ namespace CatFactory.EfCore
         public static String GetClassRepositoryName(this ProjectFeature projectFeature)
             => namingConvention.GetClassName(String.Format("{0}Repository", projectFeature.Name));
 
-        public static String GetBusinessInterfaceName(this ProjectFeature projectFeature)
-            => namingConvention.GetInterfaceName(String.Format("{0}BusinessObject", projectFeature.Name));
-
-        public static String GetBusinessClassName(this ProjectFeature projectFeature)
-            => namingConvention.GetClassName(String.Format("{0}BusinessObject", projectFeature.Name));
-
         public static EfCoreProject GetEfCoreProject(this ProjectFeature projectFeature)
             => projectFeature.Project as EfCoreProject;
     }

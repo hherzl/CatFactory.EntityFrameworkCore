@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using CatFactory.DotNetCore;
 using CatFactory.EfCore.Definitions;
 using CatFactory.Mapping;
@@ -18,6 +20,7 @@ namespace CatFactory.EfCore
             GenerateDbContext(project);
             GenerateDataContracts(project);
             GenerateDataRepositories(project);
+            GenerateReadMe(project);
 
             return project;
         }
@@ -262,6 +265,37 @@ namespace CatFactory.EfCore
 
                 codeBuilder.CreateFile(project.GetDataLayerRepositoriesDirectory());
             }
+        }
+
+        private static void GenerateReadMe(this EfCoreProject project)
+        {
+            var lines = new List<String>();
+
+            lines.Add("CatFactory: Code Generation Made Easy");
+            lines.Add(String.Empty);
+
+            lines.Add("How to use this code on your ASP.NET Core Application");
+            lines.Add(String.Empty);
+
+            lines.Add("Register objects in Startup class, register your DbContext and repositories in ConfigureServices method:");
+            lines.Add(" services.AddEntityFrameworkSqlServer().AddDbContext<StoreDbContext>();");
+            lines.Add(" services.AddScoped<IDboRepository, DboRepository>();");
+            lines.Add(String.Empty);
+
+            lines.Add("Happy code generation!");
+            lines.Add(String.Empty);
+
+            lines.Add("You can check the full guide to use this tool in:");
+            lines.Add("https://www.codeproject.com/Articles/1160615/Generating-Code-for-EF-Core-with-CatFactory");
+            lines.Add(String.Empty);
+            lines.Add("Also you can check source code on GitHub:");
+            lines.Add("https://github.com/hherzl/CatFactory.EfCore");
+            lines.Add(String.Empty);
+            lines.Add("*** Soon CatFactory will generate code for EF Core 2.0 (November - 2017) ***");
+            lines.Add(String.Empty);
+            lines.Add("CatFactory Development Team ==^^==");
+
+            TextFileHelper.CreateFile(Path.Combine(project.OutputDirectory, "ReadMe.txt"), lines.ToStringBuilder().ToString());
         }
     }
 }
