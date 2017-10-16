@@ -3,30 +3,24 @@ using CatFactory.OOP;
 
 namespace CatFactory.EfCore.Definitions
 {
-    public class RepositoryInterfaceDefinition : CSharpInterfaceDefinition
+    public static class RepositoryInterfaceDefinition
     {
-        public RepositoryInterfaceDefinition(EfCoreProject project)
-            : base()
+        public static CSharpInterfaceDefinition GetRepositoryInterfaceDefinition(this EfCoreProject project)
         {
-            Project = project;
+            var interfaceDefinition = new CSharpInterfaceDefinition();
 
-            Init();
-        }
+            interfaceDefinition.Namespaces.Add("System");
+            interfaceDefinition.Namespaces.Add("System.Threading.Tasks");
 
-        public EfCoreProject Project { get; }
+            interfaceDefinition.Namespace = project.GetDataLayerContractsNamespace();
+            interfaceDefinition.Name = "IRepository";
 
-        public void Init()
-        {
-            Namespaces.Add("System");
-            Namespaces.Add("System.Threading.Tasks");
+            interfaceDefinition.Implements.Add("IDisposable");
 
-            Namespace = Project.GetDataLayerContractsNamespace();
-            Name = "IRepository";
+            interfaceDefinition.Methods.Add(new MethodDefinition("Int32", "CommitChanges"));
+            interfaceDefinition.Methods.Add(new MethodDefinition("Task<Int32>", "CommitChangesAsync"));
 
-            Implements.Add("IDisposable");
-
-            Methods.Add(new MethodDefinition("Int32", "CommitChanges"));
-            Methods.Add(new MethodDefinition("Task<Int32>", "CommitChangesAsync"));
+            return interfaceDefinition;
         }
     }
 }

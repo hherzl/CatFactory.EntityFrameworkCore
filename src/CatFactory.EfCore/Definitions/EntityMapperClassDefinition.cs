@@ -5,35 +5,27 @@ using CatFactory.OOP;
 
 namespace CatFactory.EfCore.Definitions
 {
-    public class EntityMapperClassDefinition : CSharpClassDefinition
+    public static class EntityMapperClassDefinition
     {
-        public EntityMapperClassDefinition(EfCoreProject project)
-            : base()
+        public static CSharpClassDefinition GetEntityMapperClassDefinition(this EfCoreProject project)
         {
-            Project = project;
+            var classDefinition = new CSharpClassDefinition();
 
-            Init();
-        }
+            classDefinition.Namespaces.Add("System");
+            classDefinition.Namespaces.Add("System.Collections.Generic");
+            classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
 
-        public EfCoreProject Project { get; }
+            classDefinition.Namespace = project.GetDataLayerMappingNamespace();
 
-        public void Init()
-        {
-            Namespaces.Add("System");
-            Namespaces.Add("System.Collections.Generic");
-            Namespaces.Add("Microsoft.EntityFrameworkCore");
+            classDefinition.Name = "EntityMapper";
 
-            Namespace = Project.GetDataLayerMappingNamespace();
+            classDefinition.Implements.Add("IEntityMapper");
 
-            Name = "EntityMapper";
+            classDefinition.Constructors.Add(new ClassConstructorDefinition());
 
-            Implements.Add("IEntityMapper");
+            classDefinition.Properties.Add(new PropertyDefinition("IEnumerable<IEntityMap>", "Mappings"));
 
-            Constructors.Add(new ClassConstructorDefinition());
-
-            Properties.Add(new PropertyDefinition("IEnumerable<IEntityMap>", "Mappings"));
-
-            Methods.Add(new MethodDefinition("void", "MapEntities", new ParameterDefinition("ModelBuilder", "modelBuilder"))
+            classDefinition.Methods.Add(new MethodDefinition("void", "MapEntities", new ParameterDefinition("ModelBuilder", "modelBuilder"))
             {
                 Lines = new List<ILine>()
                 {
@@ -43,6 +35,8 @@ namespace CatFactory.EfCore.Definitions
                     new CodeLine("}}")
                 }
             });
+
+            return classDefinition;
         }
     }
 }

@@ -12,7 +12,7 @@ namespace CatFactory.EfCore
 
         static DbObjectsExtensions()
         {
-            namingConvention = new DotNetNamingConvention() as ICodeNamingConvention;
+            namingConvention = new DotNetNamingConvention();
         }
 
         public static String GetSingularName(this IDbObject dbObject)

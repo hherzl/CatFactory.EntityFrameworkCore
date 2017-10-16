@@ -2,22 +2,16 @@
 
 namespace CatFactory.EfCore.Definitions
 {
-    public class EntityInterfaceDefinition : CSharpInterfaceDefinition
+    public static class EntityInterfaceDefinition
     {
-        public EntityInterfaceDefinition(EfCoreProject project)
-            : base()
+        public static CSharpInterfaceDefinition GetEntityInterfaceDefinition(this EfCoreProject project)
         {
-            Project = project;
+            var interfaceDefinition = new CSharpInterfaceDefinition();
 
-            Init();
-        }
+            interfaceDefinition.Namespace = project.GetEntityLayerNamespace();
+            interfaceDefinition.Name = "IEntity";
 
-        public EfCoreProject Project { get; }
-
-        public void Init()
-        {
-            Namespace = Project.GetEntityLayerNamespace();
-            Name = "IEntity";
+            return interfaceDefinition;
         }
     }
 }

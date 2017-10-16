@@ -11,7 +11,7 @@ namespace CatFactory.EfCore
         {
             var codeBuilder = new CSharpInterfaceBuilder
             {
-                ObjectDefinition = new EntityInterfaceDefinition(project),
+                ObjectDefinition = project.GetEntityInterfaceDefinition(),
                 OutputDirectory = project.OutputDirectory
             };
 
@@ -19,7 +19,7 @@ namespace CatFactory.EfCore
 
             if (project.Settings.AuditEntity != null)
             {
-                codeBuilder.ObjectDefinition = new AuditEntityInterfaceDefinition(project);
+                codeBuilder.ObjectDefinition = project.GetAuditEntityInterfaceDefinition();
 
                 codeBuilder.CreateFile(project.GetEntityLayerDirectory());
             }
@@ -33,7 +33,7 @@ namespace CatFactory.EfCore
             {
                 var codeBuilder = new CSharpClassBuilder
                 {
-                    ObjectDefinition = new EntityClassDefinition(table, project),
+                    ObjectDefinition = table.GetEntityClassDefinition(project),
                     OutputDirectory = project.OutputDirectory
                 };
 
@@ -82,7 +82,7 @@ namespace CatFactory.EfCore
             {
                 var codeBuilder = new CSharpClassBuilder
                 {
-                    ObjectDefinition = new EntityClassDefinition(view, project),
+                    ObjectDefinition = view.GetEntityClassDefinition(project),
                     OutputDirectory = project.OutputDirectory
                 };
 

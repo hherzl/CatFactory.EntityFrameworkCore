@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using CatFactory.DotNetCore;
 using CatFactory.EfCore.Definitions;
 using CatFactory.Mapping;
@@ -29,7 +28,7 @@ namespace CatFactory.EfCore
         {
             var codeBuilder = new CSharpClassBuilder
             {
-                ObjectDefinition = new AppSettingsClassDefinition(project),
+                ObjectDefinition = project.GetAppSettingsClassDefinition(),
                 OutputDirectory = project.OutputDirectory
             };
 
@@ -44,22 +43,22 @@ namespace CatFactory.EfCore
                 {
                     new CSharpInterfaceBuilder
                     {
-                        ObjectDefinition = new EntityMapperInterfaceDefinition(project),
+                        ObjectDefinition = project.GetEntityMapperInterfaceDefinition(),
                         OutputDirectory = project.OutputDirectory
                     },
                     new CSharpClassBuilder
                     {
-                        ObjectDefinition = new EntityMapperClassDefinition(project),
+                        ObjectDefinition = project.GetEntityMapperClassDefinition(),
                         OutputDirectory = project.OutputDirectory
                     },
                     new CSharpInterfaceBuilder
                     {
-                        ObjectDefinition = new EntityMapInterfaceDefinition(project),
+                        ObjectDefinition = project.GetEntityMapInterfaceDefinition(),
                         OutputDirectory = project.OutputDirectory
                     },
-                    new CSharpClassBuilder()
+                    new CSharpClassBuilder
                     {
-                        ObjectDefinition = new DatabaseMapperClassDefinition(project),
+                        ObjectDefinition = project.GetDatabaseMapperClassDefinition(),
                         OutputDirectory = project.OutputDirectory
                     },
                 };
@@ -79,7 +78,7 @@ namespace CatFactory.EfCore
                 {
                     var codeBuilder = new CSharpClassBuilder
                     {
-                        ObjectDefinition = new EntityMapClassDefinition(table, project),
+                        ObjectDefinition = table.GetEntityMapClassDefinition(project),
                         OutputDirectory = project.OutputDirectory
                     };
 
@@ -90,7 +89,7 @@ namespace CatFactory.EfCore
                 {
                     var codeBuilder = new CSharpClassBuilder
                     {
-                        ObjectDefinition = new EntityMapClassDefinition(view, project),
+                        ObjectDefinition = view.GetEntityMapClassDefinition(project),
                         OutputDirectory = project.OutputDirectory
                     };
 
@@ -105,7 +104,7 @@ namespace CatFactory.EfCore
             {
                 var codeBuilder = new CSharpClassBuilder
                 {
-                    ObjectDefinition = new DbContextClassDefinition(projectFeature),
+                    ObjectDefinition = projectFeature.GetDbContextClassDefinition(),
                     OutputDirectory = project.OutputDirectory
                 };
 
@@ -148,7 +147,7 @@ namespace CatFactory.EfCore
         {
             var codeBuilder = new CSharpInterfaceBuilder
             {
-                ObjectDefinition = new RepositoryInterfaceDefinition(project),
+                ObjectDefinition = project.GetRepositoryInterfaceDefinition(),
                 OutputDirectory = project.OutputDirectory
             };
 
@@ -159,7 +158,7 @@ namespace CatFactory.EfCore
         {
             var codeBuilder = new CSharpClassBuilder
             {
-                ObjectDefinition = new RepositoryBaseClassDefinition(project),
+                ObjectDefinition = project.GetRepositoryBaseClassDefinition(),
                 OutputDirectory = project.OutputDirectory
             };
 
@@ -170,7 +169,7 @@ namespace CatFactory.EfCore
         {
             var codeBuilder = new CSharpClassBuilder
             {
-                ObjectDefinition = new RepositoryExtensionsClassDefinition(project),
+                ObjectDefinition = project.GetRepositoryExtensionsClassDefinition(),
                 OutputDirectory = project.OutputDirectory
             };
 
@@ -188,7 +187,10 @@ namespace CatFactory.EfCore
 
                 var classDefinition = new CSharpClassDefinition
                 {
-                    Namespaces = new List<String>() { "System" },
+                    Namespaces = new List<String>()
+                    {
+                        "System"
+                    },
                     Namespace = project.GetDataLayerDataContractsNamespace(),
                     Name = table.GetDataContractName()
                 };
@@ -247,7 +249,7 @@ namespace CatFactory.EfCore
 
             foreach (var projectFeature in project.Features)
             {
-                var repositoryClassDefinition = new RepositoryClassDefinition(projectFeature);
+                var repositoryClassDefinition = projectFeature.GetRepositoryClassDefinition();
 
                 var codeBuilder = new CSharpClassBuilder
                 {

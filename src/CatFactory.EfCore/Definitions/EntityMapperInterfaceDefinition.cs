@@ -3,30 +3,24 @@ using CatFactory.OOP;
 
 namespace CatFactory.EfCore.Definitions
 {
-    public class EntityMapperInterfaceDefinition : CSharpInterfaceDefinition
+    public static class EntityMapperInterfaceDefinition
     {
-        public EntityMapperInterfaceDefinition(EfCoreProject project)
-            : base()
+        public static CSharpInterfaceDefinition GetEntityMapperInterfaceDefinition(this EfCoreProject project)
         {
-            Project = project;
+            var interfaceDefinition = new CSharpInterfaceDefinition();
 
-            Init();
-        }
+            interfaceDefinition.Namespaces.Add("System.Collections.Generic");
+            interfaceDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
 
-        public EfCoreProject Project { get; }
+            interfaceDefinition.Namespace = project.GetDataLayerMappingNamespace();
 
-        public void Init()
-        {
-            Namespaces.Add("System.Collections.Generic");
-            Namespaces.Add("Microsoft.EntityFrameworkCore");
+            interfaceDefinition.Name = "IEntityMapper";
 
-            Namespace = Project.GetDataLayerMappingNamespace();
+            interfaceDefinition.Properties.Add(new PropertyDefinition("IEnumerable<IEntityMap>", "Mappings") { IsReadOnly = true });
 
-            Name = "IEntityMapper";
+            interfaceDefinition.Methods.Add(new MethodDefinition("void", "MapEntities", new ParameterDefinition("ModelBuilder", "modelBuilder")));
 
-            Properties.Add(new PropertyDefinition("IEnumerable<IEntityMap>", "Mappings") { IsReadOnly = true });
-
-            Methods.Add(new MethodDefinition("void", "MapEntities", new ParameterDefinition("ModelBuilder", "modelBuilder")));
+            return interfaceDefinition;
         }
     }
 }

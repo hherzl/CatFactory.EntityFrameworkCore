@@ -6,38 +6,30 @@ using CatFactory.OOP;
 
 namespace CatFactory.EfCore.Definitions
 {
-    public class RepositoryBaseClassDefinition : CSharpClassDefinition
+    public static class RepositoryBaseClassDefinition
     {
-        public RepositoryBaseClassDefinition(EfCoreProject project)
-            : base()
+        public static CSharpClassDefinition GetRepositoryBaseClassDefinition(this EfCoreProject project)
         {
-            Project = project;
+            var classDefinition = new CSharpClassDefinition();
 
-            Init();
-        }
+            classDefinition.Namespaces.Add("System");
+            classDefinition.Namespaces.Add("System.Linq");
+            classDefinition.Namespaces.Add("System.Threading.Tasks");
+            classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
 
-        public EfCoreProject Project { get; }
-
-        public void Init()
-        {
-            Namespaces.Add("System");
-            Namespaces.Add("System.Linq");
-            Namespaces.Add("System.Threading.Tasks");
-            Namespaces.Add("Microsoft.EntityFrameworkCore");
-
-            if (Project.Settings.AuditEntity != null)
+            if (project.Settings.AuditEntity != null)
             {
-                Namespaces.Add(Project.GetEntityLayerNamespace());
+                classDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
             }
 
-            Namespace = Project.GetDataLayerContractsNamespace();
+            classDefinition.Namespace = project.GetDataLayerContractsNamespace();
 
-            Name = "Repository";
+            classDefinition.Name = "Repository";
 
-            Fields.Add(new FieldDefinition(AccessModifier.Protected, "Boolean", "Disposed"));
-            Fields.Add(new FieldDefinition(AccessModifier.Protected, Project.Database.GetDbContextName(), "DbContext"));
+            classDefinition.Fields.Add(new FieldDefinition(AccessModifier.Protected, "Boolean", "Disposed"));
+            classDefinition.Fields.Add(new FieldDefinition(AccessModifier.Protected, project.Database.GetDbContextName(), "DbContext"));
 
-            Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(Project.Database.GetDbContextName(), "dbContext"))
+            classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(project.Database.GetDbContextName(), "dbContext"))
             {
                 Lines = new List<ILine>()
                 {
@@ -45,7 +37,7 @@ namespace CatFactory.EfCore.Definitions
                 }
             });
 
-            Methods.Add(new MethodDefinition("void", "Dispose")
+            classDefinition.Methods.Add(new MethodDefinition("void", "Dispose")
             {
                 Lines = new List<ILine>()
                 {
@@ -58,13 +50,13 @@ namespace CatFactory.EfCore.Definitions
                 }
             });
 
-            Methods.Add(GetAddMethod(Project));
+            classDefinition.Methods.Add(GetAddMethod(project));
 
-            Methods.Add(GetUpdateMethod(Project));
+            classDefinition.Methods.Add(GetUpdateMethod(project));
 
-            Methods.Add(GetRemoveMethod(Project));
+            classDefinition.Methods.Add(GetRemoveMethod(project));
 
-            Methods.Add(new MethodDefinition("Int32", "CommitChanges")
+            classDefinition.Methods.Add(new MethodDefinition("Int32", "CommitChanges")
             {
                 Lines = new List<ILine>()
                 {
@@ -72,16 +64,18 @@ namespace CatFactory.EfCore.Definitions
                 }
             });
 
-            Methods.Add(new MethodDefinition("Task<Int32>", "CommitChangesAsync")
+            classDefinition.Methods.Add(new MethodDefinition("Task<Int32>", "CommitChangesAsync")
             {
                 Lines = new List<ILine>()
                 {
                     new CodeLine("return DbContext.SaveChangesAsync();")
                 }
             });
+
+            return classDefinition;
         }
 
-        protected virtual MethodDefinition GetAddMethod(EfCoreProject project)
+        private static MethodDefinition GetAddMethod(EfCoreProject project)
         {
             var lines = new List<ILine>();
 
@@ -133,7 +127,7 @@ namespace CatFactory.EfCore.Definitions
             };
         }
 
-        protected virtual MethodDefinition GetUpdateMethod(EfCoreProject project)
+        private static MethodDefinition GetUpdateMethod(EfCoreProject project)
         {
             var lines = new List<ILine>();
 
@@ -181,7 +175,7 @@ namespace CatFactory.EfCore.Definitions
             };
         }
 
-        protected virtual MethodDefinition GetRemoveMethod(EfCoreProject project)
+        private static MethodDefinition GetRemoveMethod(EfCoreProject project)
         {
             return new MethodDefinition(AccessModifier.Protected, "void", "Remove", new ParameterDefinition("TEntity", "entity"))
             {

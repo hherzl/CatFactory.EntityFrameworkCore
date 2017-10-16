@@ -3,27 +3,21 @@ using CatFactory.OOP;
 
 namespace CatFactory.EfCore.Definitions
 {
-    public class AppSettingsClassDefinition : CSharpClassDefinition
+    public static class AppSettingsClassDefinition
     {
-        public AppSettingsClassDefinition(EfCoreProject project)
-            : base()
+        public static CSharpClassDefinition GetAppSettingsClassDefinition(this EfCoreProject project)
         {
-            Project = project;
+            var classDefinition = new CSharpClassDefinition();
 
-            Init();
-        }
+            classDefinition.Namespaces.Add("System");
 
-        public EfCoreProject Project { get; }
+            classDefinition.Namespace = project.GetDataLayerNamespace();
 
-        public void Init()
-        {
-            Namespace = Project.GetDataLayerNamespace();
+            classDefinition.Name = "AppSettings";
 
-            Namespaces.Add("System");
+            classDefinition.Properties.Add(new PropertyDefinition("String", "ConnectionString"));
 
-            Name = "AppSettings";
-
-            Properties.Add(new PropertyDefinition("String", "ConnectionString"));
+            return classDefinition;
         }
     }
 }

@@ -9,195 +9,184 @@ using CatFactory.OOP;
 
 namespace CatFactory.EfCore.Definitions
 {
-    public class EntityClassDefinition : CSharpClassDefinition
+    public static class EntityClassDefinition
     {
-        public EntityClassDefinition(IDbObject dbObject, EfCoreProject project)
-            : base()
+        public static CSharpClassDefinition GetEntityClassDefinition(this ITable table, EfCoreProject project)
         {
-            DbObject = dbObject;
-            Project = project;
+            var classDefinition = new CSharpClassDefinition();
 
-            Init();
-        }
+            classDefinition.Namespaces.Add("System");
 
-        public IDbObject DbObject { get; }
-
-        public EfCoreProject Project { get; }
-
-        public void Init()
-        {
-            Namespaces.Add("System");
-
-            if (Project.Settings.UseDataAnnotations)
+            if (project.Settings.UseDataAnnotations)
             {
-                Namespaces.Add("System.ComponentModel.DataAnnotations");
-                Namespaces.Add("System.ComponentModel.DataAnnotations.Schema");
+                classDefinition.Namespaces.Add("System.ComponentModel.DataAnnotations");
+                classDefinition.Namespaces.Add("System.ComponentModel.DataAnnotations.Schema");
             }
 
-            if (Project.Settings.EnableDataBindings)
+            if (project.Settings.EnableDataBindings)
             {
-                Namespaces.Add("System.ComponentModel");
+                classDefinition.Namespaces.Add("System.ComponentModel");
 
-                Implements.Add("INotifyPropertyChanged");
+                classDefinition.Implements.Add("INotifyPropertyChanged");
 
-                Events.Add(new EventDefinition("PropertyChangedEventHandler", "PropertyChanged"));
+                classDefinition.Events.Add(new EventDefinition("PropertyChangedEventHandler", "PropertyChanged"));
             }
 
-            Namespace = DbObject.HasDefaultSchema() ? Project.GetEntityLayerNamespace() : Project.GetEntityLayerNamespace(DbObject.Schema);
+            classDefinition.Namespace = table.HasDefaultSchema() ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(table.Schema);
 
-            Name = DbObject.GetSingularName();
+            classDefinition.Name = table.GetSingularName();
 
-            Constructors.Add(new ClassConstructorDefinition());
+            classDefinition.Constructors.Add(new ClassConstructorDefinition());
 
-            var columns = default(IEnumerable<Column>);
-
-            var tableCast = DbObject as ITable;
+            var columns = table.Columns;
 
             var typeResolver = new ClrTypeResolver();
 
-            if (tableCast != null)
+            if (table.PrimaryKey != null && table.PrimaryKey.Key.Count == 1)
             {
-                if (tableCast.PrimaryKey != null && tableCast.PrimaryKey.Key.Count == 1)
-                {
-                    var column = tableCast.PrimaryKey.GetColumns(tableCast).First();
+                var column = table.PrimaryKey.GetColumns(table).First();
 
-                    Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(typeResolver.Resolve(column.Type), column.GetParameterName()))
+                classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(typeResolver.Resolve(column.Type), column.GetParameterName()))
+                {
+                    Lines = new List<ILine>()
                     {
-                        Lines = new List<ILine>()
-                        {
-                            new CodeLine("{0} = {1};", column.GetPropertyName(), column.GetParameterName())
-                        }
-                    });
-                }
-
-                columns = tableCast.Columns;
-
-                if (!String.IsNullOrEmpty(tableCast.Description))
-                {
-                    Documentation.Summary = tableCast.Description;
-                }
+                        new CodeLine("{0} = {1};", column.GetPropertyName(), column.GetParameterName())
+                    }
+                });
             }
 
-            var viewCast = DbObject as IView;
-
-            if (viewCast != null)
+            if (!String.IsNullOrEmpty(table.Description))
             {
-                columns = viewCast.Columns;
-
-                if (!String.IsNullOrEmpty(viewCast.Description))
-                {
-                    Documentation.Summary = viewCast.Description;
-                }
+                classDefinition.Documentation.Summary = table.Description;
             }
 
-            if (tableCast != null)
+            foreach (var column in columns)
             {
-                foreach (var column in columns)
+                if (project.Settings.EnableDataBindings)
                 {
-                    if (Project.Settings.EnableDataBindings)
-                    {
-                        this.AddViewModelProperty(typeResolver.Resolve(column.Type), column.GetPropertyName());
-                    }
-                    else
-                    {
-                        if (Project.Settings.BackingFields.Contains(tableCast.GetFullColumnName(column)))
-                        {
-                            this.AddPropertyWithField(typeResolver.Resolve(column.Type), column.GetPropertyName());
-                        }
-                        else if (Project.Settings.UseAutomaticPropertiesForEntities)
-                        {
-                            Properties.Add(new PropertyDefinition(typeResolver.Resolve(column.Type), column.GetPropertyName()));
-                        }
-                        else
-                        {
-                            this.AddPropertyWithField(typeResolver.Resolve(column.Type), column.GetPropertyName());
-                        }
-                    }
-                }
-
-                if (Project.Settings.AuditEntity == null)
-                {
-                    Implements.Add("IEntity");
+                    classDefinition.AddViewModelProperty(typeResolver.Resolve(column.Type), column.GetPropertyName());
                 }
                 else
                 {
-                    var count = 0;
-
-                    foreach (var column in columns)
+                    if (project.Settings.BackingFields.Contains(table.GetFullColumnName(column)))
                     {
-                        if (Project.Settings.AuditEntity.Names.Contains(column.Name))
-                        {
-                            count += 1;
-                        }
+                        classDefinition.AddPropertyWithField(typeResolver.Resolve(column.Type), column.GetPropertyName());
                     }
-
-                    if (count == Project.Settings.AuditEntity.Names.Length)
+                    else if (project.Settings.UseAutomaticPropertiesForEntities)
                     {
-                        Implements.Add(Project.Settings.EntityInterfaceName);
+                        classDefinition.Properties.Add(new PropertyDefinition(typeResolver.Resolve(column.Type), column.GetPropertyName()));
                     }
                     else
                     {
-                        Implements.Add("IEntity");
+                        classDefinition.AddPropertyWithField(typeResolver.Resolve(column.Type), column.GetPropertyName());
                     }
                 }
             }
 
-            if (viewCast != null)
+            if (project.Settings.AuditEntity == null)
             {
+                classDefinition.Implements.Add("IEntity");
+            }
+            else
+            {
+                var count = 0;
+
                 foreach (var column in columns)
                 {
-                    Properties.Add(new PropertyDefinition(typeResolver.Resolve(column.Type), column.GetPropertyName()));
+                    if (project.Settings.AuditEntity.Names.Contains(column.Name))
+                    {
+                        count += 1;
+                    }
+                }
+
+                if (count == project.Settings.AuditEntity.Names.Length)
+                {
+                    classDefinition.Implements.Add(project.Settings.EntityInterfaceName);
+                }
+                else
+                {
+                    classDefinition.Implements.Add("IEntity");
                 }
             }
 
-            if (tableCast != null)
+            foreach (var foreignKey in table.ForeignKeys)
             {
-                foreach (var foreignKey in tableCast.ForeignKeys)
+                var foreignTable = project.Database.FindTableByFullName(foreignKey.References);
+
+                if (foreignTable == null)
                 {
-                    var foreignTable = Project.Database.FindTableByFullName(foreignKey.References);
-
-                    if (foreignTable == null)
-                    {
-                        continue;
-                    }
-                    
-                    Namespaces.AddUnique(foreignTable.HasDefaultSchema() ? Project.GetEntityLayerNamespace() : Project.GetEntityLayerNamespace(foreignTable.Schema));
-
-                    Namespace = DbObject.HasDefaultSchema() ? Project.GetEntityLayerNamespace() : Project.GetEntityLayerNamespace(DbObject.Schema);
-
-                    Properties.Add(foreignKey.GetParentNavigationProperty(Project, foreignTable));
+                    continue;
                 }
 
-                foreach (var child in Project.Database.Tables)
+                classDefinition.Namespaces.AddUnique(foreignTable.HasDefaultSchema() ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(foreignTable.Schema));
+
+                classDefinition.Namespace = table.HasDefaultSchema() ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(table.Schema);
+
+                classDefinition.Properties.Add(foreignKey.GetParentNavigationProperty(project, foreignTable));
+            }
+
+            foreach (var child in project.Database.Tables)
+            {
+                if (table.FullName == child.FullName)
                 {
-                    if (tableCast.FullName == child.FullName)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    foreach (var foreignKey in child.ForeignKeys)
+                foreach (var foreignKey in child.ForeignKeys)
+                {
+                    if (foreignKey.References.EndsWith(table.FullName))
                     {
-                        if (foreignKey.References.EndsWith(tableCast.FullName))
+                        classDefinition.Namespaces.AddUnique(project.Settings.NavigationPropertyEnumerableNamespace);
+                        classDefinition.Namespaces.AddUnique(child.HasDefaultSchema() ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(child.Schema));
+
+                        var navigationProperty = project.GetChildNavigationProperty(child, foreignKey);
+
+                        if (classDefinition.Properties.FirstOrDefault(item => item.Name == navigationProperty.Name) == null)
                         {
-                            Namespaces.AddUnique(Project.Settings.NavigationPropertyEnumerableNamespace);
-                            Namespaces.AddUnique(child.HasDefaultSchema() ? Project.GetEntityLayerNamespace() : Project.GetEntityLayerNamespace(child.Schema));
-
-                            var navigationProperty = Project.GetChildNavigationProperty(child, foreignKey);
-
-                            if (Properties.FirstOrDefault(item => item.Name == navigationProperty.Name) == null)
-                            {
-                                Properties.Add(navigationProperty);
-                            }
+                            classDefinition.Properties.Add(navigationProperty);
                         }
                     }
                 }
-
             }
 
-            if (Project.Settings.SimplifyDataTypes)
+            if (project.Settings.SimplifyDataTypes)
             {
-                this.SimplifyDataTypes();
+                classDefinition.SimplifyDataTypes();
             }
+
+            return classDefinition;
+        }
+
+        public static CSharpClassDefinition GetEntityClassDefinition(this IView view, EfCoreProject project)
+        {
+            var typeResolver = new ClrTypeResolver();
+
+            var classDefinition = new CSharpClassDefinition();
+
+            classDefinition.Namespaces.Add("System");
+
+            classDefinition.Namespace = view.HasDefaultSchema() ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(view.Schema);
+
+            classDefinition.Name = view.GetSingularName();
+
+            classDefinition.Constructors.Add(new ClassConstructorDefinition());
+
+            if (!String.IsNullOrEmpty(view.Description))
+            {
+                classDefinition.Documentation.Summary = view.Description;
+            }
+
+            foreach (var column in view.Columns)
+            {
+                classDefinition.Properties.Add(new PropertyDefinition(typeResolver.Resolve(column.Type), column.GetPropertyName()));
+            }
+
+            if (project.Settings.SimplifyDataTypes)
+            {
+                classDefinition.SimplifyDataTypes();
+            }
+
+            return classDefinition;
         }
     }
 }

@@ -3,27 +3,21 @@ using CatFactory.OOP;
 
 namespace CatFactory.EfCore.Definitions
 {
-    public class EntityMapInterfaceDefinition : CSharpInterfaceDefinition
+    public static class EntityMapInterfaceDefinition
     {
-        public EntityMapInterfaceDefinition(EfCoreProject project)
-            : base()
+        public static CSharpInterfaceDefinition GetEntityMapInterfaceDefinition(this EfCoreProject project)
         {
-            Project = project;
+            var interfaceDefinition = new CSharpInterfaceDefinition();
 
-            Init();
-        }
+            interfaceDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
 
-        public EfCoreProject Project { get; }
+            interfaceDefinition.Namespace = project.GetDataLayerMappingNamespace();
 
-        public void Init()
-        {
-            Namespaces.Add("Microsoft.EntityFrameworkCore");
+            interfaceDefinition.Name = "IEntityMap";
 
-            Namespace = Project.GetDataLayerMappingNamespace();
+            interfaceDefinition.Methods.Add(new MethodDefinition("void", "Map", new ParameterDefinition("ModelBuilder", "modelBuilder")));
 
-            Name = "IEntityMap";
-
-            Methods.Add(new MethodDefinition("void", "Map", new ParameterDefinition("ModelBuilder", "modelBuilder")));
+            return interfaceDefinition;
         }
     }
 }

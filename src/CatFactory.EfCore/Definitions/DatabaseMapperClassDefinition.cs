@@ -6,35 +6,27 @@ using CatFactory.OOP;
 
 namespace CatFactory.EfCore.Definitions
 {
-    public class DatabaseMapperClassDefinition : CSharpClassDefinition
+    public static class DatabaseMapperClassDefinition
     {
-        public DatabaseMapperClassDefinition(EfCoreProject project)
-            : base()
+        public static CSharpClassDefinition GetDatabaseMapperClassDefinition(this EfCoreProject project)
         {
-            Project = project;
+            var classDefinition = new CSharpClassDefinition();
 
-            Init();
-        }
+            classDefinition.Namespace = project.GetDataLayerMappingNamespace();
 
-        public EfCoreProject Project { get; }
+            classDefinition.Name = project.Database.GetDbEntityMapperName();
 
-        public void Init()
-        {
-            Namespace = Project.GetDataLayerMappingNamespace();
-
-            Name = Project.Database.GetDbEntityMapperName();
-
-            BaseClass = "EntityMapper";
+            classDefinition.BaseClass = "EntityMapper";
 
             var lines = new List<ILine>();
 
-            if (Project.Settings.UseMefForEntitiesMapping)
+            if (project.Settings.UseMefForEntitiesMapping)
             {
-                Namespaces.Add("System.Composition.Hosting");
-                Namespaces.Add("System.Reflection");
+                classDefinition.Namespaces.Add("System.Composition.Hosting");
+                classDefinition.Namespaces.Add("System.Reflection");
 
                 lines.Add(new CommentLine(" Get current assembly"));
-                lines.Add(new CodeLine("var currentAssembly = typeof({0}).GetTypeInfo().Assembly;", Project.Database.GetDbContextName()));
+                lines.Add(new CodeLine("var currentAssembly = typeof({0}).GetTypeInfo().Assembly;", project.Database.GetDbContextName()));
                 lines.Add(new CodeLine());
 
                 lines.Add(new CommentLine(" Get configuration for container from current assembly"));
@@ -50,26 +42,25 @@ namespace CatFactory.EfCore.Definitions
             }
             else
             {
-                Namespaces.Add("System.Collections.Generic");
+                classDefinition.Namespaces.Add("System.Collections.Generic");
 
                 lines.Add(new CodeLine("Mappings = new List<IEntityMap>()"));
 
                 lines.Add(new CodeLine("{{"));
 
-                for (var i = 0; i < Project.Database.Tables.Count; i++)
+                for (var i = 0; i < project.Database.Tables.Count; i++)
                 {
-                    var item = Project.Database.Tables[i];
+                    var item = project.Database.Tables[i];
 
-                    lines.Add(new CodeLine(1, "new {0}(){1}", item.GetMapName(), i == Project.Database.Tables.Count - 1 ? String.Empty : ","));
+                    lines.Add(new CodeLine(1, "new {0}(){1}", item.GetMapName(), i == project.Database.Tables.Count - 1 ? String.Empty : ","));
                 }
 
                 lines.Add(new CodeLine("}};"));
             }
 
-            Constructors.Add(new ClassConstructorDefinition
-            {
-                Lines = lines
-            });
+            classDefinition.Constructors.Add(new ClassConstructorDefinition { Lines = lines });
+
+            return classDefinition;
         }
     }
 }

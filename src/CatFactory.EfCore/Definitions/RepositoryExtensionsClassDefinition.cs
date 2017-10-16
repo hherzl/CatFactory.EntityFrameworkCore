@@ -6,30 +6,22 @@ using CatFactory.OOP;
 
 namespace CatFactory.EfCore.Definitions
 {
-    public class RepositoryExtensionsClassDefinition : CSharpClassDefinition
+    public static class RepositoryExtensionsClassDefinition
     {
-        public RepositoryExtensionsClassDefinition(EfCoreProject project)
-            : base()
+        public static CSharpClassDefinition GetRepositoryExtensionsClassDefinition(this EfCoreProject project)
         {
-            Project = project;
+            var classDefinition = new CSharpClassDefinition();
 
-            Init();
-        }
+            classDefinition.Namespaces.Add("System");
+            classDefinition.Namespaces.Add("System.Linq");
+            classDefinition.Namespaces.Add(project.GetDataLayerNamespace());
+            classDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
 
-        public EfCoreProject Project { get; }
+            classDefinition.Name = "RepositoryExtensions";
+            classDefinition.Namespace = project.GetDataLayerRepositoriesNamespace();
+            classDefinition.IsStatic = true;
 
-        public void Init()
-        {
-            Namespaces.Add("System");
-            Namespaces.Add("System.Linq");
-            Namespaces.Add(Project.GetDataLayerNamespace());
-            Namespaces.Add(Project.GetEntityLayerNamespace());
-
-            Name = "RepositoryExtensions";
-            Namespace = Project.GetDataLayerRepositoriesNamespace();
-            IsStatic = true;
-
-            Methods.Add(new MethodDefinition("IQueryable<TEntity>", "Paging", new ParameterDefinition(Project.Database.GetDbContextName(), "dbContext"), new ParameterDefinition("Int32", "pageSize", "0"), new ParameterDefinition("Int32", "pageNumber", "0"))
+            classDefinition.Methods.Add(new MethodDefinition("IQueryable<TEntity>", "Paging", new ParameterDefinition(project.Database.GetDbContextName(), "dbContext"), new ParameterDefinition("Int32", "pageSize", "0"), new ParameterDefinition("Int32", "pageNumber", "0"))
             {
                 GenericType = "TEntity",
                 IsExtension = true,
@@ -46,7 +38,7 @@ namespace CatFactory.EfCore.Definitions
                 }
             });
 
-            Methods.Add(new MethodDefinition("IQueryable<T>", "Paging", new ParameterDefinition("IQueryable<T>", "query"), new ParameterDefinition("Int32", "pageSize", "0"), new ParameterDefinition("Int32", "pageNumber", "0"))
+            classDefinition.Methods.Add(new MethodDefinition("IQueryable<T>", "Paging", new ParameterDefinition("IQueryable<T>", "query"), new ParameterDefinition("Int32", "pageSize", "0"), new ParameterDefinition("Int32", "pageNumber", "0"))
             {
                 GenericType = "T",
                 IsExtension = true,
@@ -61,6 +53,7 @@ namespace CatFactory.EfCore.Definitions
                 }
             });
 
+            return classDefinition;
         }
     }
 }

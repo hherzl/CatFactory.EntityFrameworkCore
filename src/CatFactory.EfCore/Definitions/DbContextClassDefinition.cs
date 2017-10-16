@@ -7,32 +7,24 @@ using CatFactory.OOP;
 
 namespace CatFactory.EfCore.Definitions
 {
-    public class DbContextClassDefinition : CSharpClassDefinition
+    public static class DbContextClassDefinition
     {
-        public DbContextClassDefinition(ProjectFeature projectFeature)
-            : base()
+        public static CSharpClassDefinition GetDbContextClassDefinition(this ProjectFeature projectFeature)
         {
-            ProjectFeature = projectFeature;
+            var classDefinition = new CSharpClassDefinition();
 
-            Init();
-        }
+            classDefinition.Namespaces.Add("System");
+            classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
+            classDefinition.Namespaces.Add("Microsoft.Extensions.Options");
 
-        public ProjectFeature ProjectFeature { get; }
+            classDefinition.Namespace = projectFeature.GetEfCoreProject().GetDataLayerNamespace();
+            classDefinition.Name = projectFeature.GetEfCoreProject().Database.GetDbContextName();
 
-        public void Init()
-        {
-            Namespaces.Add("System");
-            Namespaces.Add("Microsoft.EntityFrameworkCore");
-            Namespaces.Add("Microsoft.Extensions.Options");
+            classDefinition.BaseClass = "Microsoft.EntityFrameworkCore.DbContext";
 
-            Namespace = ProjectFeature.GetEfCoreProject().GetDataLayerNamespace();
-            Name = ProjectFeature.GetEfCoreProject().Database.GetDbContextName();
-
-            BaseClass = "Microsoft.EntityFrameworkCore.DbContext";
-
-            if (ProjectFeature.GetEfCoreProject().Settings.UseDataAnnotations)
+            if (projectFeature.GetEfCoreProject().Settings.UseDataAnnotations)
             {
-                Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition("IOptions<AppSettings>", "appSettings"))
+                classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition("IOptions<AppSettings>", "appSettings"))
                 {
                     Lines = new List<ILine>()
                     {
@@ -42,7 +34,7 @@ namespace CatFactory.EfCore.Definitions
             }
             else
             {
-                Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition("IOptions<AppSettings>", "appSettings"), new ParameterDefinition("IEntityMapper", "entityMapper"))
+                classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition("IOptions<AppSettings>", "appSettings"), new ParameterDefinition("IEntityMapper", "entityMapper"))
                 {
                     Lines = new List<ILine>()
                     {
@@ -52,31 +44,33 @@ namespace CatFactory.EfCore.Definitions
                 });
             }
 
-            Properties.Add(new PropertyDefinition("String", "ConnectionString") { IsReadOnly = true });
+            classDefinition.Properties.Add(new PropertyDefinition("String", "ConnectionString") { IsReadOnly = true });
 
-            if (!ProjectFeature.GetEfCoreProject().Settings.UseDataAnnotations)
+            if (!projectFeature.GetEfCoreProject().Settings.UseDataAnnotations)
             {
-                Properties.Add(new PropertyDefinition("IEntityMapper", "EntityMapper") { IsReadOnly = true });
+                classDefinition.Properties.Add(new PropertyDefinition("IEntityMapper", "EntityMapper") { IsReadOnly = true });
             }
 
-            Methods.Add(GetOnConfiguringMethod());
-            Methods.Add(GetOnModelCreatingMethod(ProjectFeature.GetEfCoreProject()));
+            classDefinition.Methods.Add(GetOnConfiguringMethod());
+            classDefinition.Methods.Add(GetOnModelCreatingMethod(projectFeature.GetEfCoreProject()));
 
-            if (ProjectFeature.GetEfCoreProject().Settings.DeclareDbSetPropertiesInDbContext)
+            if (projectFeature.GetEfCoreProject().Settings.DeclareDbSetPropertiesInDbContext)
             {
-                foreach (var table in ProjectFeature.GetEfCoreProject().Database.Tables)
+                foreach (var table in projectFeature.GetEfCoreProject().Database.Tables)
                 {
-                    Properties.Add(new PropertyDefinition(String.Format("DbSet<{0}>", table.GetEntityName()), table.GetPluralName()));
+                    classDefinition.Properties.Add(new PropertyDefinition(String.Format("DbSet<{0}>", table.GetEntityName()), table.GetPluralName()));
                 }
 
-                foreach (var view in ProjectFeature.GetEfCoreProject().Database.Views)
+                foreach (var view in projectFeature.GetEfCoreProject().Database.Views)
                 {
-                    Properties.Add(new PropertyDefinition(String.Format("DbSet<{0}>", view.GetEntityName()), view.GetPluralName()));
+                    classDefinition.Properties.Add(new PropertyDefinition(String.Format("DbSet<{0}>", view.GetEntityName()), view.GetPluralName()));
                 }
             }
+
+            return classDefinition;
         }
 
-        public MethodDefinition GetOnConfiguringMethod()
+        private static MethodDefinition GetOnConfiguringMethod()
         {
             return new MethodDefinition(AccessModifier.Protected, "void", "OnConfiguring", new ParameterDefinition("DbContextOptionsBuilder", "optionsBuilder"))
             {
@@ -90,7 +84,7 @@ namespace CatFactory.EfCore.Definitions
             };
         }
 
-        public MethodDefinition GetOnModelCreatingMethod(EfCoreProject project)
+        private static MethodDefinition GetOnModelCreatingMethod(EfCoreProject project)
         {
             var lines = new List<ILine>();
 

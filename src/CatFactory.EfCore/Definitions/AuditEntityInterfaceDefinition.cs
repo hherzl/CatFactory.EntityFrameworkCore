@@ -3,36 +3,25 @@ using CatFactory.OOP;
 
 namespace CatFactory.EfCore.Definitions
 {
-    public class AuditEntityInterfaceDefinition : CSharpInterfaceDefinition
+    public static class AuditEntityInterfaceDefinition
     {
-        public AuditEntityInterfaceDefinition(EfCoreProject project)
-            : base()
+        public static CSharpInterfaceDefinition GetAuditEntityInterfaceDefinition(this EfCoreProject project)
         {
-            Project = project;
+            var interfaceDefinition = new CSharpInterfaceDefinition();
 
-            Init();
-        }
+            interfaceDefinition.Namespaces.Add("System");
 
-        public EfCoreProject Project { get; }
+            interfaceDefinition.Namespace = project.GetEntityLayerNamespace();
+            interfaceDefinition.Name = "IAuditEntity";
 
-        public void Init()
-        {
-            if (Project.Settings.AuditEntity == null)
-            {
-                return;
-            }
+            interfaceDefinition.Implements.Add("IEntity");
 
-            Namespaces.Add("System");
+            interfaceDefinition.Properties.Add(new PropertyDefinition("String", "CreationUser"));
+            interfaceDefinition.Properties.Add(new PropertyDefinition("DateTime?", "CreationDateTime"));
+            interfaceDefinition.Properties.Add(new PropertyDefinition("String", "LastUpdateUser"));
+            interfaceDefinition.Properties.Add(new PropertyDefinition("DateTime?", "LastUpdateDateTime"));
 
-            Namespace = Project.GetEntityLayerNamespace();
-            Name = "IAuditEntity";
-
-            Implements.Add("IEntity");
-
-            Properties.Add(new PropertyDefinition("String", "CreationUser"));
-            Properties.Add(new PropertyDefinition("DateTime?", "CreationDateTime"));
-            Properties.Add(new PropertyDefinition("String", "LastUpdateUser"));
-            Properties.Add(new PropertyDefinition("DateTime?", "LastUpdateDateTime"));
+            return interfaceDefinition;
         }
     }
 }
