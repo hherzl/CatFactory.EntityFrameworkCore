@@ -17,54 +17,58 @@ namespace CatFactory.EfCore
             namingConvention = new DotNetNamingConvention();
         }
 
-        public static String GetEntityLayerNamespace(this Project project)
-            => namingConvention.GetClassName(String.Format("{0}.{1}", project.Name, (project as EfCoreProject).Namespaces.EntityLayer));
+        public static string GetEntityLayerNamespace(this Project project)
+            => string.Join(".", namingConvention.GetClassName(project.Name), (project as EfCoreProject).Namespaces.EntityLayer);
 
-        public static String GetEntityLayerNamespace(this EfCoreProject project, String ns)
-            => String.IsNullOrEmpty(ns) ? GetEntityLayerNamespace(project) : String.Join(".", project.Name, project.Namespaces.EntityLayer, ns);
+        public static string GetEntityLayerNamespace(this Project project, string ns)
+            => string.IsNullOrEmpty(ns) ? GetEntityLayerNamespace(project) : string.Join(".", project.Name, (project as EfCoreProject).Namespaces.EntityLayer, ns);
 
-        public static String GetDataLayerNamespace(this EfCoreProject project)
-            => namingConvention.GetClassName(String.Format("{0}.{1}", project.Name, project.Namespaces.DataLayer));
+        public static string GetDataLayerNamespace(this Project project)
+            => string.Format("{0}.{1}", namingConvention.GetClassName(project.Name), (project as EfCoreProject).Namespaces.DataLayer);
 
-        public static String GetDataLayerMappingNamespace(this EfCoreProject project)
-            => namingConvention.GetClassName(String.Join(".", project.Name, project.Namespaces.DataLayer, project.Namespaces.Mapping));
+        public static string GetDataLayerMappingNamespace(this Project project)
+        {
+            var efCoreProject = project as EfCoreProject;
 
-        public static String GetDataLayerContractsNamespace(this EfCoreProject project)
-            => namingConvention.GetClassName(String.Join(".", project.Name, project.Namespaces.DataLayer, project.Namespaces.Contracts));
+            return string.Join(".", namingConvention.GetClassName(project.Name), efCoreProject.Namespaces.DataLayer, efCoreProject.Namespaces.Mapping);
+        }
 
-        public static String GetDataLayerDataContractsNamespace(this EfCoreProject project)
-            => namingConvention.GetClassName(String.Join(".", project.Name, project.Namespaces.DataLayer, project.Namespaces.DataContracts));
+        public static string GetDataLayerContractsNamespace(this EfCoreProject project)
+            => string.Join(".", namingConvention.GetClassName(project.Name), project.Namespaces.DataLayer, project.Namespaces.Contracts);
 
-        public static String GetDataLayerRepositoriesNamespace(this EfCoreProject project)
-            => namingConvention.GetClassName(String.Join(".", project.Name, project.Namespaces.DataLayer, project.Namespaces.Repositories));
+        public static string GetDataLayerDataContractsNamespace(this EfCoreProject project)
+            => string.Join(".", namingConvention.GetClassName(project.Name), project.Namespaces.DataLayer, project.Namespaces.DataContracts);
 
-        public static String GetEntityLayerDirectory(this EfCoreProject project)
+        public static string GetDataLayerRepositoriesNamespace(this EfCoreProject project)
+            => string.Join(".", namingConvention.GetClassName(project.Name), project.Namespaces.DataLayer, project.Namespaces.Repositories);
+
+        public static string GetEntityLayerDirectory(this EfCoreProject project)
             => Path.Combine(project.OutputDirectory, project.Namespaces.EntityLayer);
 
-        public static String GetDataLayerDirectory(this EfCoreProject project)
+        public static string GetDataLayerDirectory(this EfCoreProject project)
             => Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer);
 
-        public static String GetDataLayerMappingDirectory(this EfCoreProject project)
+        public static string GetDataLayerMappingDirectory(this EfCoreProject project)
             => Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer, project.Namespaces.Mapping);
 
-        public static String GetDataLayerContractsDirectory(this EfCoreProject project)
+        public static string GetDataLayerContractsDirectory(this EfCoreProject project)
             => Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer, project.Namespaces.Contracts);
 
-        public static String GetDataLayerDataContractsDirectory(this EfCoreProject project)
+        public static string GetDataLayerDataContractsDirectory(this EfCoreProject project)
             => Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer, project.Namespaces.DataContracts);
 
-        public static String GetDataLayerRepositoriesDirectory(this EfCoreProject project)
+        public static string GetDataLayerRepositoriesDirectory(this EfCoreProject project)
             => Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer, project.Namespaces.Repositories);
 
         public static PropertyDefinition GetChildNavigationProperty(this EfCoreProject project, Table table, ForeignKey fk)
         {
-            var propertyType = String.Format("{0}<{1}>", project.Settings.NavigationPropertyEnumerableType, table.GetSingularName());
+            var propertyType = string.Format("{0}<{1}>", project.Settings.NavigationPropertyEnumerableType, table.GetSingularName());
             var propertyName = table.GetPluralName();
 
             return new PropertyDefinition(propertyType, propertyName)
             {
                 IsVirtual = project.Settings.DeclareNavigationPropertiesAsVirtual,
-                Attributes = project.Settings.UseDataAnnotations ? new List<MetadataAttribute>() { new MetadataAttribute("ForeignKey", String.Format("\"{0}\"", String.Join(",", fk.Key))) } : null
+                Attributes = project.Settings.UseDataAnnotations ? new List<MetadataAttribute>() { new MetadataAttribute("ForeignKey", string.Format("\"{0}\"", string.Join(",", fk.Key))) } : null
             };
         }
     }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using CatFactory.CodeFactory;
 using CatFactory.DotNetCore;
@@ -58,12 +57,12 @@ namespace CatFactory.EfCore.Definitions
             {
                 foreach (var table in projectFeature.GetEfCoreProject().Database.Tables)
                 {
-                    classDefinition.Properties.Add(new PropertyDefinition(String.Format("DbSet<{0}>", table.GetEntityName()), table.GetPluralName()));
+                    classDefinition.Properties.Add(new PropertyDefinition(string.Format("DbSet<{0}>", table.GetEntityName()), table.GetPluralName()));
                 }
 
                 foreach (var view in projectFeature.GetEfCoreProject().Database.Views)
                 {
-                    classDefinition.Properties.Add(new PropertyDefinition(String.Format("DbSet<{0}>", view.GetEntityName()), view.GetPluralName()));
+                    classDefinition.Properties.Add(new PropertyDefinition(string.Format("DbSet<{0}>", view.GetEntityName()), view.GetPluralName()));
                 }
             }
 
@@ -94,14 +93,14 @@ namespace CatFactory.EfCore.Definitions
                 {
                     if (table.PrimaryKey?.Key.Count > 1)
                     {
-                        lines.Add(new CodeLine("modelBuilder.Entity<{0}>().HasKey(p => new {{ {1} }});", table.GetEntityName(), String.Join(", ", table.Columns.Select(item => String.Format("p.{0}", item.Name)))));
+                        lines.Add(new CodeLine("modelBuilder.Entity<{0}>().HasKey(p => new {{ {1} }});", table.GetEntityName(), string.Join(", ", table.Columns.Select(item => string.Format("p.{0}", item.Name)))));
                         lines.Add(new CodeLine());
                     }
                 }
 
                 foreach (var view in project.Database.Views)
                 {
-                    lines.Add(new CodeLine("modelBuilder.Entity<{0}>().HasKey(p => new {{ {1} }});", view.GetEntityName(), String.Join(", ", view.Columns.Select(item => String.Format("p.{0}", item.Name)))));
+                    lines.Add(new CodeLine("modelBuilder.Entity<{0}>().HasKey(p => new {{ {1} }});", view.GetEntityName(), string.Join(", ", view.Columns.Select(item => string.Format("p.{0}", item.Name)))));
                     lines.Add(new CodeLine());
                 }
             }

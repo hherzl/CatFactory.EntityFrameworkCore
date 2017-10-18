@@ -15,6 +15,8 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store.Mock"
             };
 
+            project.Settings.ForceOverwrite = true;
+
             project.Settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
             project.Settings.ConcurrencyToken = "Timestamp";
             project.Settings.EntitiesWithDataContracts.Add("Sales.Order");
@@ -35,6 +37,8 @@ namespace CatFactory.EfCore.Tests
                 Database = StoreDatabase.Mock,
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store.Mock.DataBindings"
             };
+
+            project.Settings.ForceOverwrite = true;
 
             project.Settings.EnableDataBindings = true; 
             project.Settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
@@ -58,6 +62,8 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\School.Mock"
             };
 
+            project.Settings.ForceOverwrite = true;
+
             project.BuildFeatures();
 
             project
@@ -74,6 +80,8 @@ namespace CatFactory.EfCore.Tests
                 Database = StoreDatabase.Mock,
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\StoreWithDbSetPropertiesAndDataAnnotations.Mock"
             };
+
+            project.Settings.ForceOverwrite = true;
 
             project.Settings.UseDataAnnotations = true;
             project.Settings.DeclareDbSetPropertiesInDbContext = true;
@@ -95,6 +103,8 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\ModifiedStore.Mock"
             };
 
+            project.Settings.ForceOverwrite = true;
+
             project.Namespaces.EntityLayer = "EL";
             project.Namespaces.DataLayer = "DL";
 
@@ -114,6 +124,8 @@ namespace CatFactory.EfCore.Tests
                 Database = StoreDatabase.Mock,
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store.Tdd.Mock",
             };
+
+            project.Settings.ForceOverwrite = true;
 
             // todo: add logic to this feature
             //project.Settings.GenerateTestsForRepositories = true;

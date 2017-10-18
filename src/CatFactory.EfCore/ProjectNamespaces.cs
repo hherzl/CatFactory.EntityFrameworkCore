@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace CatFactory.EfCore
+﻿namespace CatFactory.EfCore
 {
     public class ProjectNamespaces
     {
@@ -14,16 +12,16 @@ namespace CatFactory.EfCore
             Repositories = "Repositories";
         }
 
-        public String EntityLayer { get; set; }
+        public string EntityLayer { get; set; }
 
-        public String DataLayer { get; set; }
+        public string DataLayer { get; set; }
 
-        public String Mapping { get; set; }
+        public string Mapping { get; set; }
 
-        public String Contracts { get; set; }
+        public string Contracts { get; set; }
 
-        public String DataContracts { get; set; }
+        public string DataContracts { get; set; }
 
-        public String Repositories { get; set; }
+        public string Repositories { get; set; }
     }
 }

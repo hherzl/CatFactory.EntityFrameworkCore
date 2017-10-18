@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using CatFactory.CodeFactory;
 using CatFactory.Collections;
@@ -24,7 +23,7 @@ namespace CatFactory.EfCore.Definitions
 
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
 
-            classDefinition.Namespaces.AddUnique(project.GetEntityLayerNamespace(table.HasDefaultSchema() ? String.Empty : table.Schema));
+            classDefinition.Namespaces.AddUnique(project.GetEntityLayerNamespace(table.HasDefaultSchema() ? string.Empty : table.Schema));
 
             classDefinition.Namespace = project.GetDataLayerMappingNamespace();
 
@@ -39,7 +38,7 @@ namespace CatFactory.EfCore.Definitions
 
             mapLines.Add(new CommentLine(1, " Mapping for table"));
 
-            if (String.IsNullOrEmpty(table.Schema))
+            if (string.IsNullOrEmpty(table.Schema))
             {
                 mapLines.Add(new CodeLine(1, "entity.ToTable(\"{0}\");", table.Name));
             }
@@ -54,7 +53,7 @@ namespace CatFactory.EfCore.Definitions
 
             if (table.PrimaryKey == null || table.PrimaryKey.Key.Count == 0)
             {
-                mapLines.Add(new CodeLine(1, "entity.HasKey(p => new {{ {0} }});", String.Join(", ", table.Columns.Select(item => String.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item.Name))))));
+                mapLines.Add(new CodeLine(1, "entity.HasKey(p => new {{ {0} }});", string.Join(", ", table.Columns.Select(item => string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item.Name))))));
                 mapLines.Add(new CodeLine());
             }
             else
@@ -68,7 +67,7 @@ namespace CatFactory.EfCore.Definitions
                 }
                 else if (table.PrimaryKey.Key.Count > 1)
                 {
-                    mapLines.Add(new CodeLine(1, "entity.HasKey(p => new {{ {0} }});", String.Join(", ", table.PrimaryKey.Key.Select(item => String.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item))))));
+                    mapLines.Add(new CodeLine(1, "entity.HasKey(p => new {{ {0} }});", string.Join(", ", table.PrimaryKey.Key.Select(item => string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item))))));
                     mapLines.Add(new CodeLine());
                 }
             }
@@ -88,31 +87,31 @@ namespace CatFactory.EfCore.Definitions
             {
                 var column = columns[i];
 
-                var lines = new List<String>()
+                var lines = new List<string>()
                 {
-                    String.Format("entity.Property(p => p.{0})" , column.GetPropertyName())
+                    string.Format("entity.Property(p => p.{0})" , column.GetPropertyName())
                 };
 
-                if (String.Compare(column.Name, column.GetPropertyName()) != 0)
+                if (string.Compare(column.Name, column.GetPropertyName()) != 0)
                 {
-                    lines.Add(String.Format("HasColumnName(\"{0}\")", column.Name));
+                    lines.Add(string.Format("HasColumnName(\"{0}\")", column.Name));
                 }
 
                 if (column.IsString())
                 {
-                    lines.Add(column.Length == 0 ? String.Format("HasColumnType(\"{0}(max)\")", column.Type) : String.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
+                    lines.Add(column.Length == 0 ? string.Format("HasColumnType(\"{0}(max)\")", column.Type) : string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
                 }
                 else if (column.IsDecimal())
                 {
-                    lines.Add(String.Format("HasColumnType(\"{0}({1}, {2})\")", column.Type, column.Prec, column.Scale));
+                    lines.Add(string.Format("HasColumnType(\"{0}({1}, {2})\")", column.Type, column.Prec, column.Scale));
                 }
                 else if (column.IsDouble() || column.IsSingle())
                 {
-                    lines.Add(String.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Prec));
+                    lines.Add(string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Prec));
                 }
                 else
                 {
-                    lines.Add(String.Format("HasColumnType(\"{0}\")", column.Type));
+                    lines.Add(string.Format("HasColumnType(\"{0}\")", column.Type));
                 }
 
                 if (!column.Nullable)
@@ -120,7 +119,7 @@ namespace CatFactory.EfCore.Definitions
                     lines.Add("IsRequired()");
                 }
 
-                mapLines.Add(new CodeLine(1, "{0};", String.Join(".", lines)));
+                mapLines.Add(new CodeLine(1, "{0};", string.Join(".", lines)));
             }
 
             mapLines.Add(new CodeLine());
@@ -131,7 +130,7 @@ namespace CatFactory.EfCore.Definitions
                 {
                     var column = columns[i];
 
-                    if (!String.IsNullOrEmpty(project.Settings.ConcurrencyToken) && String.Compare(column.Name, project.Settings.ConcurrencyToken) == 0)
+                    if (!string.IsNullOrEmpty(project.Settings.ConcurrencyToken) && string.Compare(column.Name, project.Settings.ConcurrencyToken) == 0)
                     {
                         mapLines.Add(new CommentLine(1, " Set concurrency token for entity"));
                         mapLines.Add(new CodeLine(1, "entity"));
@@ -153,11 +152,11 @@ namespace CatFactory.EfCore.Definitions
 
                     if (unique.Key.Count == 1)
                     {
-                        mapLines.Add(new CodeLine(2, ".HasAlternateKey(p => new {{ {0} }})", String.Join(", ", unique.Key.Select(item => String.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item))))));
+                        mapLines.Add(new CodeLine(2, ".HasAlternateKey(p => new {{ {0} }})", string.Join(", ", unique.Key.Select(item => string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item))))));
                     }
                     else
                     {
-                        mapLines.Add(new CodeLine(2, ".HasAlternateKey(p => new {{ {0} }})", String.Join(", ", table.PrimaryKey.Key.Select(item => String.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item))))));
+                        mapLines.Add(new CodeLine(2, ".HasAlternateKey(p => new {{ {0} }})", string.Join(", ", table.PrimaryKey.Key.Select(item => string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item))))));
                     }
 
                     mapLines.Add(new CodeLine(2, ".HasName(\"{0}\");", unique.ConstraintName));
@@ -189,7 +188,7 @@ namespace CatFactory.EfCore.Definitions
                         mapLines.Add(new CodeLine(1, "entity"));
                         mapLines.Add(new CodeLine(2, ".HasOne(p => p.{0})", foreignProperty.Name));
                         mapLines.Add(new CodeLine(2, ".WithMany(b => b.{0})", table.GetPluralName()));
-                        mapLines.Add(new CodeLine(2, ".HasForeignKey(p => {0})", String.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(foreignKey.Key[0]))));
+                        mapLines.Add(new CodeLine(2, ".HasForeignKey(p => {0})", string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(foreignKey.Key[0]))));
                         mapLines.Add(new CodeLine(2, ".HasConstraintName(\"{0}\");", foreignKey.ConstraintName));
                         mapLines.Add(new CodeLine());
                     }
@@ -225,7 +224,7 @@ namespace CatFactory.EfCore.Definitions
 
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
 
-            classDefinition.Namespaces.AddUnique(project.GetEntityLayerNamespace(view.HasDefaultSchema() ? String.Empty : view.Schema));
+            classDefinition.Namespaces.AddUnique(project.GetEntityLayerNamespace(view.HasDefaultSchema() ? string.Empty : view.Schema));
 
             classDefinition.Namespace = project.GetDataLayerMappingNamespace();
 
@@ -240,7 +239,7 @@ namespace CatFactory.EfCore.Definitions
 
             mapLines.Add(new CommentLine(1, " Mapping for table"));
 
-            if (String.IsNullOrEmpty(view.Schema))
+            if (string.IsNullOrEmpty(view.Schema))
             {
                 mapLines.Add(new CodeLine(1, "entity.ToTable(\"{0}\");", view.Name));
             }
@@ -255,14 +254,10 @@ namespace CatFactory.EfCore.Definitions
 
             columns = view.Columns;
 
-            mapLines.Add(new CodeLine(1, "entity.HasKey(p => new {{ {0} }});", String.Join(", ", columns.Select(item => String.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item.Name))))));
+            mapLines.Add(new CodeLine(1, "entity.HasKey(p => new {{ {0} }});", string.Join(", ", columns.Select(item => string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item.Name))))));
             mapLines.Add(new CodeLine());
 
             mapLines.Add(new CommentLine(1, " Set mapping for columns"));
-
-
-
-
 
             mapLines.Add(new CodeLine("});"));
 

@@ -1,11 +1,10 @@
-﻿using System;
-using CatFactory.Mapping;
+﻿using CatFactory.Mapping;
 
 namespace CatFactory.EfCore
 {
     public static class ColumnExtensions
     {
-        public static Boolean IsDecimal(this Column column)
+        public static bool IsDecimal(this Column column)
         {
             switch (column.Type)
             {
@@ -17,7 +16,7 @@ namespace CatFactory.EfCore
             }
         }
 
-        public static Boolean IsDouble(this Column column)
+        public static bool IsDouble(this Column column)
         {
             switch (column.Type)
             {
@@ -29,7 +28,7 @@ namespace CatFactory.EfCore
             }
         }
 
-        public static Boolean IsSingle(this Column column)
+        public static bool IsSingle(this Column column)
         {
             switch (column.Type)
             {
@@ -41,7 +40,7 @@ namespace CatFactory.EfCore
             }
         }
 
-        public static Boolean IsString(this Column column)
+        public static bool IsString(this Column column)
         {
             switch (column.Type)
             {

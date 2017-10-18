@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using CatFactory.Mapping;
@@ -34,14 +33,13 @@ namespace CatFactory.EfCore
 
                     return new ProjectFeature(item, dbObjects)
                     {
-                        Project = this,
-                        Database = Database
+                        Project = this
                     };
                 })
                 .ToList();
         }
 
-        private IEnumerable<DbObject> GetDbObjects(Database database, String schema)
+        private IEnumerable<DbObject> GetDbObjects(Database database, string schema)
         {
             var result = new List<DbObject>();
 
@@ -56,6 +54,21 @@ namespace CatFactory.EfCore
                 .Select(y => new DbObject { Schema = y.Schema, Name = y.Name, Type = "VIEW" }));
 
             return result;
+        }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private List<string> m_updateExclusions;
+
+        public List<string> UpdateExclusions
+        {
+            get
+            {
+                return m_updateExclusions ?? (m_updateExclusions = new List<string>());
+            }
+            set
+            {
+                m_updateExclusions = value;
+            }
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using CatFactory.CodeFactory;
 using CatFactory.Collections;
@@ -55,7 +54,7 @@ namespace CatFactory.EfCore.Definitions
                 });
             }
 
-            if (!String.IsNullOrEmpty(table.Description))
+            if (!string.IsNullOrEmpty(table.Description))
             {
                 classDefinition.Documentation.Summary = table.Description;
             }
@@ -171,7 +170,7 @@ namespace CatFactory.EfCore.Definitions
 
             classDefinition.Constructors.Add(new ClassConstructorDefinition());
 
-            if (!String.IsNullOrEmpty(view.Description))
+            if (!string.IsNullOrEmpty(view.Description))
             {
                 classDefinition.Documentation.Summary = view.Description;
             }

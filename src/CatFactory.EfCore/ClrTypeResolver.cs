@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace CatFactory.EfCore
+﻿namespace CatFactory.EfCore
 {
     public class ClrTypeResolver : ITypeResolver
     {
@@ -8,11 +6,11 @@ namespace CatFactory.EfCore
         {
         }
 
-        public Boolean UseNullableTypes { get; set; } = true;
+        public bool UseNullableTypes { get; set; } = true;
 
-        public virtual String Resolve(String type)
+        public virtual string Resolve(string type)
         {
-            var value = String.Empty;
+            var value = string.Empty;
 
             switch (type)
             {
@@ -92,21 +90,21 @@ namespace CatFactory.EfCore
                     break;
             }
 
-            if (String.Compare("BYTE[]", value, true) == 0)
+            if (string.Compare("BYTE[]", value, true) == 0)
             {
                 return value;
             }
-            else if (String.Compare("STRING", value, true) == 0)
+            else if (string.Compare("STRING", value, true) == 0)
             {
                 return value;
             }
-            else if (String.Compare("OBJECT", value, true) == 0)
+            else if (string.Compare("OBJECT", value, true) == 0)
             {
                 return value;
             }
             else
             {
-                return UseNullableTypes ? String.Format("{0}?", value) : value;
+                return UseNullableTypes ? string.Format("{0}?", value) : value;
             }
         }
     }

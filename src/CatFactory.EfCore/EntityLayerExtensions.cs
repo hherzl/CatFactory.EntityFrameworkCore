@@ -1,5 +1,4 @@
-﻿using System;
-using CatFactory.DotNetCore;
+﻿using CatFactory.DotNetCore;
 using CatFactory.EfCore.Definitions;
 using CatFactory.OOP;
 
@@ -12,7 +11,8 @@ namespace CatFactory.EfCore
             var codeBuilder = new CSharpInterfaceBuilder
             {
                 ObjectDefinition = project.GetEntityInterfaceDefinition(),
-                OutputDirectory = project.OutputDirectory
+                OutputDirectory = project.OutputDirectory,
+                ForceOverwrite = project.Settings.ForceOverwrite
             };
 
             codeBuilder.CreateFile(project.GetEntityLayerDirectory());
@@ -31,21 +31,17 @@ namespace CatFactory.EfCore
 
             foreach (var table in project.Database.Tables)
             {
-                var codeBuilder = new CSharpClassBuilder
-                {
-                    ObjectDefinition = table.GetEntityClassDefinition(project),
-                    OutputDirectory = project.OutputDirectory
-                };
+                var classDefinition = table.GetEntityClassDefinition(project);
 
                 if (project.Settings.UseDataAnnotations)
                 {
-                    codeBuilder.ObjectDefinition.AddTableAttribute(table);
+                    classDefinition.AddTableAttribute(table);
 
                     for (var i = 0; i < table.Columns.Count; i++)
                     {
                         var column = table.Columns[i];
 
-                        foreach (var property in codeBuilder.ObjectDefinition.Properties)
+                        foreach (var property in classDefinition.Properties)
                         {
                             if (column.GetPropertyName() == property.Name)
                             {
@@ -59,7 +55,7 @@ namespace CatFactory.EfCore
                                     property.Attributes.Add(new MetadataAttribute("Key"));
                                 }
 
-                                property.Attributes.Add(new MetadataAttribute("Column", String.Format("Order = {0}", i + 1)));
+                                property.Attributes.Add(new MetadataAttribute("Column", string.Format("Order = {0}", i + 1)));
 
                                 if (!column.Nullable)
                                 {
@@ -75,18 +71,12 @@ namespace CatFactory.EfCore
                     }
                 }
 
-                codeBuilder.CreateFile(project.GetEntityLayerDirectory());
+                CSharpClassBuilder.Create(project.OutputDirectory, project.GetEntityLayerDirectory(), project.Settings.ForceOverwrite, classDefinition);
             }
 
             foreach (var view in project.Database.Views)
             {
-                var codeBuilder = new CSharpClassBuilder
-                {
-                    ObjectDefinition = view.GetEntityClassDefinition(project),
-                    OutputDirectory = project.OutputDirectory
-                };
-
-                codeBuilder.CreateFile(project.GetEntityLayerDirectory());
+                CSharpClassBuilder.Create(project.OutputDirectory, project.GetEntityLayerDirectory(), project.Settings.ForceOverwrite, view.GetEntityClassDefinition(project));
             }
 
             return project;

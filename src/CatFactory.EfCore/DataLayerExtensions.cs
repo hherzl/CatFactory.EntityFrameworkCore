@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using CatFactory.Collections;
 using CatFactory.DotNetCore;
 using CatFactory.EfCore.Definitions;
 using CatFactory.Mapping;
@@ -25,48 +25,17 @@ namespace CatFactory.EfCore
         }
 
         private static void GenerateAppSettings(EfCoreProject project)
-        {
-            var codeBuilder = new CSharpClassBuilder
-            {
-                ObjectDefinition = project.GetAppSettingsClassDefinition(),
-                OutputDirectory = project.OutputDirectory
-            };
-
-            codeBuilder.CreateFile(project.GetDataLayerDirectory());
-        }
+            => CSharpClassBuilder.Create(project.OutputDirectory, project.GetDataLayerDirectory(), project.Settings.ForceOverwrite, project.GetAppSettingsClassDefinition());
 
         private static void GenerateMappingDependencies(EfCoreProject project)
         {
             if (!project.Settings.UseDataAnnotations)
             {
-                var codeBuilders = new List<CSharpCodeBuilder>()
-                {
-                    new CSharpInterfaceBuilder
-                    {
-                        ObjectDefinition = project.GetEntityMapperInterfaceDefinition(),
-                        OutputDirectory = project.OutputDirectory
-                    },
-                    new CSharpClassBuilder
-                    {
-                        ObjectDefinition = project.GetEntityMapperClassDefinition(),
-                        OutputDirectory = project.OutputDirectory
-                    },
-                    new CSharpInterfaceBuilder
-                    {
-                        ObjectDefinition = project.GetEntityMapInterfaceDefinition(),
-                        OutputDirectory = project.OutputDirectory
-                    },
-                    new CSharpClassBuilder
-                    {
-                        ObjectDefinition = project.GetDatabaseMapperClassDefinition(),
-                        OutputDirectory = project.OutputDirectory
-                    },
-                };
+                CSharpInterfaceBuilder
+                    .Create(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, project.GetEntityMapperInterfaceDefinition(), project.GetEntityMapInterfaceDefinition());
 
-                foreach (var codeBuilder in codeBuilders)
-                {
-                    codeBuilder.CreateFile(project.GetDataLayerMappingDirectory());
-                }
+                CSharpClassBuilder
+                    .Create(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, project.GetEntityMapperClassDefinition(), project.GetDatabaseMapperClassDefinition());
             }
         }
 
@@ -76,24 +45,12 @@ namespace CatFactory.EfCore
             {
                 foreach (var table in project.Database.Tables)
                 {
-                    var codeBuilder = new CSharpClassBuilder
-                    {
-                        ObjectDefinition = table.GetEntityMapClassDefinition(project),
-                        OutputDirectory = project.OutputDirectory
-                    };
-
-                    codeBuilder.CreateFile(project.GetDataLayerMappingDirectory());
+                    CSharpClassBuilder.Create(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, table.GetEntityMapClassDefinition(project));
                 }
 
                 foreach (var view in project.Database.Views)
                 {
-                    var codeBuilder = new CSharpClassBuilder
-                    {
-                        ObjectDefinition = view.GetEntityMapClassDefinition(project),
-                        OutputDirectory = project.OutputDirectory
-                    };
-
-                    codeBuilder.CreateFile(project.GetDataLayerMappingDirectory());
+                    CSharpClassBuilder.Create(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, view.GetEntityMapClassDefinition(project));
                 }
             }
         }
@@ -105,7 +62,8 @@ namespace CatFactory.EfCore
                 var codeBuilder = new CSharpClassBuilder
                 {
                     ObjectDefinition = projectFeature.GetDbContextClassDefinition(),
-                    OutputDirectory = project.OutputDirectory
+                    OutputDirectory = project.OutputDirectory,
+                    ForceOverwrite = project.Settings.ForceOverwrite
                 };
 
                 if (project.Settings.UseDataAnnotations)
@@ -122,59 +80,16 @@ namespace CatFactory.EfCore
         }
 
         private static void GenerateDataLayerContract(EfCoreProject project, CSharpInterfaceDefinition interfaceDefinition)
-        {
-            var codeBuilder = new CSharpInterfaceBuilder
-            {
-                ObjectDefinition = interfaceDefinition,
-                OutputDirectory = project.OutputDirectory
-            };
-
-            codeBuilder.CreateFile(project.GetDataLayerContractsDirectory());
-        }
-
-        private static void GenerateRepositoryTest(EfCoreProject project, CSharpClassDefinition classDefinition)
-        {
-            var codeBuilder = new CSharpClassBuilder
-            {
-                ObjectDefinition = classDefinition,
-                OutputDirectory = project.OutputDirectory
-            };
-
-            codeBuilder.CreateFile(project.GetDataLayerRepositoriesDirectory());
-        }
+            => CSharpInterfaceBuilder.Create(project.OutputDirectory, project.GetDataLayerContractsDirectory(), project.Settings.ForceOverwrite, interfaceDefinition);
 
         private static void GenerateRepositoryInterface(EfCoreProject project)
-        {
-            var codeBuilder = new CSharpInterfaceBuilder
-            {
-                ObjectDefinition = project.GetRepositoryInterfaceDefinition(),
-                OutputDirectory = project.OutputDirectory
-            };
-
-            codeBuilder.CreateFile(project.GetDataLayerContractsDirectory());
-        }
+            => CSharpInterfaceBuilder.Create(project.OutputDirectory, project.GetDataLayerContractsDirectory(), project.Settings.ForceOverwrite, project.GetRepositoryInterfaceDefinition());
 
         private static void GenerateBaseRepositoryClassDefinition(EfCoreProject project)
-        {
-            var codeBuilder = new CSharpClassBuilder
-            {
-                ObjectDefinition = project.GetRepositoryBaseClassDefinition(),
-                OutputDirectory = project.OutputDirectory
-            };
-
-            codeBuilder.CreateFile(project.GetDataLayerRepositoriesDirectory());
-        }
+            => CSharpClassBuilder.Create(project.OutputDirectory, project.GetDataLayerRepositoriesDirectory(), project.Settings.ForceOverwrite, project.GetRepositoryBaseClassDefinition());
 
         private static void GenerateRepositoryExtensionsClassDefinition(EfCoreProject project)
-        {
-            var codeBuilder = new CSharpClassBuilder
-            {
-                ObjectDefinition = project.GetRepositoryExtensionsClassDefinition(),
-                OutputDirectory = project.OutputDirectory
-            };
-
-            codeBuilder.CreateFile(project.GetDataLayerRepositoriesDirectory());
-        }
+            => CSharpClassBuilder.Create(project.OutputDirectory, project.GetDataLayerRepositoriesDirectory(), project.Settings.ForceOverwrite, project.GetRepositoryExtensionsClassDefinition());
 
         private static void GenerateDataContracts(EfCoreProject project)
         {
@@ -187,7 +102,7 @@ namespace CatFactory.EfCore
 
                 var classDefinition = new CSharpClassDefinition
                 {
-                    Namespaces = new List<String>()
+                    Namespaces = new List<string>()
                     {
                         "System"
                     },
@@ -215,9 +130,9 @@ namespace CatFactory.EfCore
 
                     var foreignKeyAlias = NamingConvention.GetCamelCase(foreignTable.GetEntityName());
 
-                    foreach (var column in foreignTable?.GetColumnsWithOutKey())
+                    foreach (var column in foreignTable?.GetColumnsWithOutPrimaryKey())
                     {
-                        var target = String.Format("{0}{1}", foreignTable.GetEntityName(), column.GetPropertyName());
+                        var target = string.Format("{0}{1}", foreignTable.GetEntityName(), column.GetPropertyName());
 
                         if (classDefinition.Properties.Where(item => item.Name == column.GetPropertyName()).Count() == 0)
                         {
@@ -226,19 +141,13 @@ namespace CatFactory.EfCore
                     }
                 }
 
-                var codeBuilder = new CSharpClassBuilder
-                {
-                    ObjectDefinition = classDefinition,
-                    OutputDirectory = project.OutputDirectory
-                };
-
-                codeBuilder.CreateFile(project.GetDataLayerDataContractsDirectory());
+                CSharpClassBuilder.Create(project.OutputDirectory, project.GetDataLayerDataContractsDirectory(), project.Settings.ForceOverwrite, classDefinition);
             }
         }
 
         private static void GenerateDataRepositories(EfCoreProject project)
         {
-            if (!String.IsNullOrEmpty(project.Settings.ConcurrencyToken))
+            if (!string.IsNullOrEmpty(project.Settings.ConcurrencyToken))
             {
                 project.UpdateExclusions.Add(project.Settings.ConcurrencyToken);
             }
@@ -251,12 +160,6 @@ namespace CatFactory.EfCore
             {
                 var repositoryClassDefinition = projectFeature.GetRepositoryClassDefinition();
 
-                var codeBuilder = new CSharpClassBuilder
-                {
-                    ObjectDefinition = repositoryClassDefinition,
-                    OutputDirectory = project.OutputDirectory
-                };
-
                 var interfaceDef = repositoryClassDefinition.RefactInterface();
 
                 interfaceDef.Implements.Add("IRepository");
@@ -265,37 +168,38 @@ namespace CatFactory.EfCore
 
                 GenerateDataLayerContract(project, interfaceDef);
 
-                codeBuilder.CreateFile(project.GetDataLayerRepositoriesDirectory());
+                CSharpClassBuilder.Create(project.OutputDirectory, project.GetDataLayerRepositoriesDirectory(), project.Settings.ForceOverwrite, repositoryClassDefinition);
             }
         }
 
         private static void GenerateReadMe(this EfCoreProject project)
         {
-            var lines = new List<String>();
+            var lines = new List<string>()
+            {
+                "CatFactory: Code Generation Made Easy",
+                string.Empty,
 
-            lines.Add("CatFactory: Code Generation Made Easy");
-            lines.Add(String.Empty);
+                "How to use this code on your ASP.NET Core Application",
+                string.Empty,
 
-            lines.Add("How to use this code on your ASP.NET Core Application");
-            lines.Add(String.Empty);
+                "Register objects in Startup class, register your DbContext and repositories in ConfigureServices method:",
+                " services.AddEntityFrameworkSqlServer().AddDbContext<StoreDbContext>();",
+                " services.AddScoped<IDboRepository, DboRepository>();",
+                string.Empty,
 
-            lines.Add("Register objects in Startup class, register your DbContext and repositories in ConfigureServices method:");
-            lines.Add(" services.AddEntityFrameworkSqlServer().AddDbContext<StoreDbContext>();");
-            lines.Add(" services.AddScoped<IDboRepository, DboRepository>();");
-            lines.Add(String.Empty);
+                "Happy code generation!",
+                string.Empty,
 
-            lines.Add("Happy code generation!");
-            lines.Add(String.Empty);
-
-            lines.Add("You can check the full guide to use this tool in:");
-            lines.Add("https://www.codeproject.com/Articles/1160615/Generating-Code-for-EF-Core-with-CatFactory");
-            lines.Add(String.Empty);
-            lines.Add("Also you can check source code on GitHub:");
-            lines.Add("https://github.com/hherzl/CatFactory.EfCore");
-            lines.Add(String.Empty);
-            lines.Add("*** Soon CatFactory will generate code for EF Core 2.0 (November - 2017) ***");
-            lines.Add(String.Empty);
-            lines.Add("CatFactory Development Team ==^^==");
+                "You can check the full guide to use this tool in:",
+                "https://www.codeproject.com/Articles/1160615/Generating-Code-for-EF-Core-with-CatFactory",
+                string.Empty,
+                "Also you can check source code on GitHub:",
+                "https://github.com/hherzl/CatFactory.EfCore",
+                string.Empty,
+                "*** Soon CatFactory will generate code for EF Core 2.0 (November - 2017) ***",
+                string.Empty,
+                "CatFactory Development Team ==^^=="
+            };
 
             TextFileHelper.CreateFile(Path.Combine(project.OutputDirectory, "ReadMe.txt"), lines.ToStringBuilder().ToString());
         }

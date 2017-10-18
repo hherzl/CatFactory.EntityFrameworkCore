@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace CatFactory.EfCore
+﻿namespace CatFactory.EfCore
 {
     public class AuditEntity
     {
@@ -8,7 +6,7 @@ namespace CatFactory.EfCore
         {
         }
 
-        public AuditEntity(String creationUserColumnName, String creationDateTimeColumnName, String lastUpdateUserColumnName, String lastUpdateDateTimeColumnName)
+        public AuditEntity(string creationUserColumnName, string creationDateTimeColumnName, string lastUpdateUserColumnName, string lastUpdateDateTimeColumnName)
         {
             CreationUserColumnName = creationUserColumnName;
             CreationDateTimeColumnName = creationDateTimeColumnName;
@@ -16,16 +14,16 @@ namespace CatFactory.EfCore
             LastUpdateDateTimeColumnName = lastUpdateDateTimeColumnName;
         }
 
-        public String CreationUserColumnName { get; set; }
+        public string CreationUserColumnName { get; set; }
 
-        public String CreationDateTimeColumnName { get; set; }
+        public string CreationDateTimeColumnName { get; set; }
 
-        public String LastUpdateUserColumnName { get; set; }
+        public string LastUpdateUserColumnName { get; set; }
 
-        public String LastUpdateDateTimeColumnName { get; set; }
+        public string LastUpdateDateTimeColumnName { get; set; }
 
-        public String[] Names
-            => new String[]
+        public string[] Names
+            => new string[]
             {
                 CreationUserColumnName,
                 CreationDateTimeColumnName,

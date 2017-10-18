@@ -1,5 +1,4 @@
-﻿using System;
-using CatFactory.CodeFactory;
+﻿using CatFactory.CodeFactory;
 using CatFactory.DotNetCore;
 
 namespace CatFactory.EfCore
@@ -10,14 +9,14 @@ namespace CatFactory.EfCore
 
         static ProjectFeatureExtensions()
         {
-            namingConvention = new DotNetNamingConvention() as ICodeNamingConvention;
+            namingConvention = new DotNetNamingConvention();
         }
 
-        public static String GetInterfaceRepositoryName(this ProjectFeature projectFeature)
-            => namingConvention.GetInterfaceName(String.Format("{0}Repository", projectFeature.Name));
+        public static string GetInterfaceRepositoryName(this ProjectFeature projectFeature)
+            => namingConvention.GetInterfaceName(string.Format("{0}Repository", projectFeature.Name));
 
-        public static String GetClassRepositoryName(this ProjectFeature projectFeature)
-            => namingConvention.GetClassName(String.Format("{0}Repository", projectFeature.Name));
+        public static string GetClassRepositoryName(this ProjectFeature projectFeature)
+            => namingConvention.GetClassName(string.Format("{0}Repository", projectFeature.Name));
 
         public static EfCoreProject GetEfCoreProject(this ProjectFeature projectFeature)
             => projectFeature.Project as EfCoreProject;

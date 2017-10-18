@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using CatFactory.CodeFactory;
 using CatFactory.DotNetCore;
 using CatFactory.OOP;
@@ -119,7 +118,7 @@ namespace CatFactory.EfCore.Definitions
             {
                 IsVirtual = true,
                 GenericType = "TEntity",
-                WhereConstraints = new List<String>()
+                WhereConstraints = new List<string>()
                 {
                     "TEntity : class"
                 },
@@ -167,7 +166,7 @@ namespace CatFactory.EfCore.Definitions
             {
                 IsVirtual = true,
                 GenericType = "TEntity",
-                WhereConstraints = new List<String>()
+                WhereConstraints = new List<string>()
                 {
                     "TEntity : class"
                 },
@@ -181,7 +180,7 @@ namespace CatFactory.EfCore.Definitions
             {
                 IsVirtual = true,
                 GenericType = "TEntity",
-                WhereConstraints = new List<String>()
+                WhereConstraints = new List<string>()
                 {
                     "TEntity : class"
                 },

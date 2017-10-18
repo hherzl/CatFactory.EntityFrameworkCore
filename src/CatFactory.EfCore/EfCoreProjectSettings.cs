@@ -1,43 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace CatFactory.EfCore
 {
     public class EfCoreProjectSettings : ProjectSettings
     {
-        public Boolean SimplifyDataTypes { get; set; }
+        public bool ForceOverwrite { get; set; }
 
-        public Boolean UseAutomaticPropertiesForEntities { get; set; } = true;
+        public bool SimplifyDataTypes { get; set; }
 
-        public Boolean EnableDataBindings { get; set; }
+        public bool UseAutomaticPropertiesForEntities { get; set; } = true;
 
-        public Boolean UseDataAnnotations { get; set; }
+        public bool EnableDataBindings { get; set; }
 
-        public Boolean UseMefForEntitiesMapping { get; set; } = true;
+        public bool UseDataAnnotations { get; set; }
 
-        public Boolean DeclareDbSetPropertiesInDbContext { get; set; }
+        public bool UseMefForEntitiesMapping { get; set; } = true;
 
-        public Boolean DeclareNavigationPropertiesAsVirtual { get; set; }
+        public bool DeclareDbSetPropertiesInDbContext { get; set; }
 
-        public String NavigationPropertyEnumerableNamespace { get; set; } = "System.Collections.ObjectModel";
+        public bool DeclareNavigationPropertiesAsVirtual { get; set; }
 
-        public String NavigationPropertyEnumerableType { get; set; } = "Collection";
+        public string NavigationPropertyEnumerableNamespace { get; set; } = "System.Collections.ObjectModel";
 
-        public String ConcurrencyToken { get; set; }
+        public string NavigationPropertyEnumerableType { get; set; } = "Collection";
 
-        public String EntityInterfaceName { get; set; } = "IEntity";
+        public string ConcurrencyToken { get; set; }
+
+        public string EntityInterfaceName { get; set; } = "IEntity";
 
         public AuditEntity AuditEntity { get; set; }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private List<String> m_backingFields;
+        private List<string> m_backingFields;
 
-        public List<String> EntitiesWithDataContracts
+        public List<string> EntitiesWithDataContracts
         {
             get
             {
-                return m_entitiesWithDataContracts ?? (m_entitiesWithDataContracts = new List<String>());
+                return m_entitiesWithDataContracts ?? (m_entitiesWithDataContracts = new List<string>());
             }
             set
             {
@@ -46,13 +47,13 @@ namespace CatFactory.EfCore
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private List<String> m_entitiesWithDataContracts;
+        private List<string> m_entitiesWithDataContracts;
 
-        public List<String> BackingFields
+        public List<string> BackingFields
         {
             get
             {
-                return m_backingFields ?? (m_backingFields = new List<String>());
+                return m_backingFields ?? (m_backingFields = new List<string>());
             }
             set
             {

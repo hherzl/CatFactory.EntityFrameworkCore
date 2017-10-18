@@ -22,6 +22,8 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store"
             };
 
+            project.Settings.ForceOverwrite = true;
+
             // Set audit columns
             project.Settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
 
@@ -55,6 +57,8 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\ModifiedNorthwind"
             };
 
+            project.Settings.ForceOverwrite = true;
+
             // Set custom namespaces
             project.Namespaces.EntityLayer = "EL";
             project.Namespaces.DataLayer = "DL";
@@ -85,6 +89,8 @@ namespace CatFactory.EfCore.Tests
                 Database = database,
                 OutputDirectory = "C:\\VsCode\\Northwind\\src"
             };
+
+            project.Settings.ForceOverwrite = true;
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
@@ -118,6 +124,8 @@ namespace CatFactory.EfCore.Tests
                 Database = database,
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\AdventureWorks"
             };
+
+            project.Settings.ForceOverwrite = true;
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();

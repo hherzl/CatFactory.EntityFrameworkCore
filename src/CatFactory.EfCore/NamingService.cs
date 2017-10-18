@@ -1,14 +1,12 @@
-﻿using System;
-
-namespace CatFactory.EfCore
+﻿namespace CatFactory.EfCore
 {
     public static class NamingService
     {
-        public static String GetSingularName(String value)
+        public static string GetSingularName(string value)
         {
             if (value.EndsWith("ies"))
             {
-                return String.Format("{0}y", value.Substring(0, value.Length - 3));
+                return string.Format("{0}y", value.Substring(0, value.Length - 3));
             }
             else if (value.EndsWith("tus"))
             {
@@ -16,7 +14,7 @@ namespace CatFactory.EfCore
             }
             else if (value.EndsWith("s"))
             {
-                return String.Format("{0}", value.Substring(0, value.Length - 1));
+                return string.Format("{0}", value.Substring(0, value.Length - 1));
             }
             else
             {
@@ -24,13 +22,13 @@ namespace CatFactory.EfCore
             }
         }
 
-        public static String GetPluralName(String value)
+        public static string GetPluralName(string value)
         {
             // todo: improve the way to pluralize a name
 
             if (value.EndsWith("ss"))
             {
-                return String.Format("{0}es", value);
+                return string.Format("{0}es", value);
             }
             else if (value.EndsWith("s"))
             {
@@ -38,11 +36,11 @@ namespace CatFactory.EfCore
             }
             else if (value.EndsWith("y"))
             {
-                return String.Format("{0}ies", value.Substring(0, value.Length - 1));
+                return string.Format("{0}ies", value.Substring(0, value.Length - 1));
             }
             else
             {
-                return String.Format("{0}s", value);
+                return string.Format("{0}s", value);
             }
         }
     }

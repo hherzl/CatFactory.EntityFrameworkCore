@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using CatFactory.CodeFactory;
 using CatFactory.DotNetCore;
 using CatFactory.OOP;
@@ -26,7 +25,7 @@ namespace CatFactory.EfCore.Definitions
                 GenericType = "TEntity",
                 IsExtension = true,
                 IsStatic = true,
-                WhereConstraints = new List<String>()
+                WhereConstraints = new List<string>()
                 {
                     "TEntity : class, IEntity",
                 },
@@ -43,7 +42,7 @@ namespace CatFactory.EfCore.Definitions
                 GenericType = "T",
                 IsExtension = true,
                 IsStatic = true,
-                WhereConstraints = new List<String>()
+                WhereConstraints = new List<string>()
                 {
                     "T : class",
                 },
