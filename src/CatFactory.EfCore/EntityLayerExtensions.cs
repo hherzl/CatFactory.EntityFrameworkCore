@@ -8,20 +8,11 @@ namespace CatFactory.EfCore
     {
         private static void GenerateEntityInterface(EfCoreProject project)
         {
-            var codeBuilder = new CSharpInterfaceBuilder
-            {
-                ObjectDefinition = project.GetEntityInterfaceDefinition(),
-                OutputDirectory = project.OutputDirectory,
-                ForceOverwrite = project.Settings.ForceOverwrite
-            };
-
-            codeBuilder.CreateFile(project.GetEntityLayerDirectory());
+            CSharpInterfaceBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), project.Settings.ForceOverwrite, project.GetEntityInterfaceDefinition());
 
             if (project.Settings.AuditEntity != null)
             {
-                codeBuilder.ObjectDefinition = project.GetAuditEntityInterfaceDefinition();
-
-                codeBuilder.CreateFile(project.GetEntityLayerDirectory());
+                CSharpInterfaceBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), project.Settings.ForceOverwrite, project.GetAuditEntityInterfaceDefinition());
             }
         }
 
@@ -71,12 +62,12 @@ namespace CatFactory.EfCore
                     }
                 }
 
-                CSharpClassBuilder.Create(project.OutputDirectory, project.GetEntityLayerDirectory(), project.Settings.ForceOverwrite, classDefinition);
+                CSharpClassBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), project.Settings.ForceOverwrite, classDefinition);
             }
 
             foreach (var view in project.Database.Views)
             {
-                CSharpClassBuilder.Create(project.OutputDirectory, project.GetEntityLayerDirectory(), project.Settings.ForceOverwrite, view.GetEntityClassDefinition(project));
+                CSharpClassBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), project.Settings.ForceOverwrite, view.GetEntityClassDefinition(project));
             }
 
             return project;

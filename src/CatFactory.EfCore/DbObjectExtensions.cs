@@ -5,11 +5,11 @@ using CatFactory.Mapping;
 
 namespace CatFactory.EfCore
 {
-    public static class DbObjectsExtensions
+    public static class DbObjectExtensions
     {
         private static ICodeNamingConvention namingConvention;
 
-        static DbObjectsExtensions()
+        static DbObjectExtensions()
         {
             namingConvention = new DotNetNamingConvention();
         }
@@ -17,19 +17,10 @@ namespace CatFactory.EfCore
         public static string GetSingularName(this IDbObject dbObject)
             => NamingService.GetSingularName(dbObject.GetEntityName());
 
-        public static string GetSingularName(this DbObject dbObject)
-            => NamingService.GetSingularName(dbObject.GetEntityName());
-
-        public static string GetPluralName(this DbObject dbObject)
-            => NamingService.GetPluralName(dbObject.GetEntityName());
-
         public static string GetPluralName(this IDbObject dbObject)
             => NamingService.GetPluralName(dbObject.GetEntityName());
 
         public static string GetEntityName(this IDbObject dbObject)
-            => string.Format("{0}", namingConvention.GetClassName(dbObject.Name));
-
-        public static string GetEntityName(this DbObject dbObject)
             => string.Format("{0}", namingConvention.GetClassName(dbObject.Name));
 
         public static string GetDataContractName(this IDbObject dbObject)
@@ -62,13 +53,13 @@ namespace CatFactory.EfCore
         public static string GetRemoveRepositoryMethodName(this ITable dbObject)
             => string.Format("Remove{0}Async", dbObject.GetSingularName());
 
-        public static string GetFullColumnName(this ITable table, Column column)
-            => string.Join(".", new string[] { table.Schema, table.Name, column.Name });
-
         public static bool HasDefaultSchema(this IDbObject table)
             => string.IsNullOrEmpty(table.Schema) || string.Compare(table.Schema, "dbo", true) == 0;
 
-        public static bool IsPrimaryKeyGuid(this Table table)
+        public static string GetFullColumnName(this ITable table, Column column)
+            => string.Join(".", new string[] { table.Schema, table.Name, column.Name });
+
+        public static bool IsPrimaryKeyGuid(this ITable table)
             => table.PrimaryKey != null && table.PrimaryKey.Key.Count == 1 && table.Columns[0].Type == "uniqueidentifier" ? true : false;
     }
 }

@@ -25,17 +25,17 @@ namespace CatFactory.EfCore
         }
 
         private static void GenerateAppSettings(EfCoreProject project)
-            => CSharpClassBuilder.Create(project.OutputDirectory, project.GetDataLayerDirectory(), project.Settings.ForceOverwrite, project.GetAppSettingsClassDefinition());
+            => CSharpClassBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerDirectory(), project.Settings.ForceOverwrite, project.GetAppSettingsClassDefinition());
 
         private static void GenerateMappingDependencies(EfCoreProject project)
         {
             if (!project.Settings.UseDataAnnotations)
             {
                 CSharpInterfaceBuilder
-                    .Create(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, project.GetEntityMapperInterfaceDefinition(), project.GetEntityMapInterfaceDefinition());
+                    .CreateFiles(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, project.GetEntityMapperInterfaceDefinition(), project.GetEntityMapInterfaceDefinition());
 
                 CSharpClassBuilder
-                    .Create(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, project.GetEntityMapperClassDefinition(), project.GetDatabaseMapperClassDefinition());
+                    .CreateFiles(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, project.GetEntityMapperClassDefinition(), project.GetDatabaseMapperClassDefinition());
             }
         }
 
@@ -45,12 +45,14 @@ namespace CatFactory.EfCore
             {
                 foreach (var table in project.Database.Tables)
                 {
-                    CSharpClassBuilder.Create(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, table.GetEntityMapClassDefinition(project));
+                    CSharpClassBuilder
+                        .CreateFiles(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, table.GetEntityMapClassDefinition(project));
                 }
 
                 foreach (var view in project.Database.Views)
                 {
-                    CSharpClassBuilder.Create(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, view.GetEntityMapClassDefinition(project));
+                    CSharpClassBuilder
+                        .CreateFiles(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, view.GetEntityMapClassDefinition(project));
                 }
             }
         }
@@ -59,37 +61,22 @@ namespace CatFactory.EfCore
         {
             foreach (var projectFeature in project.Features)
             {
-                var codeBuilder = new CSharpClassBuilder
-                {
-                    ObjectDefinition = projectFeature.GetDbContextClassDefinition(),
-                    OutputDirectory = project.OutputDirectory,
-                    ForceOverwrite = project.Settings.ForceOverwrite
-                };
-
-                if (project.Settings.UseDataAnnotations)
-                {
-                    codeBuilder.ObjectDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
-                }
-                else
-                {
-                    codeBuilder.ObjectDefinition.Namespaces.Add(project.GetDataLayerMappingNamespace());
-                }
-
-                codeBuilder.CreateFile(project.GetDataLayerDirectory());
+                CSharpClassBuilder
+                    .CreateFiles(project.OutputDirectory, project.GetDataLayerDirectory(), project.Settings.ForceOverwrite, projectFeature.GetDbContextClassDefinition());
             }
         }
 
         private static void GenerateDataLayerContract(EfCoreProject project, CSharpInterfaceDefinition interfaceDefinition)
-            => CSharpInterfaceBuilder.Create(project.OutputDirectory, project.GetDataLayerContractsDirectory(), project.Settings.ForceOverwrite, interfaceDefinition);
+            => CSharpInterfaceBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerContractsDirectory(), project.Settings.ForceOverwrite, interfaceDefinition);
 
         private static void GenerateRepositoryInterface(EfCoreProject project)
-            => CSharpInterfaceBuilder.Create(project.OutputDirectory, project.GetDataLayerContractsDirectory(), project.Settings.ForceOverwrite, project.GetRepositoryInterfaceDefinition());
+            => CSharpInterfaceBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerContractsDirectory(), project.Settings.ForceOverwrite, project.GetRepositoryInterfaceDefinition());
 
         private static void GenerateBaseRepositoryClassDefinition(EfCoreProject project)
-            => CSharpClassBuilder.Create(project.OutputDirectory, project.GetDataLayerRepositoriesDirectory(), project.Settings.ForceOverwrite, project.GetRepositoryBaseClassDefinition());
+            => CSharpClassBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerRepositoriesDirectory(), project.Settings.ForceOverwrite, project.GetRepositoryBaseClassDefinition());
 
         private static void GenerateRepositoryExtensionsClassDefinition(EfCoreProject project)
-            => CSharpClassBuilder.Create(project.OutputDirectory, project.GetDataLayerRepositoriesDirectory(), project.Settings.ForceOverwrite, project.GetRepositoryExtensionsClassDefinition());
+            => CSharpClassBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerRepositoriesDirectory(), project.Settings.ForceOverwrite, project.GetRepositoryExtensionsClassDefinition());
 
         private static void GenerateDataContracts(EfCoreProject project)
         {
@@ -141,7 +128,7 @@ namespace CatFactory.EfCore
                     }
                 }
 
-                CSharpClassBuilder.Create(project.OutputDirectory, project.GetDataLayerDataContractsDirectory(), project.Settings.ForceOverwrite, classDefinition);
+                CSharpClassBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerDataContractsDirectory(), project.Settings.ForceOverwrite, classDefinition);
             }
         }
 
@@ -168,7 +155,7 @@ namespace CatFactory.EfCore
 
                 GenerateDataLayerContract(project, interfaceDef);
 
-                CSharpClassBuilder.Create(project.OutputDirectory, project.GetDataLayerRepositoriesDirectory(), project.Settings.ForceOverwrite, repositoryClassDefinition);
+                CSharpClassBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerRepositoriesDirectory(), project.Settings.ForceOverwrite, repositoryClassDefinition);
             }
         }
 
