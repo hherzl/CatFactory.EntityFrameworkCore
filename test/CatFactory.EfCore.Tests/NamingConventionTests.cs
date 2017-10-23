@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using CatFactory.Mapping;
+﻿using CatFactory.Mapping;
 using Xunit;
 
 namespace CatFactory.EfCore.Tests
@@ -7,31 +6,29 @@ namespace CatFactory.EfCore.Tests
     public class NamingConventionTests
     {
         [Fact]
-        public async Task TestSingular()
+        public void TestSingular()
         {
-            await Task.Run(() =>
-            {
-                Assert.True("Product" == new DbObject { Name = "Products" }.GetSingularName());
-                Assert.True("Category" == new DbObject { Name = "Categories" }.GetSingularName());
-            });
+            // Arrange, Act and Assert
+            Assert.True("Category" == new DbObject { Name = "Categories" }.GetSingularName());
+            Assert.True("Product" == new DbObject { Name = "Products" }.GetSingularName());
+
         }
 
         [Fact]
-        public async Task TestPluralization()
+        public void TestPlural()
         {
-            await Task.Run(() =>
-            {
-                Assert.True("Queries" == new DbObject { Name = "Query" }.GetPluralName());
-            });
+            // Arrange, Act and Assert
+            Assert.True("Addresses" == new DbObject { Name = "Address" }.GetPluralName());
+            Assert.True("Books" == new DbObject { Name = "Book" }.GetPluralName());
+            Assert.True("Queries" == new DbObject { Name = "Query" }.GetPluralName());
         }
 
         [Fact]
-        public async Task TestMapName()
+        public void TestMapName()
         {
-            await Task.Run(() =>
-            {
-                Assert.True("OrdersQryMap" == new View { Name = "Orders Qry" }.GetMapName());
-            });
+            // Arrange, Act and Assert
+            Assert.True("OrderMap" == new Table { Name = "Order" }.GetMapName());
+            Assert.True("OrdersQryMap" == new View { Name = "Orders Qry" }.GetMapName());
         }
     }
 }

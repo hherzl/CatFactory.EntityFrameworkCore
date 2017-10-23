@@ -13,7 +13,6 @@ namespace CatFactory.EfCore
     {
         public static EfCoreProject GenerateDataLayer(this EfCoreProject project)
         {
-            GenerateAppSettings(project);
             GenerateMappingDependencies(project);
             GenerateMappings(project);
             GenerateDbContext(project);
@@ -24,9 +23,6 @@ namespace CatFactory.EfCore
             return project;
         }
 
-        private static void GenerateAppSettings(EfCoreProject project)
-            => CSharpClassBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerDirectory(), project.Settings.ForceOverwrite, project.GetAppSettingsClassDefinition());
-
         private static void GenerateMappingDependencies(EfCoreProject project)
         {
             if (!project.Settings.UseDataAnnotations)
@@ -35,7 +31,7 @@ namespace CatFactory.EfCore
                     .CreateFiles(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, project.GetEntityMapperInterfaceDefinition(), project.GetEntityMapInterfaceDefinition());
 
                 CSharpClassBuilder
-                    .CreateFiles(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, project.GetEntityMapperClassDefinition(), project.GetDatabaseMapperClassDefinition());
+                    .CreateFiles(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, project.GetEntityMapperClassDefinition(), project.GetDatabaseEntityMapperClassDefinition());
             }
         }
 

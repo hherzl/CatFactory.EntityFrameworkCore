@@ -19,7 +19,9 @@ namespace CatFactory.EfCore.Tests
                 .AddConsole(LogLevel.Warning)
                 .AddConsole(LogLevel.Error);
 
-            return serviceProvider.GetService<ILoggerFactory>().CreateLogger<T>();
+            return serviceProvider
+                .GetService<ILoggerFactory>()
+                .CreateLogger<T>();
         }
     }
 }

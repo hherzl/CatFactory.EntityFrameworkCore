@@ -8,9 +8,8 @@ namespace CatFactory.EfCore
         public static PropertyDefinition GetParentNavigationProperty(this ForeignKey foreignKey, EfCoreProject project, ITable table)
         {
             var propertyType = table.GetSingularName();
-            var propertyName = string.Format("{0}Fk", propertyType);
 
-            return new PropertyDefinition(propertyType, propertyName)
+            return new PropertyDefinition(propertyType, string.Format("{0}Fk", propertyType))
             {
                 IsVirtual = project.Settings.DeclareNavigationPropertiesAsVirtual
             };

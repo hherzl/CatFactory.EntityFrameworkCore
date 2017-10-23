@@ -5,9 +5,9 @@ using CatFactory.OOP;
 
 namespace CatFactory.EfCore.Definitions
 {
-    public static class DatabaseMapperClassDefinition
+    public static class DatabaseEntityMapperClassDefinition
     {
-        public static CSharpClassDefinition GetDatabaseMapperClassDefinition(this EfCoreProject project)
+        public static CSharpClassDefinition GetDatabaseEntityMapperClassDefinition(this EfCoreProject project)
         {
             var classDefinition = new CSharpClassDefinition();
 
@@ -34,10 +34,10 @@ namespace CatFactory.EfCore.Definitions
 
                 lines.Add(new CommentLine(" Create container for exports"));
                 lines.Add(new CodeLine("using (var container = configuration.CreateContainer())"));
-                lines.Add(new CodeLine("{{"));
+                lines.Add(new CodeLine("{"));
                 lines.Add(new CommentLine(1, " Get all definitions that implement IEntityMap interface"));
                 lines.Add(new CodeLine(1, "Mappings = container.GetExports<IEntityMap>();"));
-                lines.Add(new CodeLine("}}"));
+                lines.Add(new CodeLine("}"));
             }
             else
             {
@@ -49,9 +49,9 @@ namespace CatFactory.EfCore.Definitions
 
                 for (var i = 0; i < project.Database.Tables.Count; i++)
                 {
-                    var item = project.Database.Tables[i];
+                    var table = project.Database.Tables[i];
 
-                    lines.Add(new CodeLine(1, "new {0}(){1}", item.GetMapName(), i == project.Database.Tables.Count - 1 ? string.Empty : ","));
+                    lines.Add(new CodeLine(1, "new {0}(){1}", table.GetMapName(), i == project.Database.Tables.Count - 1 ? string.Empty : ","));
                 }
 
                 lines.Add(new CodeLine("};"));

@@ -16,15 +16,15 @@ namespace CatFactory.EfCore.Definitions
             classDefinition.Namespaces.Add(project.GetDataLayerNamespace());
             classDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
 
-            classDefinition.Name = "RepositoryExtensions";
             classDefinition.Namespace = project.GetDataLayerRepositoriesNamespace();
             classDefinition.IsStatic = true;
+            classDefinition.Name = "RepositoryExtensions";
 
             classDefinition.Methods.Add(new MethodDefinition("IQueryable<TEntity>", "Paging", new ParameterDefinition(project.Database.GetDbContextName(), "dbContext"), new ParameterDefinition("Int32", "pageSize", "0"), new ParameterDefinition("Int32", "pageNumber", "0"))
             {
-                GenericType = "TEntity",
                 IsExtension = true,
                 IsStatic = true,
+                GenericType = "TEntity",
                 WhereConstraints = new List<string>()
                 {
                     "TEntity : class, IEntity",
@@ -37,14 +37,14 @@ namespace CatFactory.EfCore.Definitions
                 }
             });
 
-            classDefinition.Methods.Add(new MethodDefinition("IQueryable<T>", "Paging", new ParameterDefinition("IQueryable<T>", "query"), new ParameterDefinition("Int32", "pageSize", "0"), new ParameterDefinition("Int32", "pageNumber", "0"))
+            classDefinition.Methods.Add(new MethodDefinition("IQueryable<TModel>", "Paging", new ParameterDefinition("IQueryable<TModel>", "query"), new ParameterDefinition("Int32", "pageSize", "0"), new ParameterDefinition("Int32", "pageNumber", "0"))
             {
-                GenericType = "T",
                 IsExtension = true,
                 IsStatic = true,
+                GenericType = "TModel",
                 WhereConstraints = new List<string>()
                 {
-                    "T : class",
+                    "TModel : class",
                 },
                 Lines = new List<ILine>()
                 {

@@ -30,9 +30,9 @@ namespace CatFactory.EfCore.Definitions
                 Lines = new List<ILine>()
                 {
                     new CodeLine("foreach (var item in Mappings)"),
-                    new CodeLine("{{"),
+                    new CodeLine("{"),
                     new CodeLine(1, "item.Map(modelBuilder);"),
-                    new CodeLine("}}")
+                    new CodeLine("}")
                 }
             });
 

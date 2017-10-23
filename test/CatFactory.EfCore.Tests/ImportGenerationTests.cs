@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using CatFactory.SqlServer;
 using Xunit;
 
@@ -14,7 +13,7 @@ namespace CatFactory.EfCore.Tests
             var database = SqlServerDatabaseFactory
                 .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Store;integrated security=yes;", "dbo.sysdiagrams");
 
-            // Create instance of Ef Core Project
+            // Create instance of EF Core Project
             var project = new EfCoreProject
             {
                 Name = "Store",
@@ -22,15 +21,10 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store"
             };
 
+            // Apply settings for EF Core project
             project.Settings.ForceOverwrite = true;
-
-            // Set audit columns
             project.Settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
-
-            // Set concurrency token
             project.Settings.ConcurrencyToken = "Timestamp";
-
-            // Set the list of entities with 
             project.Settings.EntitiesWithDataContracts.Add("Sales.Order");
 
             // Build features for project, group all entities by schema into a feature
@@ -49,7 +43,7 @@ namespace CatFactory.EfCore.Tests
             var database = SqlServerDatabaseFactory
                 .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
 
-            // Create instance of Ef Core Project
+            // Create instance of EF Core Project
             var project = new EfCoreProject
             {
                 Name = "Northwind",
@@ -57,6 +51,7 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\ModifiedNorthwind"
             };
 
+            // Apply settings for EF Core project
             project.Settings.ForceOverwrite = true;
 
             // Set custom namespaces
@@ -82,7 +77,7 @@ namespace CatFactory.EfCore.Tests
             var database = SqlServerDatabaseFactory
                 .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
 
-            // Create instance of Ef Core Project
+            // Create instance of EF Core Project
             var project = new EfCoreProject
             {
                 Name = "Northwind",
@@ -90,6 +85,7 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\VsCode\\Northwind\\src"
             };
 
+            // Apply settings for EF Core project
             project.Settings.ForceOverwrite = true;
 
             // Build features for project, group all entities by schema into a feature
@@ -108,7 +104,7 @@ namespace CatFactory.EfCore.Tests
             var factory = new SqlServerDatabaseFactory(LoggerMocker.GetLogger<SqlServerDatabaseFactory>())
             {
                 ConnectionString = "server=(local);database=AdventureWorks2012;integrated security=yes;",
-                Exclusions = new List<String>()
+                Exclusions = new List<string>()
                 {
                     "dbo.sysdiagrams"
                 }
@@ -117,7 +113,7 @@ namespace CatFactory.EfCore.Tests
             // Import database
             var database = factory.Import();
 
-            // Create instance of Ef Core Project
+            // Create instance of EF Core Project
             var project = new EfCoreProject
             {
                 Name = "AdventureWorks",
@@ -125,6 +121,7 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\AdventureWorks"
             };
 
+            // Apply settings for EF Core project
             project.Settings.ForceOverwrite = true;
 
             // Build features for project, group all entities by schema into a feature

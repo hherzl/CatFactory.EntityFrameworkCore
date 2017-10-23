@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using CatFactory.CodeFactory;
 using CatFactory.DotNetCore;
@@ -17,21 +16,17 @@ namespace CatFactory.EfCore
             namingConvention = new DotNetNamingConvention();
         }
 
-        public static string GetEntityLayerNamespace(this Project project)
-            => string.Join(".", namingConvention.GetClassName(project.Name), (project as EfCoreProject).Namespaces.EntityLayer);
+        public static string GetEntityLayerNamespace(this EfCoreProject project)
+            => string.Join(".", namingConvention.GetClassName(project.Name), project.Namespaces.EntityLayer);
 
-        public static string GetEntityLayerNamespace(this Project project, string ns)
-            => string.IsNullOrEmpty(ns) ? GetEntityLayerNamespace(project) : string.Join(".", project.Name, (project as EfCoreProject).Namespaces.EntityLayer, ns);
+        public static string GetEntityLayerNamespace(this EfCoreProject project, string ns)
+            => string.IsNullOrEmpty(ns) ? GetEntityLayerNamespace(project) : string.Join(".", project.Name, project.Namespaces.EntityLayer, ns);
 
-        public static string GetDataLayerNamespace(this Project project)
-            => string.Format("{0}.{1}", namingConvention.GetClassName(project.Name), (project as EfCoreProject).Namespaces.DataLayer);
+        public static string GetDataLayerNamespace(this EfCoreProject project)
+            => string.Format("{0}.{1}", namingConvention.GetClassName(project.Name), project.Namespaces.DataLayer);
 
-        public static string GetDataLayerMappingNamespace(this Project project)
-        {
-            var efCoreProject = project as EfCoreProject;
-
-            return string.Join(".", namingConvention.GetClassName(project.Name), efCoreProject.Namespaces.DataLayer, efCoreProject.Namespaces.Mapping);
-        }
+        public static string GetDataLayerMappingNamespace(this EfCoreProject project)
+            => string.Join(".", namingConvention.GetClassName(project.Name), project.Namespaces.DataLayer, project.Namespaces.Mapping);
 
         public static string GetDataLayerContractsNamespace(this EfCoreProject project)
             => string.Join(".", namingConvention.GetClassName(project.Name), project.Namespaces.DataLayer, project.Namespaces.Contracts);
@@ -60,15 +55,14 @@ namespace CatFactory.EfCore
         public static string GetDataLayerRepositoriesDirectory(this EfCoreProject project)
             => Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer, project.Namespaces.Repositories);
 
-        public static PropertyDefinition GetChildNavigationProperty(this EfCoreProject project, Table table, ForeignKey fk)
+        public static PropertyDefinition GetChildNavigationProperty(this EfCoreProject project, ITable table, ForeignKey foreignKey)
         {
             var propertyType = string.Format("{0}<{1}>", project.Settings.NavigationPropertyEnumerableType, table.GetSingularName());
-            var propertyName = table.GetPluralName();
 
-            return new PropertyDefinition(propertyType, propertyName)
+            return new PropertyDefinition(propertyType, table.GetPluralName())
             {
                 IsVirtual = project.Settings.DeclareNavigationPropertiesAsVirtual,
-                Attributes = project.Settings.UseDataAnnotations ? new List<MetadataAttribute>() { new MetadataAttribute("ForeignKey", string.Format("\"{0}\"", string.Join(",", fk.Key))) } : null
+                Attributes = project.Settings.UseDataAnnotations ? new List<MetadataAttribute>() { new MetadataAttribute("ForeignKey", string.Format("\"{0}\"", string.Join(",", foreignKey.Key))) } : null
             };
         }
     }

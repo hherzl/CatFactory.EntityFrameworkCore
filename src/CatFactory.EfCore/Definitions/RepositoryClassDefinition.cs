@@ -19,6 +19,8 @@ namespace CatFactory.EfCore.Definitions
 
         public static CSharpClassDefinition GetRepositoryClassDefinition(this ProjectFeature projectFeature)
         {
+            var efCoreProject = projectFeature.GetEfCoreProject();
+
             var classDefinition = new CSharpClassDefinition();
 
             classDefinition.Namespaces.Add("System");
@@ -26,21 +28,14 @@ namespace CatFactory.EfCore.Definitions
             classDefinition.Namespaces.Add("System.Threading.Tasks");
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
 
-            foreach (var dbObject in projectFeature.DbObjects)
+            foreach (var table in efCoreProject.Database.Tables)
             {
-                var table = projectFeature.Project.Database.Tables.FirstOrDefault(item => item.FullName == dbObject.FullName);
+                classDefinition.Namespaces.AddUnique(table.HasDefaultSchema() ? efCoreProject.GetEntityLayerNamespace() : efCoreProject.GetEntityLayerNamespace(table.Schema));
 
-                if (table == null)
-                {
-                    continue;
-                }
-
-                classDefinition.Namespaces.AddUnique(table.HasDefaultSchema() ? projectFeature.GetEfCoreProject().GetEntityLayerNamespace() : projectFeature.GetEfCoreProject().GetEntityLayerNamespace(table.Schema));
-
-                classDefinition.Namespaces.AddUnique(projectFeature.GetEfCoreProject().GetDataLayerContractsNamespace());
+                classDefinition.Namespaces.AddUnique(efCoreProject.GetDataLayerContractsNamespace());
             }
 
-            classDefinition.Namespace = projectFeature.GetEfCoreProject().GetDataLayerRepositoriesNamespace();
+            classDefinition.Namespace = efCoreProject.GetDataLayerRepositoriesNamespace();
 
             classDefinition.Name = projectFeature.GetClassRepositoryName();
 
@@ -53,15 +48,13 @@ namespace CatFactory.EfCore.Definitions
                 Invocation = "base(dbContext)"
             });
 
-            var dbos = projectFeature.DbObjects.Select(dbo => dbo.FullName).ToList();
-
-            var tables = projectFeature.Project.Database.Tables.Where(t => dbos.Contains(t.FullName)).ToList();
+            var tables = projectFeature.Project.Database.Tables.Where(item => projectFeature.DbObjects.Select(dbo => dbo.FullName).Contains(item.FullName)).ToList();
 
             foreach (var table in tables)
             {
-                if (projectFeature.GetEfCoreProject().Settings.EntitiesWithDataContracts.Contains(table.FullName) && !classDefinition.Namespaces.Contains(projectFeature.GetEfCoreProject().GetDataLayerDataContractsNamespace()))
+                if (efCoreProject.Settings.EntitiesWithDataContracts.Contains(table.FullName))
                 {
-                    classDefinition.Namespaces.AddUnique(projectFeature.GetEfCoreProject().GetDataLayerDataContractsNamespace());
+                    classDefinition.Namespaces.AddUnique(efCoreProject.GetDataLayerDataContractsNamespace());
                 }
 
                 foreach (var foreignKey in table.ForeignKeys)
@@ -72,7 +65,7 @@ namespace CatFactory.EfCore.Definitions
 
                         if (child != null)
                         {
-                            classDefinition.Namespaces.AddUnique(projectFeature.GetEfCoreProject().GetDataLayerDataContractsNamespace());
+                            classDefinition.Namespaces.AddUnique(efCoreProject.GetDataLayerDataContractsNamespace());
                         }
                     }
                 }
@@ -92,25 +85,27 @@ namespace CatFactory.EfCore.Definitions
 
         private static void GetGetAllMethod(this CSharpClassDefinition classDefinition, ProjectFeature projectFeature, IDbObject dbObject)
         {
+            var efCoreProject = projectFeature.GetEfCoreProject();
+
             var returnType = string.Empty;
 
             var lines = new List<ILine>();
 
-            var tableCast = dbObject as Table;
+            var table = dbObject as ITable;
 
-            if (tableCast == null)
+            if (table == null)
             {
                 returnType = dbObject.GetSingularName();
 
-                lines.Add(new CodeLine("return query.Paging(pageSize, pageNumber);"));
+                lines.Add(new CodeLine("return query;"));
             }
             else
             {
-                if (projectFeature.GetEfCoreProject().Settings.EntitiesWithDataContracts.Contains(tableCast.FullName))
+                if (efCoreProject.Settings.EntitiesWithDataContracts.Contains(table.FullName))
                 {
-                    var entityAlias = CatFactory.NamingConvention.GetCamelCase(tableCast.GetEntityName());
+                    var entityAlias = CatFactory.NamingConvention.GetCamelCase(table.GetEntityName());
 
-                    returnType = tableCast.GetDataContractName();
+                    returnType = table.GetDataContractName();
 
                     var dataContractPropertiesSets = new[]
                     {
@@ -125,7 +120,7 @@ namespace CatFactory.EfCore.Definitions
                         }
                     }.ToList();
 
-                    foreach (var column in tableCast.Columns)
+                    foreach (var column in table.Columns)
                     {
                         var propertyName = column.GetPropertyName();
 
@@ -140,7 +135,7 @@ namespace CatFactory.EfCore.Definitions
                         });
                     }
 
-                    foreach (var foreignKey in tableCast.ForeignKeys)
+                    foreach (var foreignKey in table.ForeignKeys)
                     {
                         var foreignTable = projectFeature.Project.Database.FindTableByFullName(foreignKey.References);
 
@@ -171,9 +166,9 @@ namespace CatFactory.EfCore.Definitions
                     }
 
                     lines.Add(new CommentLine(" Get query from DbSet"));
-                    lines.Add(new CodeLine("var query = from {0} in DbContext.Set<{1}>()", entityAlias, tableCast.GetEntityName()));
+                    lines.Add(new CodeLine("var query = from {0} in DbContext.Set<{1}>()", entityAlias, table.GetEntityName()));
 
-                    foreach (var foreignKey in tableCast.ForeignKeys)
+                    foreach (var foreignKey in table.ForeignKeys)
                     {
                         var foreignTable = projectFeature.Project.Database.FindTableByFullName(foreignKey.References);
 
@@ -188,11 +183,11 @@ namespace CatFactory.EfCore.Definitions
 
                         if (foreignTable.HasDefaultSchema())
                         {
-                            classDefinition.Namespaces.AddUnique(projectFeature.GetEfCoreProject().GetEntityLayerNamespace());
+                            classDefinition.Namespaces.AddUnique(efCoreProject.GetEntityLayerNamespace());
                         }
                         else
                         {
-                            classDefinition.Namespaces.AddUnique(projectFeature.GetEfCoreProject().GetEntityLayerNamespace(foreignTable.Schema));
+                            classDefinition.Namespaces.AddUnique(efCoreProject.GetEntityLayerNamespace(foreignTable.Schema));
                         }
 
                         if (foreignKey.Key.Count == 0)
@@ -207,7 +202,7 @@ namespace CatFactory.EfCore.Definitions
                             }
                             else
                             {
-                                var column = tableCast.Columns.FirstOrDefault(item => item.Name == foreignKey.Key[0]);
+                                var column = table.Columns.FirstOrDefault(item => item.Name == foreignKey.Key[0]);
 
                                 var x = NamingConvention.GetPropertyName(foreignKey.Key[0]);
                                 var y = NamingConvention.GetPropertyName(foreignTable.PrimaryKey.Key[0]);
@@ -289,29 +284,27 @@ namespace CatFactory.EfCore.Definitions
                 }
             }
 
-            var parameters = new List<ParameterDefinition>()
+            var parameters = new List<ParameterDefinition>
             {
-                new ParameterDefinition("Int32", "pageSize", "10"),
-                new ParameterDefinition("Int32", "pageNumber", "1")
             };
 
-            if (tableCast != null)
+            if (table != null)
             {
-                if (tableCast.ForeignKeys.Count == 0)
+                if (table.ForeignKeys.Count == 0)
                 {
-                    lines.Add(new CodeLine("return query.Paging(pageSize, pageNumber);"));
+                    lines.Add(new CodeLine("return query;"));
                 }
                 else
                 {
                     var typeResolver = new ClrTypeResolver();
 
-                    for (var i = 0; i < tableCast.ForeignKeys.Count; i++)
+                    for (var i = 0; i < table.ForeignKeys.Count; i++)
                     {
-                        var foreignKey = tableCast.ForeignKeys[i];
+                        var foreignKey = table.ForeignKeys[i];
 
                         if (foreignKey.Key.Count == 1)
                         {
-                            var column = tableCast.Columns.First(item => item.Name == foreignKey.Key[0]);
+                            var column = table.Columns.First(item => item.Name == foreignKey.Key[0]);
 
                             var parameterName = NamingConvention.GetParameterName(column.Name);
 
@@ -343,7 +336,7 @@ namespace CatFactory.EfCore.Definitions
                         }
                     }
 
-                    lines.Add(new CodeLine("return query.Paging(pageSize, pageNumber);"));
+                    lines.Add(new CodeLine("return query;"));
                 }
             }
 
@@ -353,67 +346,80 @@ namespace CatFactory.EfCore.Definitions
             });
         }
 
-        private static void AddGetByUniqueMethods(this CSharpClassDefinition classDefinition, ProjectFeature projectFeature, IDbObject dbObject)
+        private static void AddGetByUniqueMethods(this CSharpClassDefinition classDefinition, ProjectFeature projectFeature, ITable table)
         {
-            var table = dbObject as ITable;
-
-            if (table == null)
-            {
-                table = projectFeature.Project.Database.FindTableBySchemaAndName(dbObject.FullName);
-            }
-
-            if (table == null)
-            {
-                return;
-            }
+            var efCoreProject = projectFeature.GetEfCoreProject();
 
             foreach (var unique in table.Uniques)
             {
                 var expression = string.Format("item => {0}", string.Join(" && ", unique.Key.Select(item => string.Format("item.{0} == entity.{0}", NamingConvention.GetPropertyName(item)))));
 
-                classDefinition.Methods.Add(new MethodDefinition(string.Format("Task<{0}>", dbObject.GetSingularName()), dbObject.GetGetByUniqueRepositoryMethodName(unique), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
+                classDefinition.Methods.Add(new MethodDefinition(string.Format("Task<{0}>", table.GetSingularName()), table.GetGetByUniqueRepositoryMethodName(unique), new ParameterDefinition(table.GetSingularName(), "entity"))
                 {
                     IsAsync = true,
                     Lines = new List<ILine>()
                     {
-                        new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", projectFeature.GetEfCoreProject().Settings.DeclareDbSetPropertiesInDbContext ? dbObject.GetPluralName() : string.Format("Set<{0}>()", dbObject.GetSingularName()), expression)
+                        new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", efCoreProject.Settings.DeclareDbSetPropertiesInDbContext ? table.GetPluralName() : string.Format("Set<{0}>()", table.GetSingularName()), expression)
                     }
                 });
             }
         }
 
-        private static MethodDefinition GetGetMethod(ProjectFeature projectFeature, IDbObject dbObject)
+        private static MethodDefinition GetGetMethod(ProjectFeature projectFeature, ITable table)
         {
+            var efCoreProject = projectFeature.GetEfCoreProject();
+
             var expression = string.Empty;
 
-            var table = projectFeature.Project.Database.FindTableBySchemaAndName(dbObject.FullName);
-
-            if (table != null)
+            if (table.PrimaryKey == null && table.Identity != null)
             {
-                if (table.PrimaryKey == null)
-                {
-                    if (table.Identity != null)
-                    {
-                        expression = string.Format("item => item.{0} == entity.{0}", NamingConvention.GetPropertyName(table.Identity.Name));
-                    }
-                }
-                else
-                {
-                    expression = string.Format("item => {0}", string.Join(" && ", table.PrimaryKey.Key.Select(item => string.Format("item.{0} == entity.{0}", NamingConvention.GetPropertyName(item)))));
-                }
+                expression = string.Format("item => item.{0} == entity.{0}", NamingConvention.GetPropertyName(table.Identity.Name));
+            }
+            else
+            {
+                expression = string.Format("item => {0}", string.Join(" && ", table.PrimaryKey.Key.Select(item => string.Format("item.{0} == entity.{0}", NamingConvention.GetPropertyName(item)))));
             }
 
-            return new MethodDefinition(string.Format("Task<{0}>", dbObject.GetSingularName()), dbObject.GetGetRepositoryMethodName(), new ParameterDefinition(dbObject.GetSingularName(), "entity"))
+            if (efCoreProject.Settings.EntitiesWithDataContracts.Contains(table.FullName))
             {
-                IsAsync = true,
-                Lines = new List<ILine>()
+                var lines = new List<ILine>();
+
+                lines.Add(new CodeLine("return await DbContext.{0}", efCoreProject.Settings.DeclareDbSetPropertiesInDbContext ? table.GetPluralName() : string.Format("Set<{0}>()", table.GetSingularName())));
+
+                foreach (var foreignKey in table.ForeignKeys)
                 {
-                    new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", projectFeature.GetEfCoreProject().Settings.DeclareDbSetPropertiesInDbContext ? dbObject.GetPluralName() : string.Format("Set<{0}>()", dbObject.GetSingularName()), expression)
+                    var foreignTable = projectFeature.Project.Database.FindTableByFullName(foreignKey.References);
+
+                    if (foreignKey == null)
+                    {
+                        continue;
+                    }
+
+                    lines.Add(new CodeLine(1, ".Include(p => p.{0})", foreignKey.GetParentNavigationProperty(efCoreProject, foreignTable).Name));
                 }
-            };
+
+                lines.Add(new CodeLine(1, ".FirstOrDefaultAsync({0});", expression));
+
+                return new MethodDefinition(string.Format("Task<{0}>", table.GetSingularName()), table.GetGetRepositoryMethodName(), new ParameterDefinition(table.GetSingularName(), "entity"))
+                {
+                    IsAsync = true,
+                    Lines = lines
+                };
+            }
+            else
+            {
+                return new MethodDefinition(string.Format("Task<{0}>", table.GetSingularName()), table.GetGetRepositoryMethodName(), new ParameterDefinition(table.GetSingularName(), "entity"))
+                {
+                    IsAsync = true,
+                    Lines = new List<ILine>
+                    {
+                        new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", efCoreProject.Settings.DeclareDbSetPropertiesInDbContext ? table.GetPluralName() : string.Format("Set<{0}>()", table.GetSingularName()), expression)
+                    }
+                };
+            }
         }
 
-        private static MethodDefinition GetAddMethod(ProjectFeature projectFeature, Table table)
+        private static MethodDefinition GetAddMethod(ProjectFeature projectFeature, ITable table)
         {
             var lines = new List<ILine>();
 
@@ -437,7 +443,7 @@ namespace CatFactory.EfCore.Definitions
             };
         }
 
-        private static MethodDefinition GetUpdateMethod(ProjectFeature projectFeature, Table table)
+        private static MethodDefinition GetUpdateMethod(ProjectFeature projectFeature, ITable table)
         {
             var lines = new List<ILine>();
 
@@ -454,7 +460,7 @@ namespace CatFactory.EfCore.Definitions
             };
         }
 
-        private static MethodDefinition GetRemoveMethod(ProjectFeature projectFeature, Table table)
+        private static MethodDefinition GetRemoveMethod(ProjectFeature projectFeature, ITable table)
         {
             return new MethodDefinition("Task<Int32>", table.GetRemoveRepositoryMethodName(), new ParameterDefinition(table.GetSingularName(), "entity"))
             {

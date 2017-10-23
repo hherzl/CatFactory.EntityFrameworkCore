@@ -16,80 +16,53 @@ namespace CatFactory.EfCore.Definitions
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
             classDefinition.Namespaces.Add("Microsoft.Extensions.Options");
 
-            if (projectFeature.GetEfCoreProject().Settings.UseDataAnnotations)
-            {
-                classDefinition.Namespaces.Add(projectFeature.GetEfCoreProject().GetEntityLayerNamespace());
-            }
-            else
-            {
-                classDefinition.Namespaces.Add(projectFeature.GetEfCoreProject().GetDataLayerMappingNamespace());
-            }
+            classDefinition.Namespaces.Add(projectFeature.GetEfCoreProject().Settings.UseDataAnnotations ? projectFeature.GetEfCoreProject().GetEntityLayerNamespace() : projectFeature.GetEfCoreProject().GetDataLayerMappingNamespace());
 
             classDefinition.Namespace = projectFeature.GetEfCoreProject().GetDataLayerNamespace();
-            classDefinition.Name = projectFeature.GetEfCoreProject().Database.GetDbContextName();
+            classDefinition.Name = projectFeature.Project.Database.GetDbContextName();
 
             classDefinition.BaseClass = "Microsoft.EntityFrameworkCore.DbContext";
 
             if (projectFeature.GetEfCoreProject().Settings.UseDataAnnotations)
             {
-                classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition("IOptions<AppSettings>", "appSettings"))
+                classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(string.Format("DbContextOptions<{0}>", classDefinition.Name), "options"))
                 {
-                    Lines = new List<ILine>()
-                    {
-                        new CodeLine("ConnectionString = appSettings.Value.ConnectionString;"),
-                    }
+                    Invocation = "base(options)"
                 });
             }
             else
             {
-                classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition("IOptions<AppSettings>", "appSettings"), new ParameterDefinition("IEntityMapper", "entityMapper"))
+                classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(string.Format("DbContextOptions<{0}>", classDefinition.Name), "options"), new ParameterDefinition("IEntityMapper", "entityMapper"))
                 {
+                    Invocation = "base(options)",
                     Lines = new List<ILine>()
                     {
-                        new CodeLine("ConnectionString = appSettings.Value.ConnectionString;"),
                         new CodeLine("EntityMapper = entityMapper;")
                     }
                 });
             }
-
-            classDefinition.Properties.Add(new PropertyDefinition("String", "ConnectionString") { IsReadOnly = true });
 
             if (!projectFeature.GetEfCoreProject().Settings.UseDataAnnotations)
             {
                 classDefinition.Properties.Add(new PropertyDefinition("IEntityMapper", "EntityMapper") { IsReadOnly = true });
             }
 
-            classDefinition.Methods.Add(GetOnConfiguringMethod());
             classDefinition.Methods.Add(GetOnModelCreatingMethod(projectFeature.GetEfCoreProject()));
 
             if (projectFeature.GetEfCoreProject().Settings.DeclareDbSetPropertiesInDbContext)
             {
-                foreach (var table in projectFeature.GetEfCoreProject().Database.Tables)
+                foreach (var table in projectFeature.Project.Database.Tables)
                 {
                     classDefinition.Properties.Add(new PropertyDefinition(string.Format("DbSet<{0}>", table.GetEntityName()), table.GetPluralName()));
                 }
 
-                foreach (var view in projectFeature.GetEfCoreProject().Database.Views)
+                foreach (var view in projectFeature.Project.Database.Views)
                 {
                     classDefinition.Properties.Add(new PropertyDefinition(string.Format("DbSet<{0}>", view.GetEntityName()), view.GetPluralName()));
                 }
             }
 
             return classDefinition;
-        }
-
-        private static MethodDefinition GetOnConfiguringMethod()
-        {
-            return new MethodDefinition(AccessModifier.Protected, "void", "OnConfiguring", new ParameterDefinition("DbContextOptionsBuilder", "optionsBuilder"))
-            {
-                IsOverride = true,
-                Lines = new List<ILine>()
-                {
-                    new CodeLine("optionsBuilder.UseSqlServer(ConnectionString);"),
-                    new CodeLine(),
-                    new CodeLine("base.OnConfiguring(optionsBuilder);")
-                }
-            };
         }
 
         private static MethodDefinition GetOnModelCreatingMethod(EfCoreProject project)

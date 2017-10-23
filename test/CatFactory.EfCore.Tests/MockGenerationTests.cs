@@ -1,5 +1,4 @@
-﻿using System;
-using Xunit;
+﻿using Xunit;
 
 namespace CatFactory.EfCore.Tests
 {
@@ -8,21 +7,24 @@ namespace CatFactory.EfCore.Tests
         [Fact]
         public void ProjectGenerationWithDefaultsFromMockDatabaseTest()
         {
+            // Create instance of EF Core Project
             var project = new EfCoreProject
             {
                 Name = "Store",
-                Database = StoreDatabase.Mock,
+                Database = Databases.Store,
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store.Mock"
             };
 
+            // Apply settings for EF Core project
             project.Settings.ForceOverwrite = true;
-
             project.Settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
             project.Settings.ConcurrencyToken = "Timestamp";
             project.Settings.EntitiesWithDataContracts.Add("Sales.Order");
 
+            // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
 
+            // Generate code =^^=
             project
                 .GenerateEntityLayer()
                 .GenerateDataLayer();
@@ -31,22 +33,25 @@ namespace CatFactory.EfCore.Tests
         [Fact]
         public void ProjectGenerationWithDataBindingsFromMockDatabaseTest()
         {
+            // Create instance of EF Core Project
             var project = new EfCoreProject
             {
                 Name = "Store",
-                Database = StoreDatabase.Mock,
+                Database = Databases.Store,
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store.Mock.DataBindings"
             };
 
+            // Apply settings for EF Core project
             project.Settings.ForceOverwrite = true;
-
-            project.Settings.EnableDataBindings = true; 
+            project.Settings.EnableDataBindings = true;
             project.Settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
             project.Settings.ConcurrencyToken = "Timestamp";
             project.Settings.EntitiesWithDataContracts.Add("Sales.Order");
 
+            // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
 
+            // Generate code =^^=
             project
                 .GenerateEntityLayer()
                 .GenerateDataLayer();
@@ -55,17 +60,21 @@ namespace CatFactory.EfCore.Tests
         [Fact]
         public void ProjectGenerationWithDefaultsFromClassicMockDatabaseTest()
         {
+            // Create instance of EF Core Project
             var project = new EfCoreProject
             {
                 Name = "School",
-                Database = SchoolDatabase.Mock,
+                Database = Databases.School,
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\School.Mock"
             };
 
+            // Apply settings for EF Core project
             project.Settings.ForceOverwrite = true;
 
+            // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
 
+            // Generate code =^^=
             project
                 .GenerateEntityLayer()
                 .GenerateDataLayer();
@@ -74,20 +83,23 @@ namespace CatFactory.EfCore.Tests
         [Fact]
         public void ProjectGenerationWithDbSetPropertiesAndDataAnnotationsTest()
         {
+            // Create instance of EF Core Project
             var project = new EfCoreProject
             {
                 Name = "Store",
-                Database = StoreDatabase.Mock,
+                Database = Databases.Store,
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\StoreWithDbSetPropertiesAndDataAnnotations.Mock"
             };
 
+            // Apply settings for EF Core project
             project.Settings.ForceOverwrite = true;
-
             project.Settings.UseDataAnnotations = true;
             project.Settings.DeclareDbSetPropertiesInDbContext = true;
 
+            // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
 
+            // Generate code =^^=
             project
                 .GenerateEntityLayer()
                 .GenerateDataLayer();
@@ -96,57 +108,51 @@ namespace CatFactory.EfCore.Tests
         [Fact]
         public void ProjectGenerationWithModifiedNamespacesFromMockDatabaseTest()
         {
+            // Create instance of EF Core Project
             var project = new EfCoreProject
             {
                 Name = "Store",
-                Database = StoreDatabase.Mock,
+                Database = Databases.Store,
                 OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\ModifiedStore.Mock"
             };
 
+            // Apply settings for EF Core project
             project.Settings.ForceOverwrite = true;
 
             project.Namespaces.EntityLayer = "EL";
             project.Namespaces.DataLayer = "DL";
 
+            // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
 
+            // Generate code =^^=
             project
                 .GenerateEntityLayer()
                 .GenerateDataLayer();
         }
-        
-        [Fact]
-        public void ProjectGenerationWithTddFromMockDatabaseTest()
-        {
-            var project = new EfCoreProject
-            {
-                Name = "Store",
-                Database = StoreDatabase.Mock,
-                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store.Tdd.Mock",
-            };
 
-            project.Settings.ForceOverwrite = true;
+        // todo: add logic to this feature
+        //[Fact]
+        //public void ProjectGenerationWithTddFromMockDatabaseTest()
+        //{
+        //    var project = new EfCoreProject
+        //    {
+        //        Name = "Store",
+        //        Database = Databases.Store,
+        //        OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store.Tdd.Mock",
+        //    };
 
-            // todo: add logic to this feature
-            //project.Settings.GenerateTestsForRepositories = true;
+        //    project.Settings.ForceOverwrite = true;
+        //    project.Settings.ConcurrencyToken = "Timestamp";
+        //    project.Settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
 
-            project.UpdateExclusions.AddRange(new String[] { "CreationUser", "CreationDateTime" });
+        //    project.UpdateExclusions.AddRange(new string[] { "CreationUser", "CreationDateTime" });
 
-            project.Settings.AuditEntity = new AuditEntity
-            {
-                CreationUserColumnName = "CreationUser",
-                CreationDateTimeColumnName = "CreationDateTime",
-                LastUpdateUserColumnName = "LastUpdateUser",
-                LastUpdateDateTimeColumnName = "LastUpdateDateTime"
-            };
+        //    project.BuildFeatures();
 
-            project.Settings.ConcurrencyToken = "Timestamp";
-
-            project.BuildFeatures();
-
-            project
-                .GenerateEntityLayer()
-                .GenerateDataLayer();
-        }
+        //    project
+        //        .GenerateEntityLayer()
+        //        .GenerateDataLayer();
+        //}
     }
 }
