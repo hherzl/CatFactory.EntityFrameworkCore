@@ -1,5 +1,5 @@
 {
-  "version": "3.0.0-alpha-build02",
+  "version": "3.0.0-alpha-build03",
   "title": "CatFactory.EfCore",
   "description": "CatFactory package for EF Core code generation with enterprise patterns",
   "packOptions": {
@@ -13,7 +13,7 @@
 
   "dependencies": {
     "NETStandard.Library": "1.6.1",
-    "CatFactory.DotNetCore": "3.0.0-alpha-build01",
+    "CatFactory.DotNetCore": "3.0.0-alpha-build02",
     "System.Runtime": "4.3.0"
   },
 

@@ -192,13 +192,13 @@ namespace CatFactory.EfCore.Definitions
 
                         if (foreignKey.Key.Count == 0)
                         {
-                            lines.Add(new WarningLine(1, " There isn't definition for key in foreign key '{0}' in your current database", foreignKey.References));
+                            lines.Add(new PreprocessorDirectiveLine(1, " There isn't definition for key in foreign key '{0}' in your current database", foreignKey.References));
                         }
                         else if (foreignKey.Key.Count == 1)
                         {
                             if (foreignTable == null)
                             {
-                                lines.Add(new WarningLine(1, " There isn't definition for '{0}' in your current database", foreignKey.References));
+                                lines.Add(LineHelper.GetWarning(" There isn't definition for '{0}' in your current database", foreignKey.References));
                             }
                             else
                             {
@@ -221,7 +221,7 @@ namespace CatFactory.EfCore.Definitions
                         else
                         {
                             // todo: add logic for foreign key with multiple key
-                            lines.Add(new WarningLine(1, "// todo: add logic for foreign key with multiple key"));
+                            lines.Add(LineHelper.GetWarning("// todo: add logic for foreign key with multiple key"));
                         }
                     }
 
@@ -332,7 +332,7 @@ namespace CatFactory.EfCore.Definitions
                         else
                         {
                             // todo: add logic for composed foreign key
-                            lines.Add(new WarningLine(1, "// todo: add logic for foreign key with multiple key"));
+                            lines.Add(LineHelper.GetWarning("// todo: add logic for foreign key with multiple key"));
                         }
                     }
 
