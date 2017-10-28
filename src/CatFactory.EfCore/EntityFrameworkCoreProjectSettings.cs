@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace CatFactory.EfCore
 {
-    public class EfCoreProjectSettings : ProjectSettings
+    public class EntityFrameworkCoreProjectSettings : ProjectSettings
     {
         public bool ForceOverwrite { get; set; }
 

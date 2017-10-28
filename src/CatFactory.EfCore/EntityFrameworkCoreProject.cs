@@ -5,9 +5,9 @@ using CatFactory.Mapping;
 
 namespace CatFactory.EfCore
 {
-    public class EfCoreProject : Project
+    public class EntityFrameworkCoreProject : Project
     {
-        public EfCoreProject()
+        public EntityFrameworkCoreProject()
         {
         }
 
@@ -78,9 +78,9 @@ namespace CatFactory.EfCore
             => m_namespaces ?? (m_namespaces = new ProjectNamespaces());
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private EfCoreProjectSettings m_settings;
+        private EntityFrameworkCoreProjectSettings m_settings;
 
-        public EfCoreProjectSettings Settings
-            => m_settings ?? (m_settings = new EfCoreProjectSettings());
+        public EntityFrameworkCoreProjectSettings Settings
+            => m_settings ?? (m_settings = new EntityFrameworkCoreProjectSettings());
     }
 }

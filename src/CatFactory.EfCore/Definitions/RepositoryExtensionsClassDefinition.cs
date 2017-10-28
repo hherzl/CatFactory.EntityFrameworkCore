@@ -7,7 +7,7 @@ namespace CatFactory.EfCore.Definitions
 {
     public static class RepositoryExtensionsClassDefinition
     {
-        public static CSharpClassDefinition GetRepositoryExtensionsClassDefinition(this EfCoreProject project)
+        public static CSharpClassDefinition GetRepositoryExtensionsClassDefinition(this EntityFrameworkCoreProject project)
         {
             var classDefinition = new CSharpClassDefinition();
 

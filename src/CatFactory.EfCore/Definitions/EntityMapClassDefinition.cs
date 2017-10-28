@@ -10,7 +10,7 @@ namespace CatFactory.EfCore.Definitions
 {
     public static class EntityMapClassDefinition
     {
-        public static CSharpClassDefinition GetEntityMapClassDefinition(this ITable table, EfCoreProject project)
+        public static CSharpClassDefinition GetEntityMapClassDefinition(this ITable table, EntityFrameworkCoreProject project)
         {
             var classDefinition = new CSharpClassDefinition();
 
@@ -211,7 +211,7 @@ namespace CatFactory.EfCore.Definitions
             return classDefinition;
         }
 
-        public static CSharpClassDefinition GetEntityMapClassDefinition(this IView view, EfCoreProject project)
+        public static CSharpClassDefinition GetEntityMapClassDefinition(this IView view, EntityFrameworkCoreProject project)
         {
             var classDefinition = new CSharpClassDefinition();
 

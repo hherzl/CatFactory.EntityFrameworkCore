@@ -1,10 +1,10 @@
 {
-  "version": "3.0.0-alpha-build03",
+  "version": "3.0.0-alpha-build04",
   "title": "CatFactory.EfCore",
-  "description": "CatFactory package for EF Core code generation with enterprise patterns",
+  "description": "CatFactory package for Entity Framework Core code generation with enterprise patterns",
   "packOptions": {
     "repository": {
-      "url": "https://github.com/hherzl/CatFactory.EfCore"
+      "url": "https://github.com/hherzl/CatFactory.EntityFrameworkCore"
     }
   },
   "authors": [

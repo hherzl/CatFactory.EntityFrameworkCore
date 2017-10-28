@@ -5,7 +5,7 @@ namespace CatFactory.EfCore.Definitions
 {
     public static class AuditEntityInterfaceDefinition
     {
-        public static CSharpInterfaceDefinition GetAuditEntityInterfaceDefinition(this EfCoreProject project)
+        public static CSharpInterfaceDefinition GetAuditEntityInterfaceDefinition(this EntityFrameworkCoreProject project)
         {
             var interfaceDefinition = new CSharpInterfaceDefinition();
 

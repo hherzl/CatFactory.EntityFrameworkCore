@@ -11,19 +11,19 @@ namespace CatFactory.EfCore
 {
     public static class DataLayerExtensions
     {
-        public static EfCoreProject GenerateDataLayer(this EfCoreProject project)
+        public static EntityFrameworkCoreProject ScaffoldDataLayer(this EntityFrameworkCoreProject project)
         {
-            GenerateMappingDependencies(project);
-            GenerateMappings(project);
-            GenerateDbContext(project);
-            GenerateDataContracts(project);
-            GenerateDataRepositories(project);
-            GenerateReadMe(project);
+            ScaffoldMappingDependencies(project);
+            ScaffoldMappings(project);
+            ScaffoldDbContext(project);
+            ScaffoldDataContracts(project);
+            ScaffoldDataRepositories(project);
+            ScaffoldReadMe(project);
 
             return project;
         }
 
-        private static void GenerateMappingDependencies(EfCoreProject project)
+        private static void ScaffoldMappingDependencies(EntityFrameworkCoreProject project)
         {
             if (!project.Settings.UseDataAnnotations)
             {
@@ -35,7 +35,7 @@ namespace CatFactory.EfCore
             }
         }
 
-        private static void GenerateMappings(EfCoreProject project)
+        private static void ScaffoldMappings(EntityFrameworkCoreProject project)
         {
             if (!project.Settings.UseDataAnnotations)
             {
@@ -53,7 +53,7 @@ namespace CatFactory.EfCore
             }
         }
 
-        private static void GenerateDbContext(EfCoreProject project)
+        private static void ScaffoldDbContext(EntityFrameworkCoreProject project)
         {
             foreach (var projectFeature in project.Features)
             {
@@ -62,19 +62,19 @@ namespace CatFactory.EfCore
             }
         }
 
-        private static void GenerateDataLayerContract(EfCoreProject project, CSharpInterfaceDefinition interfaceDefinition)
+        private static void ScaffoldDataLayerContract(EntityFrameworkCoreProject project, CSharpInterfaceDefinition interfaceDefinition)
             => CSharpInterfaceBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerContractsDirectory(), project.Settings.ForceOverwrite, interfaceDefinition);
 
-        private static void GenerateRepositoryInterface(EfCoreProject project)
+        private static void ScaffoldRepositoryInterface(EntityFrameworkCoreProject project)
             => CSharpInterfaceBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerContractsDirectory(), project.Settings.ForceOverwrite, project.GetRepositoryInterfaceDefinition());
 
-        private static void GenerateBaseRepositoryClassDefinition(EfCoreProject project)
+        private static void ScaffoldBaseRepositoryClassDefinition(EntityFrameworkCoreProject project)
             => CSharpClassBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerRepositoriesDirectory(), project.Settings.ForceOverwrite, project.GetRepositoryBaseClassDefinition());
 
-        private static void GenerateRepositoryExtensionsClassDefinition(EfCoreProject project)
+        private static void GenerateRepositoryExtensionsClassDefinition(EntityFrameworkCoreProject project)
             => CSharpClassBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerRepositoriesDirectory(), project.Settings.ForceOverwrite, project.GetRepositoryExtensionsClassDefinition());
 
-        private static void GenerateDataContracts(EfCoreProject project)
+        private static void ScaffoldDataContracts(EntityFrameworkCoreProject project)
         {
             foreach (var table in project.Database.Tables)
             {
@@ -128,15 +128,15 @@ namespace CatFactory.EfCore
             }
         }
 
-        private static void GenerateDataRepositories(EfCoreProject project)
+        private static void ScaffoldDataRepositories(EntityFrameworkCoreProject project)
         {
             if (!string.IsNullOrEmpty(project.Settings.ConcurrencyToken))
             {
                 project.UpdateExclusions.Add(project.Settings.ConcurrencyToken);
             }
 
-            GenerateRepositoryInterface(project);
-            GenerateBaseRepositoryClassDefinition(project);
+            ScaffoldRepositoryInterface(project);
+            ScaffoldBaseRepositoryClassDefinition(project);
             GenerateRepositoryExtensionsClassDefinition(project);
 
             foreach (var projectFeature in project.Features)
@@ -149,13 +149,13 @@ namespace CatFactory.EfCore
 
                 interfaceDef.Namespace = project.GetDataLayerContractsNamespace();
 
-                GenerateDataLayerContract(project, interfaceDef);
+                ScaffoldDataLayerContract(project, interfaceDef);
 
                 CSharpClassBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerRepositoriesDirectory(), project.Settings.ForceOverwrite, repositoryClassDefinition);
             }
         }
 
-        private static void GenerateReadMe(this EfCoreProject project)
+        private static void ScaffoldReadMe(this EntityFrameworkCoreProject project)
         {
             var lines = new List<string>()
             {
@@ -174,10 +174,10 @@ namespace CatFactory.EfCore
                 string.Empty,
 
                 "You can check the full guide to use this tool in:",
-                "https://www.codeproject.com/Articles/1160615/Generating-Code-for-EF-Core-with-CatFactory",
+                "https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory",
                 string.Empty,
                 "Also you can check source code on GitHub:",
-                "https://github.com/hherzl/CatFactory.EfCore",
+                "https://github.com/hherzl/CatFactory.EntityFrameworkCore",
                 string.Empty,
                 "*** Soon CatFactory will generate code for EF Core 2.0 (November - 2017) ***",
                 string.Empty,

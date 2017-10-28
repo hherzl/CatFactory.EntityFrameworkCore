@@ -6,7 +6,7 @@ namespace CatFactory.EfCore
 {
     public static class EntityLayerExtensions
     {
-        private static void GenerateEntityInterface(EfCoreProject project)
+        private static void GenerateEntityInterface(EntityFrameworkCoreProject project)
         {
             CSharpInterfaceBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), project.Settings.ForceOverwrite, project.GetEntityInterfaceDefinition());
 
@@ -16,7 +16,7 @@ namespace CatFactory.EfCore
             }
         }
 
-        public static EfCoreProject GenerateEntityLayer(this EfCoreProject project)
+        public static EntityFrameworkCoreProject ScaffoldEntityLayer(this EntityFrameworkCoreProject project)
         {
             GenerateEntityInterface(project);
 
@@ -30,7 +30,7 @@ namespace CatFactory.EfCore
 
                     for (var i = 0; i < table.Columns.Count; i++)
                     {
-                        var column = table.Columns[i];
+                        var column = table[i];
 
                         foreach (var property in classDefinition.Properties)
                         {
@@ -77,7 +77,7 @@ namespace CatFactory.EfCore
 
                     for (var i = 0; i < view.Columns.Count; i++)
                     {
-                        var column = view.Columns[i];
+                        var column = view[i];
 
                         foreach (var property in classDefinition.Properties)
                         {

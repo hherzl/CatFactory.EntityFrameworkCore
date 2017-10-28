@@ -14,11 +14,11 @@ namespace CatFactory.EfCore.Tests
                 .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Store;integrated security=yes;", "dbo.sysdiagrams");
 
             // Create instance of EF Core Project
-            var project = new EfCoreProject
+            var project = new EntityFrameworkCoreProject
             {
                 Name = "Store",
                 Database = database,
-                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store"
+                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\Store"
             };
 
             // Apply settings for EF Core project
@@ -32,8 +32,8 @@ namespace CatFactory.EfCore.Tests
 
             // Generate code =^^=
             project
-                .GenerateEntityLayer()
-                .GenerateDataLayer();
+                .ScaffoldEntityLayer()
+                .ScaffoldDataLayer();
         }
 
         [Fact]
@@ -44,11 +44,11 @@ namespace CatFactory.EfCore.Tests
                 .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
 
             // Create instance of EF Core Project
-            var project = new EfCoreProject
+            var project = new EntityFrameworkCoreProject
             {
                 Name = "Northwind",
                 Database = database,
-                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\ModifiedNorthwind"
+                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\ModifiedNorthwind"
             };
 
             // Apply settings for EF Core project
@@ -66,8 +66,8 @@ namespace CatFactory.EfCore.Tests
 
             // Generate code =^^=
             project
-                .GenerateEntityLayer()
-                .GenerateDataLayer();
+                .ScaffoldEntityLayer()
+                .ScaffoldDataLayer();
         }
 
         [Fact]
@@ -78,7 +78,7 @@ namespace CatFactory.EfCore.Tests
                 .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
 
             // Create instance of EF Core Project
-            var project = new EfCoreProject
+            var project = new EntityFrameworkCoreProject
             {
                 Name = "Northwind",
                 Database = database,
@@ -93,8 +93,8 @@ namespace CatFactory.EfCore.Tests
 
             // Generate code =^^=
             project
-                .GenerateEntityLayer()
-                .GenerateDataLayer();
+                .ScaffoldEntityLayer()
+                .ScaffoldDataLayer();
         }
 
         [Fact]
@@ -114,11 +114,11 @@ namespace CatFactory.EfCore.Tests
             var database = factory.Import();
 
             // Create instance of EF Core Project
-            var project = new EfCoreProject
+            var project = new EntityFrameworkCoreProject
             {
                 Name = "AdventureWorks",
                 Database = database,
-                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\AdventureWorks"
+                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\AdventureWorks"
             };
 
             // Apply settings for EF Core project
@@ -129,8 +129,8 @@ namespace CatFactory.EfCore.Tests
 
             // Generate code =^^=
             project
-                .GenerateEntityLayer()
-                .GenerateDataLayer();
+                .ScaffoldEntityLayer()
+                .ScaffoldDataLayer();
         }
     }
 }

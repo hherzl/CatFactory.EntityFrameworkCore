@@ -5,7 +5,7 @@ namespace CatFactory.EfCore.Definitions
 {
     public static class EntityMapperInterfaceDefinition
     {
-        public static CSharpInterfaceDefinition GetEntityMapperInterfaceDefinition(this EfCoreProject project)
+        public static CSharpInterfaceDefinition GetEntityMapperInterfaceDefinition(this EntityFrameworkCoreProject project)
         {
             var interfaceDefinition = new CSharpInterfaceDefinition();
 

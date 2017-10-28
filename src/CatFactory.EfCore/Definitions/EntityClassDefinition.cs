@@ -10,7 +10,7 @@ namespace CatFactory.EfCore.Definitions
 {
     public static class EntityClassDefinition
     {
-        public static CSharpClassDefinition GetEntityClassDefinition(this ITable table, EfCoreProject project)
+        public static CSharpClassDefinition GetEntityClassDefinition(this ITable table, EntityFrameworkCoreProject project)
         {
             var classDefinition = new CSharpClassDefinition();
 
@@ -156,7 +156,7 @@ namespace CatFactory.EfCore.Definitions
             return classDefinition;
         }
 
-        public static CSharpClassDefinition GetEntityClassDefinition(this IView view, EfCoreProject project)
+        public static CSharpClassDefinition GetEntityClassDefinition(this IView view, EntityFrameworkCoreProject project)
         {
             var typeResolver = new ClrTypeResolver();
 

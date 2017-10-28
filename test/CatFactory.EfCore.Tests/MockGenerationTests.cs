@@ -8,11 +8,11 @@ namespace CatFactory.EfCore.Tests
         public void ProjectGenerationWithDefaultsFromMockDatabaseTest()
         {
             // Create instance of EF Core Project
-            var project = new EfCoreProject
+            var project = new EntityFrameworkCoreProject
             {
                 Name = "Store",
                 Database = Databases.Store,
-                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store.Mock"
+                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\Store.Mock"
             };
 
             // Apply settings for EF Core project
@@ -26,19 +26,19 @@ namespace CatFactory.EfCore.Tests
 
             // Generate code =^^=
             project
-                .GenerateEntityLayer()
-                .GenerateDataLayer();
+                .ScaffoldEntityLayer()
+                .ScaffoldDataLayer();
         }
 
         [Fact]
         public void ProjectGenerationWithDataBindingsFromMockDatabaseTest()
         {
             // Create instance of EF Core Project
-            var project = new EfCoreProject
+            var project = new EntityFrameworkCoreProject
             {
                 Name = "Store",
                 Database = Databases.Store,
-                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store.Mock.DataBindings"
+                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\Store.Mock.DataBindings"
             };
 
             // Apply settings for EF Core project
@@ -53,19 +53,19 @@ namespace CatFactory.EfCore.Tests
 
             // Generate code =^^=
             project
-                .GenerateEntityLayer()
-                .GenerateDataLayer();
+                .ScaffoldEntityLayer()
+                .ScaffoldDataLayer();
         }
 
         [Fact]
         public void ProjectGenerationWithDefaultsFromClassicMockDatabaseTest()
         {
             // Create instance of EF Core Project
-            var project = new EfCoreProject
+            var project = new EntityFrameworkCoreProject
             {
                 Name = "School",
                 Database = Databases.School,
-                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\School.Mock"
+                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\School.Mock"
             };
 
             // Apply settings for EF Core project
@@ -76,19 +76,19 @@ namespace CatFactory.EfCore.Tests
 
             // Generate code =^^=
             project
-                .GenerateEntityLayer()
-                .GenerateDataLayer();
+                .ScaffoldEntityLayer()
+                .ScaffoldDataLayer();
         }
 
         [Fact]
         public void ProjectGenerationWithDbSetPropertiesAndDataAnnotationsTest()
         {
             // Create instance of EF Core Project
-            var project = new EfCoreProject
+            var project = new EntityFrameworkCoreProject
             {
                 Name = "Store",
                 Database = Databases.Store,
-                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\StoreWithDbSetPropertiesAndDataAnnotations.Mock"
+                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\StoreWithDbSetPropertiesAndDataAnnotations.Mock"
             };
 
             // Apply settings for EF Core project
@@ -101,19 +101,19 @@ namespace CatFactory.EfCore.Tests
 
             // Generate code =^^=
             project
-                .GenerateEntityLayer()
-                .GenerateDataLayer();
+                .ScaffoldEntityLayer()
+                .ScaffoldDataLayer();
         }
 
         [Fact]
         public void ProjectGenerationWithModifiedNamespacesFromMockDatabaseTest()
         {
             // Create instance of EF Core Project
-            var project = new EfCoreProject
+            var project = new EntityFrameworkCoreProject
             {
                 Name = "Store",
                 Database = Databases.Store,
-                OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\ModifiedStore.Mock"
+                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\ModifiedStore.Mock"
             };
 
             // Apply settings for EF Core project
@@ -127,19 +127,19 @@ namespace CatFactory.EfCore.Tests
 
             // Generate code =^^=
             project
-                .GenerateEntityLayer()
-                .GenerateDataLayer();
+                .ScaffoldEntityLayer()
+                .ScaffoldDataLayer();
         }
 
         // todo: add logic to this feature
         //[Fact]
         //public void ProjectGenerationWithTddFromMockDatabaseTest()
         //{
-        //    var project = new EfCoreProject
+        //    var project = new EntityFrameworkCoreProject
         //    {
         //        Name = "Store",
         //        Database = Databases.Store,
-        //        OutputDirectory = "C:\\Temp\\CatFactory.EfCore\\Store.Tdd.Mock",
+        //        OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\Store.Tdd.Mock",
         //    };
 
         //    project.Settings.ForceOverwrite = true;

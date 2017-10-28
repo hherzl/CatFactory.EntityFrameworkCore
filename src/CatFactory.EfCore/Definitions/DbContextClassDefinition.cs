@@ -12,16 +12,14 @@ namespace CatFactory.EfCore.Definitions
         {
             var classDefinition = new CSharpClassDefinition();
 
-            classDefinition.Namespaces.Add("System");
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
-            classDefinition.Namespaces.Add("Microsoft.Extensions.Options");
 
             classDefinition.Namespaces.Add(projectFeature.GetEfCoreProject().Settings.UseDataAnnotations ? projectFeature.GetEfCoreProject().GetEntityLayerNamespace() : projectFeature.GetEfCoreProject().GetDataLayerMappingNamespace());
 
             classDefinition.Namespace = projectFeature.GetEfCoreProject().GetDataLayerNamespace();
             classDefinition.Name = projectFeature.Project.Database.GetDbContextName();
 
-            classDefinition.BaseClass = "Microsoft.EntityFrameworkCore.DbContext";
+            classDefinition.BaseClass = "DbContext";
 
             if (projectFeature.GetEfCoreProject().Settings.UseDataAnnotations)
             {
@@ -65,7 +63,7 @@ namespace CatFactory.EfCore.Definitions
             return classDefinition;
         }
 
-        private static MethodDefinition GetOnModelCreatingMethod(EfCoreProject project)
+        private static MethodDefinition GetOnModelCreatingMethod(EntityFrameworkCoreProject project)
         {
             var lines = new List<ILine>();
 

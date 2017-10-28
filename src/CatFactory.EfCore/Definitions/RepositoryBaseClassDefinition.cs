@@ -7,7 +7,7 @@ namespace CatFactory.EfCore.Definitions
 {
     public static class RepositoryBaseClassDefinition
     {
-        public static CSharpClassDefinition GetRepositoryBaseClassDefinition(this EfCoreProject project)
+        public static CSharpClassDefinition GetRepositoryBaseClassDefinition(this EntityFrameworkCoreProject project)
         {
             var classDefinition = new CSharpClassDefinition();
 
@@ -74,7 +74,7 @@ namespace CatFactory.EfCore.Definitions
             return classDefinition;
         }
 
-        private static MethodDefinition GetAddMethod(EfCoreProject project)
+        private static MethodDefinition GetAddMethod(EntityFrameworkCoreProject project)
         {
             var lines = new List<ILine>();
 
@@ -126,7 +126,7 @@ namespace CatFactory.EfCore.Definitions
             };
         }
 
-        private static MethodDefinition GetUpdateMethod(EfCoreProject project)
+        private static MethodDefinition GetUpdateMethod(EntityFrameworkCoreProject project)
         {
             var lines = new List<ILine>();
 
@@ -174,7 +174,7 @@ namespace CatFactory.EfCore.Definitions
             };
         }
 
-        private static MethodDefinition GetRemoveMethod(EfCoreProject project)
+        private static MethodDefinition GetRemoveMethod(EntityFrameworkCoreProject project)
         {
             return new MethodDefinition(AccessModifier.Protected, "void", "Remove", new ParameterDefinition("TEntity", "entity"))
             {

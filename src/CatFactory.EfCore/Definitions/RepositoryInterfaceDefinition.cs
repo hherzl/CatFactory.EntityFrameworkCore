@@ -5,7 +5,7 @@ namespace CatFactory.EfCore.Definitions
 {
     public static class RepositoryInterfaceDefinition
     {
-        public static CSharpInterfaceDefinition GetRepositoryInterfaceDefinition(this EfCoreProject project)
+        public static CSharpInterfaceDefinition GetRepositoryInterfaceDefinition(this EntityFrameworkCoreProject project)
         {
             var interfaceDefinition = new CSharpInterfaceDefinition();
 

@@ -7,7 +7,7 @@ namespace CatFactory.EfCore.Definitions
 {
     public static class EntityMapperClassDefinition
     {
-        public static CSharpClassDefinition GetEntityMapperClassDefinition(this EfCoreProject project)
+        public static CSharpClassDefinition GetEntityMapperClassDefinition(this EntityFrameworkCoreProject project)
         {
             var classDefinition = new CSharpClassDefinition();
 
