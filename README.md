@@ -1,3 +1,3 @@
 # CatFactory.EfCore
-EfCore package for CatFactory
-https://www.codeproject.com/Articles/1160615/Generating-Code-for-EF-Core-with-CatFactory
+Entity Framework Core for CatFactory
+https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory
