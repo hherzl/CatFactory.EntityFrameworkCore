@@ -104,9 +104,12 @@ namespace CatFactory.EfCore.Tests
             var factory = new SqlServerDatabaseFactory(LoggerMocker.GetLogger<SqlServerDatabaseFactory>())
             {
                 ConnectionString = "server=(local);database=AdventureWorks2012;integrated security=yes;",
-                Exclusions = new List<string>()
+                ImportSettings = new DatabaseImportSettings
                 {
-                    "dbo.sysdiagrams"
+                    Exclusions = new List<string>
+                    {
+                        "dbo.sysdiagrams"
+                    }
                 }
             };
 
