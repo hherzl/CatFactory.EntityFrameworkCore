@@ -28,7 +28,7 @@ namespace CatFactory.EfCore
             if (!project.Settings.UseDataAnnotations)
             {
                 CSharpInterfaceBuilder
-                    .CreateFiles(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, project.GetEntityMapperInterfaceDefinition(), project.GetEntityMapInterfaceDefinition());
+                    .CreateFiles(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, project.GetEntityMapperInterfaceDefinition(), project.GetEntityTypeConfigurationInterfaceDefinition());
 
                 CSharpClassBuilder
                     .CreateFiles(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, project.GetEntityMapperClassDefinition(), project.GetDatabaseEntityMapperClassDefinition());
@@ -42,13 +42,13 @@ namespace CatFactory.EfCore
                 foreach (var table in project.Database.Tables)
                 {
                     CSharpClassBuilder
-                        .CreateFiles(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, table.GetEntityMapClassDefinition(project));
+                        .CreateFiles(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, table.GetEntityTypeConfigurationClassDefinition(project));
                 }
 
                 foreach (var view in project.Database.Views)
                 {
                     CSharpClassBuilder
-                        .CreateFiles(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, view.GetEntityMapClassDefinition(project));
+                        .CreateFiles(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, view.GetEntityTypeConfigurationClassDefinition(project));
                 }
             }
         }
@@ -71,7 +71,7 @@ namespace CatFactory.EfCore
         private static void ScaffoldBaseRepositoryClassDefinition(EntityFrameworkCoreProject project)
             => CSharpClassBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerRepositoriesDirectory(), project.Settings.ForceOverwrite, project.GetRepositoryBaseClassDefinition());
 
-        private static void GenerateRepositoryExtensionsClassDefinition(EntityFrameworkCoreProject project)
+        private static void ScaffoldRepositoryExtensionsClassDefinition(EntityFrameworkCoreProject project)
             => CSharpClassBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerRepositoriesDirectory(), project.Settings.ForceOverwrite, project.GetRepositoryExtensionsClassDefinition());
 
         private static void ScaffoldDataContracts(EntityFrameworkCoreProject project)
@@ -137,7 +137,7 @@ namespace CatFactory.EfCore
 
             ScaffoldRepositoryInterface(project);
             ScaffoldBaseRepositoryClassDefinition(project);
-            GenerateRepositoryExtensionsClassDefinition(project);
+            ScaffoldRepositoryExtensionsClassDefinition(project);
 
             foreach (var projectFeature in project.Features)
             {
@@ -162,24 +162,28 @@ namespace CatFactory.EfCore
                 "CatFactory: Code Generation Made Easy",
                 string.Empty,
 
-                "How to use this code on your ASP.NET Core Application",
+                "How to use this code on your ASP.NET Core Application:",
                 string.Empty,
 
-                "Register objects in Startup class, register your DbContext and repositories in ConfigureServices method:",
-                " services.AddEntityFrameworkSqlServer().AddDbContext<StoreDbContext>();",
+                "1. Install packages for EntityFrameworkCore and EntityFrameworkCore.SqlServer",
+                string.Empty,
+
+                "2. Register your DbContext and repositories in ConfigureServices method (Startup class):",
+                " services.AddDbContext<StoreDbContext>(options => options.UseSqlServer(Configuration[\"ConnectionString\"]));",
+            
                 " services.AddScoped<IDboRepository, DboRepository>();",
                 string.Empty,
 
                 "Happy code generation!",
                 string.Empty,
 
-                "You can check the full guide to use this tool in:",
+                "You can check the guide for this package in:",
                 "https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory",
                 string.Empty,
                 "Also you can check source code on GitHub:",
                 "https://github.com/hherzl/CatFactory.EntityFrameworkCore",
                 string.Empty,
-                "*** Soon CatFactory will generate code for EF Core 2.0 (November - 2017) ***",
+                "*** Soon CatFactory will scaffold code for Entity Framework Core 2.0 (November - 2017) ***",
                 string.Empty,
                 "CatFactory Development Team ==^^=="
             };

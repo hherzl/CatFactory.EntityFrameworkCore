@@ -11,7 +11,6 @@ namespace CatFactory.EfCore.Tests
             // Arrange, Act and Assert
             Assert.True("Category" == new DbObject { Name = "Categories" }.GetSingularName());
             Assert.True("Product" == new DbObject { Name = "Products" }.GetSingularName());
-
         }
 
         [Fact]
@@ -27,8 +26,8 @@ namespace CatFactory.EfCore.Tests
         public void TestMapName()
         {
             // Arrange, Act and Assert
-            Assert.True("OrderMap" == new Table { Name = "Order" }.GetMapName());
-            Assert.True("OrdersQryMap" == new View { Name = "Orders Qry" }.GetMapName());
+            Assert.True("OrderEntityTypeConfiguration" == new Table { Name = "Order" }.GetEntityTypeConfigurationName());
+            Assert.True("OrdersQryEntityTypeConfiguration" == new View { Name = "Orders Qry" }.GetEntityTypeConfigurationName());
         }
     }
 }

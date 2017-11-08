@@ -24,7 +24,7 @@ namespace CatFactory.EfCore.Tests
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
 
-            // Generate code =^^=
+            // Scaffolding =^^=
             project
                 .ScaffoldEntityLayer()
                 .ScaffoldDataLayer();
@@ -51,7 +51,7 @@ namespace CatFactory.EfCore.Tests
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
 
-            // Generate code =^^=
+            // Scaffolding =^^=
             project
                 .ScaffoldEntityLayer()
                 .ScaffoldDataLayer();
@@ -74,7 +74,7 @@ namespace CatFactory.EfCore.Tests
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
 
-            // Generate code =^^=
+            // Scaffolding =^^=
             project
                 .ScaffoldEntityLayer()
                 .ScaffoldDataLayer();
@@ -99,7 +99,7 @@ namespace CatFactory.EfCore.Tests
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
 
-            // Generate code =^^=
+            // Scaffolding =^^=
             project
                 .ScaffoldEntityLayer()
                 .ScaffoldDataLayer();
@@ -125,7 +125,7 @@ namespace CatFactory.EfCore.Tests
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
 
-            // Generate code =^^=
+            // Scaffolding =^^=
             project
                 .ScaffoldEntityLayer()
                 .ScaffoldDataLayer();

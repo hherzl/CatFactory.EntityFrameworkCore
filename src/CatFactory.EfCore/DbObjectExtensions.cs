@@ -26,8 +26,8 @@ namespace CatFactory.EfCore
         public static string GetDataContractName(this IDbObject dbObject)
             => string.Format("{0}Dto", namingConvention.GetClassName(dbObject.Name));
 
-        public static string GetMapName(this IDbObject dbObject)
-            => namingConvention.GetClassName(string.Format("{0}Map", dbObject.GetSingularName()));
+        public static string GetEntityTypeConfigurationName(this IDbObject dbObject)
+            => namingConvention.GetClassName(string.Format("{0}EntityTypeConfiguration", dbObject.GetSingularName()));
 
         public static string GetDbContextName(this Database database)
             => namingConvention.GetClassName(string.Format("{0}DbContext", database.Name));

@@ -36,14 +36,14 @@ namespace CatFactory.EfCore.Definitions
                 lines.Add(new CodeLine("using (var container = configuration.CreateContainer())"));
                 lines.Add(new CodeLine("{"));
                 lines.Add(new CommentLine(1, " Get all definitions that implement IEntityMap interface"));
-                lines.Add(new CodeLine(1, "Mappings = container.GetExports<IEntityMap>();"));
+                lines.Add(new CodeLine(1, "Configurations = container.GetExports<IEntityTypeConfiguration>();"));
                 lines.Add(new CodeLine("}"));
             }
             else
             {
                 classDefinition.Namespaces.Add("System.Collections.Generic");
 
-                lines.Add(new CodeLine("Mappings = new List<IEntityMap>()"));
+                lines.Add(new CodeLine("Configurations = new List<IEntityTypeConfiguration>()"));
 
                 lines.Add(new CodeLine("{"));
 
@@ -51,7 +51,7 @@ namespace CatFactory.EfCore.Definitions
                 {
                     var table = project.Database.Tables[i];
 
-                    lines.Add(new CodeLine(1, "new {0}(){1}", table.GetMapName(), i == project.Database.Tables.Count - 1 ? string.Empty : ","));
+                    lines.Add(new CodeLine(1, "new {0}(){1}", table.GetEntityTypeConfigurationName(), i == project.Database.Tables.Count - 1 ? string.Empty : ","));
                 }
 
                 lines.Add(new CodeLine("};"));

@@ -16,9 +16,9 @@ namespace CatFactory.EfCore.Definitions
 
             interfaceDefinition.Name = "IEntityMapper";
 
-            interfaceDefinition.Properties.Add(new PropertyDefinition("IEnumerable<IEntityMap>", "Mappings") { IsReadOnly = true });
+            interfaceDefinition.Properties.Add(new PropertyDefinition("IEnumerable<IEntityTypeConfiguration>", "Configurations") { IsReadOnly = true });
 
-            interfaceDefinition.Methods.Add(new MethodDefinition("void", "MapEntities", new ParameterDefinition("ModelBuilder", "modelBuilder")));
+            interfaceDefinition.Methods.Add(new MethodDefinition("void", "ConfigureEntities", new ParameterDefinition("ModelBuilder", "modelBuilder")));
 
             return interfaceDefinition;
         }

@@ -8,9 +8,9 @@ using CatFactory.OOP;
 
 namespace CatFactory.EfCore.Definitions
 {
-    public static class EntityMapClassDefinition
+    public static class EntityTypeConfigurationClassDefinition
     {
-        public static CSharpClassDefinition GetEntityMapClassDefinition(this ITable table, EntityFrameworkCoreProject project)
+        public static CSharpClassDefinition GetEntityTypeConfigurationClassDefinition(this ITable table, EntityFrameworkCoreProject project)
         {
             var classDefinition = new CSharpClassDefinition();
 
@@ -18,7 +18,7 @@ namespace CatFactory.EfCore.Definitions
             {
                 classDefinition.Namespaces.Add("System.Composition");
 
-                classDefinition.Attributes.Add(new MetadataAttribute("Export", "typeof(IEntityMap)"));
+                classDefinition.Attributes.Add(new MetadataAttribute("Export", "typeof(IEntityTypeConfiguration)"));
             }
 
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
@@ -27,16 +27,16 @@ namespace CatFactory.EfCore.Definitions
 
             classDefinition.Namespace = project.GetDataLayerMappingNamespace();
 
-            classDefinition.Name = table.GetMapName();
+            classDefinition.Name = table.GetEntityTypeConfigurationName();
 
-            classDefinition.Implements.Add("IEntityMap");
+            classDefinition.Implements.Add("IEntityTypeConfiguration");
 
             var mapLines = new List<ILine>();
 
             mapLines.Add(new CodeLine("modelBuilder.Entity<{0}>(entity =>", table.GetSingularName()));
             mapLines.Add(new CodeLine("{"));
 
-            mapLines.Add(new CommentLine(1, " Mapping for table"));
+            mapLines.Add(new CommentLine(1, " Set configuration for entity"));
 
             if (string.IsNullOrEmpty(table.Schema))
             {
@@ -81,7 +81,7 @@ namespace CatFactory.EfCore.Definitions
 
             columns = table.Columns;
 
-            mapLines.Add(new CommentLine(1, " Set mapping for columns"));
+            mapLines.Add(new CommentLine(1, " Set configuration for columns"));
 
             for (var i = 0; i < columns.Count; i++)
             {
@@ -142,7 +142,7 @@ namespace CatFactory.EfCore.Definitions
                 }
             }
 
-            if (table != null && table.Uniques.Count > 0)
+            if (table.Uniques.Count > 0)
             {
                 mapLines.Add(new CommentLine(1, " Add configuration for uniques"));
 
@@ -164,7 +164,7 @@ namespace CatFactory.EfCore.Definitions
                 }
             }
 
-            if (table != null && table.ForeignKeys.Count > 0)
+            if (table.ForeignKeys.Count > 0)
             {
                 mapLines.Add(new CommentLine(1, " Add configuration for foreign keys"));
 
@@ -201,7 +201,7 @@ namespace CatFactory.EfCore.Definitions
 
             mapLines.Add(new CodeLine("});"));
 
-            var mapMethod = new MethodDefinition("void", "Map", new ParameterDefinition("ModelBuilder", "modelBuilder"))
+            var mapMethod = new MethodDefinition("void", "Configure", new ParameterDefinition("ModelBuilder", "modelBuilder"))
             {
                 Lines = mapLines
             };
@@ -211,7 +211,7 @@ namespace CatFactory.EfCore.Definitions
             return classDefinition;
         }
 
-        public static CSharpClassDefinition GetEntityMapClassDefinition(this IView view, EntityFrameworkCoreProject project)
+        public static CSharpClassDefinition GetEntityTypeConfigurationClassDefinition(this IView view, EntityFrameworkCoreProject project)
         {
             var classDefinition = new CSharpClassDefinition();
 
@@ -219,7 +219,7 @@ namespace CatFactory.EfCore.Definitions
             {
                 classDefinition.Namespaces.Add("System.Composition");
 
-                classDefinition.Attributes.Add(new MetadataAttribute("Export", "typeof(IEntityMap)"));
+                classDefinition.Attributes.Add(new MetadataAttribute("Export", "typeof(IEntityTypeConfiguration)"));
             }
 
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
@@ -228,16 +228,16 @@ namespace CatFactory.EfCore.Definitions
 
             classDefinition.Namespace = project.GetDataLayerMappingNamespace();
 
-            classDefinition.Name = view.GetMapName();
+            classDefinition.Name = view.GetEntityTypeConfigurationName();
 
-            classDefinition.Implements.Add("IEntityMap");
+            classDefinition.Implements.Add("IEntityTypeConfiguration");
 
             var mapLines = new List<ILine>();
 
             mapLines.Add(new CodeLine("modelBuilder.Entity<{0}>(entity =>", view.GetSingularName()));
             mapLines.Add(new CodeLine("{"));
 
-            mapLines.Add(new CommentLine(1, " Mapping for table"));
+            mapLines.Add(new CommentLine(1, " Set configuration for entity"));
 
             if (string.IsNullOrEmpty(view.Schema))
             {
@@ -250,18 +250,16 @@ namespace CatFactory.EfCore.Definitions
 
             mapLines.Add(new CodeLine());
 
-            var columns = default(List<Column>);
-
-            columns = view.Columns;
+            var columns = view.Columns;
 
             mapLines.Add(new CodeLine(1, "entity.HasKey(p => new {{ {0} }});", string.Join(", ", columns.Select(item => string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item.Name))))));
             mapLines.Add(new CodeLine());
 
-            mapLines.Add(new CommentLine(1, " Set mapping for columns"));
+            mapLines.Add(new CommentLine(1, " Set configuration for columns"));
 
             mapLines.Add(new CodeLine("});"));
 
-            var mapMethod = new MethodDefinition("void", "Map", new ParameterDefinition("ModelBuilder", "modelBuilder"))
+            var mapMethod = new MethodDefinition("void", "Configure", new ParameterDefinition("ModelBuilder", "modelBuilder"))
             {
                 Lines = mapLines
             };

@@ -14,14 +14,14 @@ namespace CatFactory.EfCore.Definitions
 
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
 
-            classDefinition.Namespaces.Add(projectFeature.GetEfCoreProject().Settings.UseDataAnnotations ? projectFeature.GetEfCoreProject().GetEntityLayerNamespace() : projectFeature.GetEfCoreProject().GetDataLayerMappingNamespace());
+            classDefinition.Namespaces.Add(projectFeature.GetEntityFrameworkCoreProject().Settings.UseDataAnnotations ? projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace() : projectFeature.GetEntityFrameworkCoreProject().GetDataLayerMappingNamespace());
 
-            classDefinition.Namespace = projectFeature.GetEfCoreProject().GetDataLayerNamespace();
+            classDefinition.Namespace = projectFeature.GetEntityFrameworkCoreProject().GetDataLayerNamespace();
             classDefinition.Name = projectFeature.Project.Database.GetDbContextName();
 
             classDefinition.BaseClass = "DbContext";
 
-            if (projectFeature.GetEfCoreProject().Settings.UseDataAnnotations)
+            if (projectFeature.GetEntityFrameworkCoreProject().Settings.UseDataAnnotations)
             {
                 classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(string.Format("DbContextOptions<{0}>", classDefinition.Name), "options"))
                 {
@@ -40,14 +40,14 @@ namespace CatFactory.EfCore.Definitions
                 });
             }
 
-            if (!projectFeature.GetEfCoreProject().Settings.UseDataAnnotations)
+            if (!projectFeature.GetEntityFrameworkCoreProject().Settings.UseDataAnnotations)
             {
                 classDefinition.Properties.Add(new PropertyDefinition("IEntityMapper", "EntityMapper") { IsReadOnly = true });
             }
 
-            classDefinition.Methods.Add(GetOnModelCreatingMethod(projectFeature.GetEfCoreProject()));
+            classDefinition.Methods.Add(GetOnModelCreatingMethod(projectFeature.GetEntityFrameworkCoreProject()));
 
-            if (projectFeature.GetEfCoreProject().Settings.DeclareDbSetPropertiesInDbContext)
+            if (projectFeature.GetEntityFrameworkCoreProject().Settings.DeclareDbSetPropertiesInDbContext)
             {
                 foreach (var table in projectFeature.Project.Database.Tables)
                 {
@@ -86,7 +86,8 @@ namespace CatFactory.EfCore.Definitions
             }
             else
             {
-                lines.Add(new CodeLine("EntityMapper.MapEntities(modelBuilder);"));
+                lines.Add(new CommentLine(" This feature will be change for EF Core 2"));
+                lines.Add(new CodeLine("EntityMapper.ConfigureEntities(modelBuilder);"));
                 lines.Add(new CodeLine());
             }
 

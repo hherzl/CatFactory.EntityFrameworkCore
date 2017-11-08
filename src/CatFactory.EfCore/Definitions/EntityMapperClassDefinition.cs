@@ -11,7 +11,6 @@ namespace CatFactory.EfCore.Definitions
         {
             var classDefinition = new CSharpClassDefinition();
 
-            classDefinition.Namespaces.Add("System");
             classDefinition.Namespaces.Add("System.Collections.Generic");
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
 
@@ -23,15 +22,15 @@ namespace CatFactory.EfCore.Definitions
 
             classDefinition.Constructors.Add(new ClassConstructorDefinition());
 
-            classDefinition.Properties.Add(new PropertyDefinition("IEnumerable<IEntityMap>", "Mappings"));
+            classDefinition.Properties.Add(new PropertyDefinition("IEnumerable<IEntityTypeConfiguration>", "Configurations"));
 
-            classDefinition.Methods.Add(new MethodDefinition("void", "MapEntities", new ParameterDefinition("ModelBuilder", "modelBuilder"))
+            classDefinition.Methods.Add(new MethodDefinition("void", "ConfigureEntities", new ParameterDefinition("ModelBuilder", "modelBuilder"))
             {
                 Lines = new List<ILine>()
                 {
-                    new CodeLine("foreach (var item in Mappings)"),
+                    new CodeLine("foreach (var item in Configurations)"),
                     new CodeLine("{"),
-                    new CodeLine(1, "item.Map(modelBuilder);"),
+                    new CodeLine(1, "item.Configure(modelBuilder);"),
                     new CodeLine("}")
                 }
             });
