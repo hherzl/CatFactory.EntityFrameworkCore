@@ -86,7 +86,7 @@ namespace CatFactory.EfCore.Definitions
             }
             else
             {
-                lines.Add(new CommentLine(" This feature will be change for EF Core 2"));
+                lines.Add(new CommentLine(" This code will change for EF Core 2"));
                 lines.Add(new CodeLine("EntityMapper.ConfigureEntities(modelBuilder);"));
                 lines.Add(new CodeLine());
             }

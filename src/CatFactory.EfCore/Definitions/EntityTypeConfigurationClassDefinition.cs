@@ -152,11 +152,13 @@ namespace CatFactory.EfCore.Definitions
 
                     if (unique.Key.Count == 1)
                     {
-                        mapLines.Add(new CodeLine(2, ".HasAlternateKey(p => new {{ {0} }})", string.Join(", ", unique.Key.Select(item => string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item))))));
+                        mapLines.Add(new CodeLine(2, ".HasIndex(p => p.{0})", classDefinition.NamingConvention.GetPropertyName(unique.Key.First())));
+                        mapLines.Add(new CodeLine(2, ".IsUnique()"));
                     }
                     else
                     {
-                        mapLines.Add(new CodeLine(2, ".HasAlternateKey(p => new {{ {0} }})", string.Join(", ", table.PrimaryKey.Key.Select(item => string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item))))));
+                        mapLines.Add(new CodeLine(2, ".HasIndex(p => new {{ {0} }})", string.Join(", ", table.PrimaryKey.Key.Select(item => string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item))))));
+                        mapLines.Add(new CodeLine(2, ".IsUnique()"));
                     }
 
                     mapLines.Add(new CodeLine(2, ".HasName(\"{0}\");", unique.ConstraintName));

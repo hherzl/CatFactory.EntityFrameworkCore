@@ -169,7 +169,7 @@ namespace CatFactory.EfCore
                 string.Empty,
 
                 "2. Register your DbContext and repositories in ConfigureServices method (Startup class):",
-                " services.AddDbContext<StoreDbContext>(options => options.UseSqlServer(Configuration[\"ConnectionString\"]));",
+                string.Format(" services.AddDbContext<{0}>(options => options.UseSqlServer(Configuration[\"ConnectionString\"]));", project.Database.GetDbContextName()),
             
                 " services.AddScoped<IDboRepository, DboRepository>();",
                 string.Empty,
