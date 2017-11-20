@@ -93,13 +93,9 @@ namespace CatFactory.EfCore
                     Name = table.GetDataContractName()
                 };
 
-                var typeResolver = new ClrTypeResolver();
-
                 foreach (var column in table.Columns)
                 {
-                    var propertyName = column.GetPropertyName();
-
-                    classDefinition.Properties.Add(new PropertyDefinition(typeResolver.Resolve(column.Type), propertyName));
+                    classDefinition.Properties.Add(new PropertyDefinition(column.GetClrType(), column.GetPropertyName()));
                 }
 
                 foreach (var foreignKey in table.ForeignKeys)
@@ -119,7 +115,7 @@ namespace CatFactory.EfCore
 
                         if (classDefinition.Properties.Where(item => item.Name == column.GetPropertyName()).Count() == 0)
                         {
-                            classDefinition.Properties.Add(new PropertyDefinition(typeResolver.Resolve(column.Type), target));
+                            classDefinition.Properties.Add(new PropertyDefinition(column.GetClrType(), target));
                         }
                     }
                 }
@@ -170,7 +166,7 @@ namespace CatFactory.EfCore
 
                 "2. Register your DbContext and repositories in ConfigureServices method (Startup class):",
                 string.Format(" services.AddDbContext<{0}>(options => options.UseSqlServer(Configuration[\"ConnectionString\"]));", project.Database.GetDbContextName()),
-            
+
                 " services.AddScoped<IDboRepository, DboRepository>();",
                 string.Empty,
 

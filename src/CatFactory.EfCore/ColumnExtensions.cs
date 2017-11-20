@@ -4,6 +4,9 @@ namespace CatFactory.EfCore
 {
     public static class ColumnExtensions
     {
+        public static string GetClrType(this Column column)
+            => new ClrTypeResolver().Resolve(column.Type);
+
         public static bool IsDecimal(this Column column)
         {
             switch (column.Type)

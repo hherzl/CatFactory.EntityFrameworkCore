@@ -1,5 +1,5 @@
 {
-  "version": "3.0.0-alpha-build07",
+  "version": "3.0.0-alpha-build08",
   "title": "CatFactory.EfCore",
   "description": "CatFactory package for Entity Framework Core code generation with enterprise patterns",
   "packOptions": {

@@ -39,13 +39,11 @@ namespace CatFactory.EfCore.Definitions
 
             var columns = table.Columns;
 
-            var typeResolver = new ClrTypeResolver();
-
-            if (table.PrimaryKey != null && table.PrimaryKey.Key.Count == 1)
+            if (table.PrimaryKey?.Key.Count == 1)
             {
                 var column = table.PrimaryKey.GetColumns(table).First();
 
-                classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(typeResolver.Resolve(column.Type), column.GetParameterName()))
+                classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(column.GetClrType(), column.GetParameterName()))
                 {
                     Lines = new List<ILine>()
                     {
@@ -63,21 +61,21 @@ namespace CatFactory.EfCore.Definitions
             {
                 if (project.Settings.EnableDataBindings)
                 {
-                    classDefinition.AddViewModelProperty(typeResolver.Resolve(column.Type), column.GetPropertyName());
+                    classDefinition.AddViewModelProperty(column.GetClrType(), column.GetPropertyName());
                 }
                 else
                 {
                     if (project.Settings.BackingFields.Contains(table.GetFullColumnName(column)))
                     {
-                        classDefinition.AddPropertyWithField(typeResolver.Resolve(column.Type), column.GetPropertyName());
+                        classDefinition.AddPropertyWithField(column.GetClrType(), column.GetPropertyName());
                     }
                     else if (project.Settings.UseAutomaticPropertiesForEntities)
                     {
-                        classDefinition.Properties.Add(new PropertyDefinition(typeResolver.Resolve(column.Type), column.GetPropertyName()));
+                        classDefinition.Properties.Add(new PropertyDefinition(column.GetClrType(), column.GetPropertyName()));
                     }
                     else
                     {
-                        classDefinition.AddPropertyWithField(typeResolver.Resolve(column.Type), column.GetPropertyName());
+                        classDefinition.AddPropertyWithField(column.GetClrType(), column.GetPropertyName());
                     }
                 }
             }
@@ -158,8 +156,6 @@ namespace CatFactory.EfCore.Definitions
 
         public static CSharpClassDefinition GetEntityClassDefinition(this IView view, EntityFrameworkCoreProject project)
         {
-            var typeResolver = new ClrTypeResolver();
-
             var classDefinition = new CSharpClassDefinition();
 
             classDefinition.Namespaces.Add("System");
@@ -177,7 +173,7 @@ namespace CatFactory.EfCore.Definitions
 
             foreach (var column in view.Columns)
             {
-                classDefinition.Properties.Add(new PropertyDefinition(typeResolver.Resolve(column.Type), column.GetPropertyName()));
+                classDefinition.Properties.Add(new PropertyDefinition(column.GetClrType(), column.GetPropertyName()));
             }
 
             if (project.Settings.SimplifyDataTypes)

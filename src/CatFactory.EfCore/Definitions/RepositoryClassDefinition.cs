@@ -99,7 +99,7 @@ namespace CatFactory.EfCore.Definitions
             return classDefinition;
         }
 
-        private static void GetGetAllMethod(this CSharpClassDefinition classDefinition, ProjectFeature projectFeature, IDbObject dbObject)
+        private static void GetGetAllMethod(this CSharpClassDefinition classDefinition, ProjectFeature projectFeature, ITable table)
         {
             var entityFrameworkCoreProject = projectFeature.GetEntityFrameworkCoreProject();
 
@@ -107,264 +107,375 @@ namespace CatFactory.EfCore.Definitions
 
             var lines = new List<ILine>();
 
-            var table = dbObject as ITable;
-
-            if (table == null)
+            if (entityFrameworkCoreProject.Settings.EntitiesWithDataContracts.Contains(table.FullName))
             {
-                returnType = dbObject.GetSingularName();
+                var entityAlias = CatFactory.NamingConvention.GetCamelCase(table.GetEntityName());
 
-                lines.Add(new CodeLine("return query;"));
-            }
-            else
-            {
-                if (entityFrameworkCoreProject.Settings.EntitiesWithDataContracts.Contains(table.FullName))
+                returnType = table.GetDataContractName();
+
+                var dataContractPropertiesSets = new[]
                 {
-                    var entityAlias = CatFactory.NamingConvention.GetCamelCase(table.GetEntityName());
-
-                    returnType = table.GetDataContractName();
-
-                    var dataContractPropertiesSets = new[]
+                    new
                     {
-                        new
-                        {
-                            IsForeign = false,
-                            Type = string.Empty,
-                            Nullable = false,
-                            ObjectSource = string.Empty,
-                            PropertySource = string.Empty,
-                            Target = string.Empty
-                        }
-                    }.ToList();
-
-                    foreach (var column in table.Columns)
-                    {
-                        var propertyName = column.GetPropertyName();
-
-                        dataContractPropertiesSets.Add(new
-                        {
-                            IsForeign = false,
-                            Type = column.Type,
-                            Nullable = column.Nullable,
-                            ObjectSource = entityAlias,
-                            PropertySource = propertyName,
-                            Target = propertyName
-                        });
+                        IsForeign = false,
+                        Type = string.Empty,
+                        Nullable = false,
+                        ObjectSource = string.Empty,
+                        PropertySource = string.Empty,
+                        Target = string.Empty
                     }
+                }.ToList();
 
-                    foreach (var foreignKey in table.ForeignKeys)
+                foreach (var column in table.Columns)
+                {
+                    var propertyName = column.GetPropertyName();
+
+                    dataContractPropertiesSets.Add(new
                     {
-                        var foreignTable = projectFeature.Project.Database.FindTableByFullName(foreignKey.References);
-
-                        if (foreignTable == null)
-                        {
-                            continue;
-                        }
-
-                        var foreignKeyAlias = CatFactory.NamingConvention.GetCamelCase(foreignTable.GetEntityName());
-
-                        foreach (var column in foreignTable?.GetColumnsWithOutPrimaryKey())
-                        {
-                            if (dataContractPropertiesSets.Where(item => string.Format("{0}.{1}", item.ObjectSource, item.PropertySource) == string.Format("{0}.{1}", entityAlias, column.GetPropertyName())).Count() == 0)
-                            {
-                                var target = string.Format("{0}{1}", foreignTable.GetEntityName(), column.GetPropertyName());
-
-                                dataContractPropertiesSets.Add(new
-                                {
-                                    IsForeign = true,
-                                    Type = column.Type,
-                                    Nullable = column.Nullable,
-                                    ObjectSource = foreignKeyAlias,
-                                    PropertySource = column.GetPropertyName(),
-                                    Target = target
-                                });
-                            }
-                        }
-                    }
-
-                    lines.Add(new CommentLine(" Get query from DbSet"));
-                    lines.Add(new CodeLine("var query = from {0} in DbContext.Set<{1}>()", entityAlias, table.GetEntityName()));
-
-                    foreach (var foreignKey in table.ForeignKeys)
-                    {
-                        var foreignTable = projectFeature.Project.Database.FindTableByFullName(foreignKey.References);
-
-                        if (foreignTable == null)
-                        {
-                            continue;
-                        }
-
-                        var foreignKeyEntityName = foreignTable.GetEntityName();
-
-                        var foreignKeyAlias = CatFactory.NamingConvention.GetCamelCase(foreignTable.GetEntityName());
-
-                        if (foreignTable.HasDefaultSchema())
-                        {
-                            classDefinition.Namespaces.AddUnique(entityFrameworkCoreProject.GetEntityLayerNamespace());
-                        }
-                        else
-                        {
-                            classDefinition.Namespaces.AddUnique(entityFrameworkCoreProject.GetEntityLayerNamespace(foreignTable.Schema));
-                        }
-
-                        if (foreignKey.Key.Count == 0)
-                        {
-                            lines.Add(new PreprocessorDirectiveLine(1, " There isn't definition for key in foreign key '{0}' in your current database", foreignKey.References));
-                        }
-                        else if (foreignKey.Key.Count == 1)
-                        {
-                            if (foreignTable == null)
-                            {
-                                lines.Add(LineHelper.GetWarning(" There isn't definition for '{0}' in your current database", foreignKey.References));
-                            }
-                            else
-                            {
-                                var column = table.Columns.FirstOrDefault(item => item.Name == foreignKey.Key[0]);
-
-                                var x = NamingConvention.GetPropertyName(foreignKey.Key[0]);
-                                var y = NamingConvention.GetPropertyName(foreignTable.PrimaryKey.Key[0]);
-
-                                if (column.Nullable)
-                                {
-                                    lines.Add(new CodeLine(1, "join {0}Join in DbContext.Set<{1}>() on {2}.{3} equals {0}Join.{4} into {0}Temp", foreignKeyAlias, foreignKeyEntityName, entityAlias, x, y));
-                                    lines.Add(new CodeLine(2, "from {0} in {0}Temp.Where(relation => relation.{2} == {1}.{3}).DefaultIfEmpty()", foreignKeyAlias, entityAlias, x, y));
-                                }
-                                else
-                                {
-                                    lines.Add(new CodeLine(1, "join {0} in DbContext.Set<{1}>() on {2}.{3} equals {0}.{4}", foreignKeyAlias, foreignKeyEntityName, entityAlias, x, y));
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // todo: add logic for foreign key with multiple key
-                            lines.Add(LineHelper.GetWarning("// todo: add logic for foreign key with multiple key"));
-                        }
-                    }
-
-                    lines.Add(new CodeLine(1, "select new {0}", returnType));
-                    lines.Add(new CodeLine(1, "{"));
-
-                    for (var i = 0; i < dataContractPropertiesSets.Count; i++)
-                    {
-                        var property = dataContractPropertiesSets[i];
-
-                        if (string.IsNullOrEmpty(property.ObjectSource) && string.IsNullOrEmpty(property.Target))
-                        {
-                            continue;
-                        }
-
-                        if (property.IsForeign)
-                        {
-                            if (property.Type.Contains("char"))
-                            {
-                                lines.Add(new CodeLine(2, "{0} = {1} == null ? string.Empty : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
-                            else if (property.Type.Contains("date"))
-                            {
-                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(DateTime?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
-                            else if (property.Type.Contains("smallint"))
-                            {
-                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Int16?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
-                            else if (property.Type.Contains("bigint"))
-                            {
-                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Int64?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
-                            else if (property.Type.Contains("int"))
-                            {
-                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Int32?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
-                            else if (property.Type.Contains("decimal"))
-                            {
-                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Decimal?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
-                        }
-                        else
-                        {
-                            lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                        }
-                    }
-
-                    lines.Add(new CodeLine(1, "};"));
-                    lines.Add(new CodeLine());
+                        IsForeign = false,
+                        Type = column.Type,
+                        Nullable = column.Nullable,
+                        ObjectSource = entityAlias,
+                        PropertySource = propertyName,
+                        Target = propertyName
+                    });
                 }
-                else
+
+                foreach (var foreignKey in table.ForeignKeys)
                 {
-                    returnType = dbObject.GetSingularName();
+                    var foreignTable = projectFeature.Project.Database.FindTableByFullName(foreignKey.References);
 
-                    lines.Add(new CommentLine(" Get query from DbSet"));
-
-                    if (entityFrameworkCoreProject.Settings.DeclareDbSetPropertiesInDbContext)
+                    if (foreignTable == null)
                     {
-                        lines.Add(new CodeLine("var query = DbContext.{0}.AsQueryable();", dbObject.GetPluralName()));
+                        continue;
+                    }
+
+                    var foreignKeyAlias = CatFactory.NamingConvention.GetCamelCase(foreignTable.GetEntityName());
+
+                    foreach (var column in foreignTable?.GetColumnsWithOutPrimaryKey())
+                    {
+                        if (dataContractPropertiesSets.Where(item => string.Format("{0}.{1}", item.ObjectSource, item.PropertySource) == string.Format("{0}.{1}", entityAlias, column.GetPropertyName())).Count() == 0)
+                        {
+                            var target = string.Format("{0}{1}", foreignTable.GetEntityName(), column.GetPropertyName());
+
+                            dataContractPropertiesSets.Add(new
+                            {
+                                IsForeign = true,
+                                Type = column.Type,
+                                Nullable = column.Nullable,
+                                ObjectSource = foreignKeyAlias,
+                                PropertySource = column.GetPropertyName(),
+                                Target = target
+                            });
+                        }
+                    }
+                }
+
+                lines.Add(new CommentLine(" Get query from DbSet"));
+                lines.Add(new CodeLine("var query = from {0} in DbContext.Set<{1}>()", entityAlias, table.GetEntityName()));
+
+                foreach (var foreignKey in table.ForeignKeys)
+                {
+                    var foreignTable = projectFeature.Project.Database.FindTableByFullName(foreignKey.References);
+
+                    if (foreignTable == null)
+                    {
+                        continue;
+                    }
+
+                    var foreignKeyEntityName = foreignTable.GetEntityName();
+
+                    var foreignKeyAlias = CatFactory.NamingConvention.GetCamelCase(foreignTable.GetEntityName());
+
+                    if (foreignTable.HasDefaultSchema())
+                    {
+                        classDefinition.Namespaces.AddUnique(entityFrameworkCoreProject.GetEntityLayerNamespace());
                     }
                     else
                     {
-                        lines.Add(new CodeLine("var query = DbContext.Set<{0}>().AsQueryable();", dbObject.GetSingularName()));
+                        classDefinition.Namespaces.AddUnique(entityFrameworkCoreProject.GetEntityLayerNamespace(foreignTable.Schema));
                     }
 
-                    lines.Add(new CodeLine());
+                    if (foreignKey.Key.Count == 0)
+                    {
+                        lines.Add(new PreprocessorDirectiveLine(1, " There isn't definition for key in foreign key '{0}' in your current database", foreignKey.References));
+                    }
+                    else if (foreignKey.Key.Count == 1)
+                    {
+                        if (foreignTable == null)
+                        {
+                            lines.Add(LineHelper.GetWarning(" There isn't definition for '{0}' in your current database", foreignKey.References));
+                        }
+                        else
+                        {
+                            var column = table.Columns.FirstOrDefault(item => item.Name == foreignKey.Key[0]);
+
+                            var x = NamingConvention.GetPropertyName(foreignKey.Key[0]);
+                            var y = NamingConvention.GetPropertyName(foreignTable.PrimaryKey.Key[0]);
+
+                            if (column.Nullable)
+                            {
+                                lines.Add(new CodeLine(1, "join {0}Join in DbContext.Set<{1}>() on {2}.{3} equals {0}Join.{4} into {0}Temp", foreignKeyAlias, foreignKeyEntityName, entityAlias, x, y));
+                                lines.Add(new CodeLine(2, "from {0} in {0}Temp.Where(relation => relation.{2} == {1}.{3}).DefaultIfEmpty()", foreignKeyAlias, entityAlias, x, y));
+                            }
+                            else
+                            {
+                                lines.Add(new CodeLine(1, "join {0} in DbContext.Set<{1}>() on {2}.{3} equals {0}.{4}", foreignKeyAlias, foreignKeyEntityName, entityAlias, x, y));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // todo: add logic for foreign key with multiple key
+                        lines.Add(LineHelper.GetWarning("// todo: add logic for foreign key with multiple key"));
+                    }
                 }
+
+                lines.Add(new CodeLine(1, "select new {0}", returnType));
+                lines.Add(new CodeLine(1, "{"));
+
+                for (var i = 0; i < dataContractPropertiesSets.Count; i++)
+                {
+                    var property = dataContractPropertiesSets[i];
+
+                    if (string.IsNullOrEmpty(property.ObjectSource) && string.IsNullOrEmpty(property.Target))
+                    {
+                        continue;
+                    }
+
+                    if (property.IsForeign)
+                    {
+                        if (property.Type == "binary" || property.Type == "image" || property.Type == "varbinary")
+                        {
+                            if (property.Nullable)
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Byte[]) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                            else
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                        }
+                        else if (property.Type == "bit")
+                        {
+                            if (property.Nullable)
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Boolean?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                            else
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                        }
+                        else if (property.Type.Contains("char") || property.Type.Contains("text"))
+                        {
+                            if (property.Nullable)
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? string.Empty : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                            else
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                        }
+                        else if (property.Type.Contains("date"))
+                        {
+                            if (property.Nullable)
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(DateTime?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                            else
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                        }
+                        else if (property.Type == "tinyint")
+                        {
+                            if (property.Nullable)
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Byte?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                            else
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                        }
+                        else if (property.Type == "smallint")
+                        {
+                            if (property.Nullable)
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Int16?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                            else
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                        }
+                        else if (property.Type == "bigint")
+                        {
+                            if (property.Nullable)
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Int64?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                            else
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                        }
+                        else if (property.Type == "int")
+                        {
+                            if (property.Nullable)
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Int32?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                            else
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                        }
+                        else if (property.Type == "decimal" || property.Type == "money" || property.Type == "smallmoney")
+                        {
+                            if (property.Nullable)
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Decimal?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                            else
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                        }
+                        else if (property.Type == "float")
+                        {
+                            if (property.Nullable)
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Double?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                            else
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                        }
+                        else if (property.Type == "real")
+                        {
+                            if (property.Nullable)
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Single?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                            else
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                        }
+                        else if (property.Type == "uniqueidentifier")
+                        {
+                            if (property.Nullable)
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Guid?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                            else
+                            {
+                                lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                    }
+                }
+
+                lines.Add(new CodeLine(1, "};"));
+                lines.Add(new CodeLine());
+            }
+            else
+            {
+                returnType = table.GetSingularName();
+
+                lines.Add(new CommentLine(" Get query from DbSet"));
+
+                if (entityFrameworkCoreProject.Settings.DeclareDbSetPropertiesInDbContext)
+                {
+                    lines.Add(new CodeLine("var query = DbContext.{0}.AsQueryable();", table.GetPluralName()));
+                }
+                else
+                {
+                    lines.Add(new CodeLine("var query = DbContext.Set<{0}>().AsQueryable();", table.GetSingularName()));
+                }
+
+                lines.Add(new CodeLine());
             }
 
             var parameters = new List<ParameterDefinition>
             {
             };
 
-            if (table != null)
+            if (table.ForeignKeys.Count == 0)
             {
-                if (table.ForeignKeys.Count == 0)
+                lines.Add(new CodeLine("return query;"));
+            }
+            else
+            {
+                for (var i = 0; i < table.ForeignKeys.Count; i++)
                 {
-                    lines.Add(new CodeLine("return query;"));
-                }
-                else
-                {
-                    var typeResolver = new ClrTypeResolver();
+                    var foreignKey = table.ForeignKeys[i];
 
-                    for (var i = 0; i < table.ForeignKeys.Count; i++)
+                    if (foreignKey.Key.Count == 1)
                     {
-                        var foreignKey = table.ForeignKeys[i];
+                        var column = table.Columns.First(item => item.Name == foreignKey.Key[0]);
 
-                        if (foreignKey.Key.Count == 1)
+                        var parameterName = NamingConvention.GetParameterName(column.Name);
+
+                        parameters.Add(new ParameterDefinition(column.GetClrType(), parameterName, "null"));
+
+                        if (column.IsString())
                         {
-                            var column = table.Columns.First(item => item.Name == foreignKey.Key[0]);
-
-                            var parameterName = NamingConvention.GetParameterName(column.Name);
-
-                            parameters.Add(new ParameterDefinition(typeResolver.Resolve(column.Type), parameterName, "null"));
-
-                            if (column.IsString())
-                            {
-                                lines.Add(new CodeLine("if (!string.IsNullOrEmpty({0}))", NamingConvention.GetParameterName(column.Name)));
-                                lines.Add(new CodeLine("{"));
-                                lines.Add(new CommentLine(1, " Filter by: '{0}'", column.Name));
-                                lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
-                                lines.Add(new CodeLine("}"));
-                                lines.Add(new CodeLine());
-                            }
-                            else
-                            {
-                                lines.Add(new CodeLine("if ({0}.HasValue)", NamingConvention.GetParameterName(column.Name)));
-                                lines.Add(new CodeLine("{"));
-                                lines.Add(new CommentLine(1, " Filter by: '{0}'", column.Name));
-                                lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
-                                lines.Add(new CodeLine("}"));
-                                lines.Add(new CodeLine());
-                            }
+                            lines.Add(new CodeLine("if (!string.IsNullOrEmpty({0}))", NamingConvention.GetParameterName(column.Name)));
+                            lines.Add(new CodeLine("{"));
+                            lines.Add(new CommentLine(1, " Filter by: '{0}'", column.Name));
+                            lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
+                            lines.Add(new CodeLine("}"));
+                            lines.Add(new CodeLine());
                         }
                         else
                         {
-                            // todo: add logic for composed foreign key
-                            lines.Add(LineHelper.GetWarning("// todo: add logic for foreign key with multiple key"));
+                            lines.Add(new CodeLine("if ({0}.HasValue)", NamingConvention.GetParameterName(column.Name)));
+                            lines.Add(new CodeLine("{"));
+                            lines.Add(new CommentLine(1, " Filter by: '{0}'", column.Name));
+                            lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
+                            lines.Add(new CodeLine("}"));
+                            lines.Add(new CodeLine());
                         }
                     }
-
-                    lines.Add(new CodeLine("return query;"));
+                    else
+                    {
+                        // todo: add logic for composed foreign key
+                        lines.Add(LineHelper.GetWarning("// todo: add logic for foreign key with multiple key"));
+                    }
                 }
+
+                lines.Add(new CodeLine("return query;"));
             }
 
-            classDefinition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", returnType), dbObject.GetGetAllRepositoryMethodName(), parameters.ToArray())
+            classDefinition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", returnType), table.GetGetAllRepositoryMethodName(), parameters.ToArray())
+            {
+                Lines = lines
+            });
+        }
+
+        private static void GetGetAllMethod(this CSharpClassDefinition classDefinition, ProjectFeature projectFeature, IView view)
+        {
+            var returnType = view.GetSingularName();
+
+            var lines = new List<ILine>
+            {
+                new CodeLine("return query;")
+            };
+
+            var parameters = new List<ParameterDefinition>
+            {
+            };
+
+            classDefinition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", returnType), view.GetGetAllRepositoryMethodName(), parameters.ToArray())
             {
                 Lines = lines
             });
