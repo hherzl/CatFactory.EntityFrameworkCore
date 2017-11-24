@@ -8,17 +8,19 @@ namespace CatFactory.EfCore
     public static class DbObjectExtensions
     {
         private static ICodeNamingConvention namingConvention;
+        private static INamingService namingService;
 
         static DbObjectExtensions()
         {
             namingConvention = new DotNetNamingConvention();
+            namingService = new NamingService();
         }
 
         public static string GetSingularName(this IDbObject dbObject)
-            => NamingService.GetSingularName(dbObject.GetEntityName());
+            => namingService.Singularize(dbObject.GetEntityName());
 
         public static string GetPluralName(this IDbObject dbObject)
-            => NamingService.GetPluralName(dbObject.GetEntityName());
+            => namingService.Pluralize(dbObject.GetEntityName());
 
         public static string GetEntityName(this IDbObject dbObject)
             => namingConvention.GetClassName(dbObject.Name);
