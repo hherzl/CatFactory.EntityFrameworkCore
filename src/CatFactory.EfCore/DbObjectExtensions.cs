@@ -29,7 +29,7 @@ namespace CatFactory.EfCore
             => string.Format("{0}Dto", namingConvention.GetClassName(dbObject.Name));
 
         public static string GetEntityTypeConfigurationName(this IDbObject dbObject)
-            => namingConvention.GetClassName(string.Format("{0}EntityTypeConfiguration", dbObject.GetSingularName()));
+            => namingConvention.GetClassName(string.Format("{0}Configuration", dbObject.GetSingularName()));
 
         public static string GetDbContextName(this Database database)
             => namingConvention.GetClassName(string.Format("{0}DbContext", database.Name));

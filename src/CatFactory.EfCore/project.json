@@ -1,11 +1,17 @@
 {
-  "version": "3.0.0-alpha-build09",
+  "version": "3.0.0-alpha-build11",
   "title": "CatFactory.EfCore",
-  "description": "CatFactory package for Entity Framework Core code generation with enterprise patterns",
+  "description": "CatFactory package for Entity Framework Core scaffolding with enterprise patterns",
   "packOptions": {
+    "summary": "CatFactory package for Entity Framework Core scaffolding with enterprise patterns",
+    "tags": [ "Entity Framework Core" ],
+    "releaseNotes": "Quick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory",
+    "requireLicenseAcceptance": false,
     "repository": {
+      "type": "git",
       "url": "https://github.com/hherzl/CatFactory.EntityFrameworkCore"
-    }
+    },
+    "owners": [ "C. Herzl" ]
   },
   "authors": [
     "C. Herzl"
@@ -13,7 +19,7 @@
 
   "dependencies": {
     "NETStandard.Library": "1.6.1",
-    "CatFactory.DotNetCore": "3.0.0-alpha-build04",
+    "CatFactory.DotNetCore": "3.0.0-alpha-build06",
     "System.Runtime": "4.3.0"
   },
 
