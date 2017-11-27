@@ -24,10 +24,13 @@ namespace CatFactory.EfCore.Definitions
             {
                 IsExtension = true,
                 IsStatic = true,
-                GenericType = "TEntity",
-                WhereConstraints = new List<string>()
+                GenericTypes = new List<GenericTypeDefinition>
                 {
-                    "TEntity : class, IEntity",
+                    new GenericTypeDefinition
+                    {
+                        Name = "TEntity",
+                        Constraint = "TEntity : class"
+                    }
                 },
                 Lines = new List<ILine>()
                 {
@@ -41,10 +44,13 @@ namespace CatFactory.EfCore.Definitions
             {
                 IsExtension = true,
                 IsStatic = true,
-                GenericType = "TModel",
-                WhereConstraints = new List<string>()
+                GenericTypes = new List<GenericTypeDefinition>
                 {
-                    "TModel : class",
+                    new GenericTypeDefinition
+                    {
+                        Name = "TModel",
+                        Constraint = "TModel : class"
+                    }
                 },
                 Lines = new List<ILine>()
                 {

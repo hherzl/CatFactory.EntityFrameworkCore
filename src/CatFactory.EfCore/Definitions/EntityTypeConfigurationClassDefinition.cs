@@ -25,7 +25,7 @@ namespace CatFactory.EfCore.Definitions
 
             classDefinition.Namespaces.AddUnique(project.GetEntityLayerNamespace(table.HasDefaultSchema() ? string.Empty : table.Schema));
 
-            classDefinition.Namespace = project.GetDataLayerMappingNamespace();
+            classDefinition.Namespace = project.GetDataLayerConfigurationsNamespace();
 
             classDefinition.Name = table.GetEntityTypeConfigurationName();
 
@@ -228,7 +228,7 @@ namespace CatFactory.EfCore.Definitions
 
             classDefinition.Namespaces.AddUnique(project.GetEntityLayerNamespace(view.HasDefaultSchema() ? string.Empty : view.Schema));
 
-            classDefinition.Namespace = project.GetDataLayerMappingNamespace();
+            classDefinition.Namespace = project.GetDataLayerConfigurationsNamespace();
 
             classDefinition.Name = view.GetEntityTypeConfigurationName();
 

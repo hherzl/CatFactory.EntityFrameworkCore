@@ -28,10 +28,10 @@ namespace CatFactory.EfCore
             if (!project.Settings.UseDataAnnotations)
             {
                 CSharpInterfaceBuilder
-                    .CreateFiles(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, project.GetEntityMapperInterfaceDefinition(), project.GetEntityTypeConfigurationInterfaceDefinition());
+                    .CreateFiles(project.OutputDirectory, project.GetDataLayerConfigurationsDirectory(), project.Settings.ForceOverwrite, project.GetEntityMapperInterfaceDefinition(), project.GetEntityTypeConfigurationInterfaceDefinition());
 
                 CSharpClassBuilder
-                    .CreateFiles(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, project.GetEntityMapperClassDefinition(), project.GetDatabaseEntityMapperClassDefinition());
+                    .CreateFiles(project.OutputDirectory, project.GetDataLayerConfigurationsDirectory(), project.Settings.ForceOverwrite, project.GetEntityMapperClassDefinition(), project.GetDatabaseEntityMapperClassDefinition());
             }
         }
 
@@ -42,13 +42,13 @@ namespace CatFactory.EfCore
                 foreach (var table in project.Database.Tables)
                 {
                     CSharpClassBuilder
-                        .CreateFiles(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, table.GetEntityTypeConfigurationClassDefinition(project));
+                        .CreateFiles(project.OutputDirectory, project.GetDataLayerConfigurationsDirectory(), project.Settings.ForceOverwrite, table.GetEntityTypeConfigurationClassDefinition(project));
                 }
 
                 foreach (var view in project.Database.Views)
                 {
                     CSharpClassBuilder
-                        .CreateFiles(project.OutputDirectory, project.GetDataLayerMappingDirectory(), project.Settings.ForceOverwrite, view.GetEntityTypeConfigurationClassDefinition(project));
+                        .CreateFiles(project.OutputDirectory, project.GetDataLayerConfigurationsDirectory(), project.Settings.ForceOverwrite, view.GetEntityTypeConfigurationClassDefinition(project));
                 }
             }
         }

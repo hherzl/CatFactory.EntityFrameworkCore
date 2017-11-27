@@ -12,7 +12,7 @@ namespace CatFactory.EfCore.Definitions
             interfaceDefinition.Namespaces.Add("System.Collections.Generic");
             interfaceDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
 
-            interfaceDefinition.Namespace = project.GetDataLayerMappingNamespace();
+            interfaceDefinition.Namespace = project.GetDataLayerConfigurationsNamespace();
 
             interfaceDefinition.Name = "IEntityMapper";
 

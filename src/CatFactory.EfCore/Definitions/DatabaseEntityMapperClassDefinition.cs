@@ -11,7 +11,7 @@ namespace CatFactory.EfCore.Definitions
         {
             var classDefinition = new CSharpClassDefinition();
 
-            classDefinition.Namespace = project.GetDataLayerMappingNamespace();
+            classDefinition.Namespace = project.GetDataLayerConfigurationsNamespace();
 
             classDefinition.Name = project.Database.GetDbEntityMapperName();
 

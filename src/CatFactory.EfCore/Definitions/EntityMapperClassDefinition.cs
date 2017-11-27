@@ -14,7 +14,7 @@ namespace CatFactory.EfCore.Definitions
             classDefinition.Namespaces.Add("System.Collections.Generic");
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
 
-            classDefinition.Namespace = project.GetDataLayerMappingNamespace();
+            classDefinition.Namespace = project.GetDataLayerConfigurationsNamespace();
 
             classDefinition.Name = "EntityMapper";
 

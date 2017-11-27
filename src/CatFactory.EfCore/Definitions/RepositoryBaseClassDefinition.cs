@@ -117,10 +117,13 @@ namespace CatFactory.EfCore.Definitions
             return new MethodDefinition(AccessModifier.Protected, "void", "Add", new ParameterDefinition("TEntity", "entity"))
             {
                 IsVirtual = true,
-                GenericType = "TEntity",
-                WhereConstraints = new List<string>()
+                GenericTypes = new List<GenericTypeDefinition>
                 {
-                    "TEntity : class"
+                    new GenericTypeDefinition
+                    {
+                        Name = "TEntity",
+                        Constraint = "TEntity : class"
+                    }
                 },
                 Lines = lines
             };
@@ -165,10 +168,13 @@ namespace CatFactory.EfCore.Definitions
             return new MethodDefinition(AccessModifier.Protected, "void", "Update", new ParameterDefinition("TEntity", "entity"))
             {
                 IsVirtual = true,
-                GenericType = "TEntity",
-                WhereConstraints = new List<string>()
+                GenericTypes = new List<GenericTypeDefinition>
                 {
-                    "TEntity : class"
+                    new GenericTypeDefinition
+                    {
+                        Name = "TEntity",
+                        Constraint = "TEntity : class"
+                    }
                 },
                 Lines = lines
             };
@@ -179,10 +185,13 @@ namespace CatFactory.EfCore.Definitions
             return new MethodDefinition(AccessModifier.Protected, "void", "Remove", new ParameterDefinition("TEntity", "entity"))
             {
                 IsVirtual = true,
-                GenericType = "TEntity",
-                WhereConstraints = new List<string>()
+                GenericTypes = new List<GenericTypeDefinition>
                 {
-                    "TEntity : class"
+                    new GenericTypeDefinition
+                    {
+                        Name = "TEntity",
+                        Constraint = "TEntity : class"
+                    }
                 },
                 Lines = new List<ILine>()
                 {

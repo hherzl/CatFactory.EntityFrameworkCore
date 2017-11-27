@@ -14,7 +14,7 @@ namespace CatFactory.EfCore.Definitions
 
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
 
-            classDefinition.Namespaces.Add(projectFeature.GetEntityFrameworkCoreProject().Settings.UseDataAnnotations ? projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace() : projectFeature.GetEntityFrameworkCoreProject().GetDataLayerMappingNamespace());
+            classDefinition.Namespaces.Add(projectFeature.GetEntityFrameworkCoreProject().Settings.UseDataAnnotations ? projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace() : projectFeature.GetEntityFrameworkCoreProject().GetDataLayerConfigurationsNamespace());
 
             classDefinition.Namespace = projectFeature.GetEntityFrameworkCoreProject().GetDataLayerNamespace();
             classDefinition.Name = projectFeature.Project.Database.GetDbContextName();

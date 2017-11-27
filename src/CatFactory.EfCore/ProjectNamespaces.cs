@@ -6,7 +6,7 @@
         {
             EntityLayer = "EntityLayer";
             DataLayer = "DataLayer";
-            Mapping = "Mapping";
+            Configurations = "Configurations";
             Contracts = "Contracts";
             DataContracts = "DataContracts";
             Repositories = "Repositories";
@@ -16,7 +16,7 @@
 
         public string DataLayer { get; set; }
 
-        public string Mapping { get; set; }
+        public string Configurations { get; set; }
 
         public string Contracts { get; set; }
 
