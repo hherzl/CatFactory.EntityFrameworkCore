@@ -26,7 +26,7 @@ namespace CatFactory.EfCore.Definitions
 
             classDefinition.Methods.Add(new MethodDefinition("void", "ConfigureEntities", new ParameterDefinition("ModelBuilder", "modelBuilder"))
             {
-                Lines = new List<ILine>()
+                Lines = new List<ILine>
                 {
                     new CodeLine("foreach (var item in Configurations)"),
                     new CodeLine("{"),

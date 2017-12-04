@@ -17,13 +17,13 @@ namespace CatFactory.EfCore
         }
 
         public static string GetEntityLayerNamespace(this EntityFrameworkCoreProject project)
-            => string.Join(".", namingConvention.GetClassName(project.Name), project.Namespaces.EntityLayer);
+            => string.Join(".", namingConvention.GetClassName(project.Name), namingConvention.GetNamespace(project.Namespaces.EntityLayer));
 
         public static string GetEntityLayerNamespace(this EntityFrameworkCoreProject project, string ns)
             => string.IsNullOrEmpty(ns) ? GetEntityLayerNamespace(project) : string.Join(".", project.Name, project.Namespaces.EntityLayer, ns);
 
         public static string GetDataLayerNamespace(this EntityFrameworkCoreProject project)
-            => string.Format("{0}.{1}", namingConvention.GetClassName(project.Name), project.Namespaces.DataLayer);
+            => string.Join(".", new string[] { namingConvention.GetClassName(project.Name), project.Namespaces.DataLayer });
 
         public static string GetDataLayerConfigurationsNamespace(this EntityFrameworkCoreProject project)
             => string.Join(".", namingConvention.GetClassName(project.Name), project.Namespaces.DataLayer, project.Namespaces.Configurations);
@@ -62,10 +62,7 @@ namespace CatFactory.EfCore
             return new PropertyDefinition(propertyType, table.GetPluralName())
             {
                 IsVirtual = project.Settings.DeclareNavigationPropertiesAsVirtual,
-                Attributes = project.Settings.UseDataAnnotations ? new List<MetadataAttribute>()
-                {
-                    new MetadataAttribute("ForeignKey", string.Format("\"{0}\"", string.Join(",", foreignKey.Key)))
-                } : null
+                Attributes = project.Settings.UseDataAnnotations ? new List<MetadataAttribute> { new MetadataAttribute("ForeignKey", string.Format("\"{0}\"", string.Join(",", foreignKey.Key))) } : null
             };
         }
     }

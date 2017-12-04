@@ -1,5 +1,7 @@
-﻿using CatFactory.DotNetCore;
+﻿using System.Linq;
+using CatFactory.DotNetCore;
 using CatFactory.EfCore.Definitions;
+using CatFactory.Mapping;
 using CatFactory.OOP;
 
 namespace CatFactory.EfCore
@@ -8,11 +10,11 @@ namespace CatFactory.EfCore
     {
         private static void GenerateEntityInterface(EntityFrameworkCoreProject project)
         {
-            CSharpInterfaceBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), project.Settings.ForceOverwrite, project.GetEntityInterfaceDefinition());
+            CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), project.Settings.ForceOverwrite, project.GetEntityInterfaceDefinition());
 
             if (project.Settings.AuditEntity != null)
             {
-                CSharpInterfaceBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), project.Settings.ForceOverwrite, project.GetAuditEntityInterfaceDefinition());
+                CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), project.Settings.ForceOverwrite, project.GetAuditEntityInterfaceDefinition());
             }
         }
 
@@ -22,7 +24,7 @@ namespace CatFactory.EfCore
 
             foreach (var table in project.Database.Tables)
             {
-                var classDefinition = table.GetEntityClassDefinition(project);
+                var classDefinition = project.GetEntityClassDefinition(table);
 
                 if (project.Settings.UseDataAnnotations)
                 {
@@ -64,12 +66,16 @@ namespace CatFactory.EfCore
                     }
                 }
 
-                CSharpClassBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), project.Settings.ForceOverwrite, classDefinition);
+                CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), project.Settings.ForceOverwrite, classDefinition);
             }
+
+            var primaryKeys = project.Database.Tables.Where(item => item.PrimaryKey != null).Select(item => item.PrimaryKey?.GetColumns(item).Select(c => c.Name).First()).ToList();
 
             foreach (var view in project.Database.Views)
             {
-                var classDefinition = view.GetEntityClassDefinition(project);
+                var result = view.Columns.Where(item => primaryKeys.Contains(item.Name)).ToList();
+
+                var classDefinition = project.GetEntityClassDefinition(view);
 
                 if (project.Settings.UseDataAnnotations)
                 {
@@ -81,16 +87,20 @@ namespace CatFactory.EfCore
 
                         foreach (var property in classDefinition.Properties)
                         {
-                            if (column.GetPropertyName() == property.Name)
+                            if (primaryKeys.Contains(column.Name))
                             {
                                 property.Attributes.Add(new MetadataAttribute("Key"));
+                            }
+
+                            if (column.GetPropertyName() == property.Name)
+                            {
                                 property.Attributes.Add(new MetadataAttribute("Column", string.Format("Order = {0}", i + 1)));
                             }
                         }
                     }
                 }
 
-                CSharpClassBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), project.Settings.ForceOverwrite, classDefinition);
+                CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), project.Settings.ForceOverwrite, classDefinition);
             }
 
             return project;

@@ -10,13 +10,6 @@ namespace CatFactory.EfCore.Definitions
 {
     public static class RepositoryClassDefinition
     {
-        private static ICodeNamingConvention NamingConvention;
-
-        static RepositoryClassDefinition()
-        {
-            NamingConvention = new DotNetNamingConvention();
-        }
-
         public static CSharpClassDefinition GetRepositoryClassDefinition(this ProjectFeature projectFeature)
         {
             var entityFrameworkCoreProject = projectFeature.GetEntityFrameworkCoreProject();
@@ -96,6 +89,42 @@ namespace CatFactory.EfCore.Definitions
                 }
             }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            var views = projectFeature
+                .Project
+                .Database
+                .Views
+                .Where(item => projectFeature.DbObjects.Select(dbo => dbo.FullName).Contains(item.FullName))
+                .ToList();
+
+            foreach (var view in views)
+            {
+                if (entityFrameworkCoreProject.Settings.EntitiesWithDataContracts.Contains(view.FullName))
+                {
+                    classDefinition.Namespaces.AddUnique(entityFrameworkCoreProject.GetDataLayerDataContractsNamespace());
+                }
+
+                classDefinition.GetGetAllMethod(projectFeature, view);
+            }
+
             return classDefinition;
         }
 
@@ -109,7 +138,7 @@ namespace CatFactory.EfCore.Definitions
 
             if (entityFrameworkCoreProject.Settings.EntitiesWithDataContracts.Contains(table.FullName))
             {
-                var entityAlias = CatFactory.NamingConvention.GetCamelCase(table.GetEntityName());
+                var entityAlias = NamingConvention.GetCamelCase(table.GetEntityName());
 
                 returnType = table.GetDataContractName();
 
@@ -150,7 +179,7 @@ namespace CatFactory.EfCore.Definitions
                         continue;
                     }
 
-                    var foreignKeyAlias = CatFactory.NamingConvention.GetCamelCase(foreignTable.GetEntityName());
+                    var foreignKeyAlias = NamingConvention.GetCamelCase(foreignTable.GetEntityName());
 
                     foreach (var column in foreignTable?.GetColumnsWithOutPrimaryKey())
                     {
@@ -185,7 +214,7 @@ namespace CatFactory.EfCore.Definitions
 
                     var foreignKeyEntityName = foreignTable.GetEntityName();
 
-                    var foreignKeyAlias = CatFactory.NamingConvention.GetCamelCase(foreignTable.GetEntityName());
+                    var foreignKeyAlias = NamingConvention.GetCamelCase(foreignTable.GetEntityName());
 
                     if (foreignTable.HasDefaultSchema())
                     {
@@ -210,8 +239,8 @@ namespace CatFactory.EfCore.Definitions
                         {
                             var column = table.Columns.FirstOrDefault(item => item.Name == foreignKey.Key[0]);
 
-                            var x = NamingConvention.GetPropertyName(foreignKey.Key[0]);
-                            var y = NamingConvention.GetPropertyName(foreignTable.PrimaryKey.Key[0]);
+                            var x = NamingExtensions.namingConvention.GetPropertyName(foreignKey.Key[0]);
+                            var y = NamingExtensions.namingConvention.GetPropertyName(foreignTable.PrimaryKey.Key[0]);
 
                             if (column.Nullable)
                             {
@@ -226,8 +255,7 @@ namespace CatFactory.EfCore.Definitions
                     }
                     else
                     {
-                        // todo: add logic for foreign key with multiple key
-                        lines.Add(LineHelper.GetWarning("// todo: add logic for foreign key with multiple key"));
+                        lines.Add(LineHelper.GetWarning(" Add logic for foreign key with multiple key"));
                     }
                 }
 
@@ -423,13 +451,13 @@ namespace CatFactory.EfCore.Definitions
                     {
                         var column = table.Columns.First(item => item.Name == foreignKey.Key[0]);
 
-                        var parameterName = NamingConvention.GetParameterName(column.Name);
+                        var parameterName = NamingExtensions.namingConvention.GetParameterName(column.Name);
 
                         parameters.Add(new ParameterDefinition(column.GetClrType(), parameterName, "null"));
 
                         if (column.IsString())
                         {
-                            lines.Add(new CodeLine("if (!string.IsNullOrEmpty({0}))", NamingConvention.GetParameterName(column.Name)));
+                            lines.Add(new CodeLine("if (!string.IsNullOrEmpty({0}))", NamingExtensions.namingConvention.GetParameterName(column.Name)));
                             lines.Add(new CodeLine("{"));
                             lines.Add(new CommentLine(1, " Filter by: '{0}'", column.Name));
                             lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
@@ -438,7 +466,7 @@ namespace CatFactory.EfCore.Definitions
                         }
                         else
                         {
-                            lines.Add(new CodeLine("if ({0}.HasValue)", NamingConvention.GetParameterName(column.Name)));
+                            lines.Add(new CodeLine("if ({0}.HasValue)", NamingExtensions.namingConvention.GetParameterName(column.Name)));
                             lines.Add(new CodeLine("{"));
                             lines.Add(new CommentLine(1, " Filter by: '{0}'", column.Name));
                             lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
@@ -448,8 +476,7 @@ namespace CatFactory.EfCore.Definitions
                     }
                     else
                     {
-                        // todo: add logic for composed foreign key
-                        lines.Add(LineHelper.GetWarning("// todo: add logic for foreign key with multiple key"));
+                        lines.Add(LineHelper.GetWarning("Add logic for foreign key with multiple key"));
                     }
                 }
 
@@ -464,18 +491,16 @@ namespace CatFactory.EfCore.Definitions
 
         private static void GetGetAllMethod(this CSharpClassDefinition classDefinition, ProjectFeature projectFeature, IView view)
         {
-            var returnType = view.GetSingularName();
-
             var lines = new List<ILine>
             {
-                new CodeLine("return query;")
+                new CodeLine("DbContext.Set<{0}>();", view.GetSingularName())
             };
 
             var parameters = new List<ParameterDefinition>
             {
             };
 
-            classDefinition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", returnType), view.GetGetAllRepositoryMethodName(), parameters.ToArray())
+            classDefinition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", view.GetSingularName()), view.GetGetAllRepositoryMethodName(), parameters.ToArray())
             {
                 Lines = lines
             });
@@ -485,12 +510,12 @@ namespace CatFactory.EfCore.Definitions
         {
             var entityFrameworkCoreProject = projectFeature.GetEntityFrameworkCoreProject();
 
-            var expression = string.Format("item => {0}", string.Join(" && ", unique.Key.Select(item => string.Format("item.{0} == entity.{0}", NamingConvention.GetPropertyName(item)))));
+            var expression = string.Format("item => {0}", string.Join(" && ", unique.Key.Select(item => string.Format("item.{0} == entity.{0}", NamingExtensions.namingConvention.GetPropertyName(item)))));
 
             return new MethodDefinition(string.Format("Task<{0}>", table.GetSingularName()), table.GetGetByUniqueRepositoryMethodName(unique), new ParameterDefinition(table.GetSingularName(), "entity"))
             {
                 IsAsync = true,
-                Lines = new List<ILine>()
+                Lines = new List<ILine>
                 {
                     new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", entityFrameworkCoreProject.Settings.DeclareDbSetPropertiesInDbContext ? table.GetPluralName() : string.Format("Set<{0}>()", table.GetSingularName()), expression)
                 }
@@ -505,18 +530,19 @@ namespace CatFactory.EfCore.Definitions
 
             if (table.Identity == null)
             {
-                expression = string.Format("item => {0}", string.Join(" && ", table.PrimaryKey.Key.Select(item => string.Format("item.{0} == entity.{0}", NamingConvention.GetPropertyName(item)))));
+                expression = string.Format("item => {0}", string.Join(" && ", table.PrimaryKey.Key.Select(item => string.Format("item.{0} == entity.{0}", NamingExtensions.namingConvention.GetPropertyName(item)))));
             }
             else
             {
-                expression = string.Format("item => item.{0} == entity.{0}", NamingConvention.GetPropertyName(table.Identity.Name));
+                expression = string.Format("item => item.{0} == entity.{0}", NamingExtensions.namingConvention.GetPropertyName(table.Identity.Name));
             }
 
             if (entityFrameworkCoreProject.Settings.EntitiesWithDataContracts.Contains(table.FullName))
             {
-                var lines = new List<ILine>();
-
-                lines.Add(new CodeLine("return await DbContext.{0}", entityFrameworkCoreProject.Settings.DeclareDbSetPropertiesInDbContext ? table.GetPluralName() : string.Format("Set<{0}>()", table.GetSingularName())));
+                var lines = new List<ILine>
+                {
+                    new CodeLine("return await DbContext.{0}", entityFrameworkCoreProject.Settings.DeclareDbSetPropertiesInDbContext ? table.GetPluralName() : string.Format("Set<{0}>()", table.GetSingularName()))
+                };
 
                 foreach (var foreignKey in table.ForeignKeys)
                 {
@@ -558,7 +584,7 @@ namespace CatFactory.EfCore.Definitions
             if (table.IsPrimaryKeyGuid())
             {
                 lines.Add(new CommentLine(" Set value for GUID"));
-                lines.Add(new CodeLine("entity.{0} = Guid.NewGuid();", NamingConvention.GetPropertyName(table.PrimaryKey.Key[0])));
+                lines.Add(new CodeLine("entity.{0} = Guid.NewGuid();", NamingExtensions.namingConvention.GetPropertyName(table.PrimaryKey.Key[0])));
                 lines.Add(new CodeLine());
             }
 
@@ -597,7 +623,7 @@ namespace CatFactory.EfCore.Definitions
             return new MethodDefinition("Task<Int32>", table.GetRemoveRepositoryMethodName(), new ParameterDefinition(table.GetSingularName(), "entity"))
             {
                 IsAsync = true,
-                Lines = new List<ILine>()
+                Lines = new List<ILine>
                 {
                     new CommentLine(" Remove entity from DbSet"),
                     new CodeLine("Remove(entity);"),

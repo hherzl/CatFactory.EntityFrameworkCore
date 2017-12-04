@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using CatFactory.CodeFactory;
+using CatFactory.Collections;
 using CatFactory.DotNetCore;
+using CatFactory.Mapping;
 using CatFactory.OOP;
 
 namespace CatFactory.EfCore.Definitions
@@ -33,7 +35,7 @@ namespace CatFactory.EfCore.Definitions
                 classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(string.Format("DbContextOptions<{0}>", classDefinition.Name), "options"), new ParameterDefinition("IEntityMapper", "entityMapper"))
                 {
                     Invocation = "base(options)",
-                    Lines = new List<ILine>()
+                    Lines = new List<ILine>
                     {
                         new CodeLine("EntityMapper = entityMapper;")
                     }
@@ -47,15 +49,25 @@ namespace CatFactory.EfCore.Definitions
 
             classDefinition.Methods.Add(GetOnModelCreatingMethod(projectFeature.GetEntityFrameworkCoreProject()));
 
-            if (projectFeature.GetEntityFrameworkCoreProject().Settings.DeclareDbSetPropertiesInDbContext)
+            if (projectFeature.GetEntityFrameworkCoreProject().Settings.UseDataAnnotations)
             {
                 foreach (var table in projectFeature.Project.Database.Tables)
                 {
+                    if (!table.HasDefaultSchema())
+                    {
+                        classDefinition.Namespaces.AddUnique(projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace(table.Schema));
+                    }
+
                     classDefinition.Properties.Add(new PropertyDefinition(string.Format("DbSet<{0}>", table.GetEntityName()), table.GetPluralName()));
                 }
 
                 foreach (var view in projectFeature.Project.Database.Views)
                 {
+                    if (!view.HasDefaultSchema())
+                    {
+                        classDefinition.Namespaces.AddUnique(projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace(view.Schema));
+                    }
+
                     classDefinition.Properties.Add(new PropertyDefinition(string.Format("DbSet<{0}>", view.GetEntityName()), view.GetPluralName()));
                 }
             }
@@ -69,20 +81,23 @@ namespace CatFactory.EfCore.Definitions
 
             if (project.Settings.UseDataAnnotations)
             {
-                foreach (var table in project.Database.Tables)
-                {
-                    if (table.PrimaryKey?.Key.Count > 1)
-                    {
-                        lines.Add(new CodeLine("modelBuilder.Entity<{0}>().HasKey(p => new {{ {1} }});", table.GetEntityName(), string.Join(", ", table.Columns.Select(item => string.Format("p.{0}", item.Name)))));
-                        lines.Add(new CodeLine());
-                    }
-                }
+                var primaryKeys = project.Database.Tables.Where(item => item.PrimaryKey != null).Select(item => item.PrimaryKey?.GetColumns(item).Select(c => c.Name).First()).ToList();
 
                 foreach (var view in project.Database.Views)
                 {
-                    lines.Add(new CodeLine("modelBuilder.Entity<{0}>().HasKey(p => new {{ {1} }});", view.GetEntityName(), string.Join(", ", view.Columns.Select(item => string.Format("p.{0}", item.Name)))));
-                    lines.Add(new CodeLine());
+                    var result = view.Columns.Where(item => primaryKeys.Contains(item.Name)).ToList();
+
+                    if (result.Count == 0)
+                    {
+                        lines.Add(LineHelper.GetWarning(" Add configuration for {0} entity", view.GetSingularName()));
+                    }
+                    else
+                    {
+                        lines.Add(new CodeLine(1, "modelBuilder.Entity<{0}>().HasKey(p => new {{ {1} }});", view.GetSingularName(), string.Join(", ", result.Select(item => string.Format("p.{0}", NamingExtensions.namingConvention.GetPropertyName(item.Name))))));
+                    }
                 }
+
+                lines.Add(new CodeLine());
             }
             else
             {
@@ -91,7 +106,7 @@ namespace CatFactory.EfCore.Definitions
                 lines.Add(new CodeLine());
             }
 
-            lines.Add(new CodeLine("base.OnModelCreating(modelBuilder);"));
+            lines.Add(new CodeLine(lines.Count == 0 ? 0 : 1, "base.OnModelCreating(modelBuilder);"));
 
             return new MethodDefinition(AccessModifier.Protected, "void", "OnModelCreating", new ParameterDefinition("ModelBuilder", "modelBuilder"))
             {

@@ -7,7 +7,7 @@ namespace CatFactory.EfCore.Tests
     public class ImportGenerationTests
     {
         [Fact]
-        public void ProjectGenerationFromExistingDatabaseTest()
+        public void ProjectScaffoldingFromExistingDatabaseTest()
         {
             // Import database
             var database = SqlServerDatabaseFactory
@@ -37,7 +37,38 @@ namespace CatFactory.EfCore.Tests
         }
 
         [Fact]
-        public void ProjectGenerationWithModifiedNamespacesFromExistingDatabaseTest()
+        public void ProjectScaffoldingWithDataAnnotationsFromExistingDatabaseTest()
+        {
+            // Import database
+            var database = SqlServerDatabaseFactory
+                .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Store;integrated security=yes;", "dbo.sysdiagrams");
+
+            // Create instance of EF Core Project
+            var project = new EntityFrameworkCoreProject
+            {
+                Name = "StoreWithDataAnnotations",
+                Database = database,
+                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\StoreWithDataAnnotations"
+            };
+
+            // Apply settings for EF Core project
+            project.Settings.ForceOverwrite = true;
+            project.Settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
+            project.Settings.ConcurrencyToken = "Timestamp";
+            project.Settings.EntitiesWithDataContracts.Add("Sales.Order");
+            project.Settings.UseDataAnnotations = true;
+
+            // Build features for project, group all entities by schema into a feature
+            project.BuildFeatures();
+
+            // Scaffolding =^^=
+            project
+                .ScaffoldEntityLayer()
+                .ScaffoldDataLayer();
+        }
+
+        [Fact]
+        public void ProjectScaffoldingWithModifiedNamespacesFromExistingDatabaseTest()
         {
             // Import database
             var database = SqlServerDatabaseFactory
@@ -71,7 +102,7 @@ namespace CatFactory.EfCore.Tests
         }
 
         [Fact]
-        public void ProjectGenerationForNorthwindDatabaseTest()
+        public void ProjectScaffoldingForNorthwindDatabaseTest()
         {
             // Import database
             var database = SqlServerDatabaseFactory
@@ -98,7 +129,7 @@ namespace CatFactory.EfCore.Tests
         }
 
         [Fact]
-        public void ProjectGenerationForAdventureWorksDatabaseTest()
+        public void ProjectScaffoldingForAdventureWorksDatabaseTest()
         {
             // Create instance of factory for SQL Server
             var factory = new SqlServerDatabaseFactory(LoggerMocker.GetLogger<SqlServerDatabaseFactory>())

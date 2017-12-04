@@ -10,7 +10,7 @@ namespace CatFactory.EfCore.Definitions
 {
     public static class EntityTypeConfigurationClassDefinition
     {
-        public static CSharpClassDefinition GetEntityTypeConfigurationClassDefinition(this ITable table, EntityFrameworkCoreProject project)
+        public static CSharpClassDefinition GetEntityTypeConfigurationClassDefinition(this EntityFrameworkCoreProject project, ITable table)
         {
             var classDefinition = new CSharpClassDefinition();
 
@@ -53,7 +53,7 @@ namespace CatFactory.EfCore.Definitions
 
             if (table.PrimaryKey == null || table.PrimaryKey.Key.Count == 0)
             {
-                mapLines.Add(new CodeLine(1, "builder.HasKey(p => new {{ {0} }});", string.Join(", ", table.Columns.Select(item => string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item.Name))))));
+                mapLines.Add(LineHelper.GetWarning("Add configuration for entity's key"));
                 mapLines.Add(new CodeLine());
             }
             else
@@ -124,21 +124,18 @@ namespace CatFactory.EfCore.Definitions
 
             mapLines.Add(new CodeLine());
 
-            if (columns != null)
+            for (var i = 0; i < columns.Count; i++)
             {
-                for (var i = 0; i < columns.Count; i++)
-                {
-                    var column = columns[i];
+                var column = columns[i];
 
-                    if (!string.IsNullOrEmpty(project.Settings.ConcurrencyToken) && string.Compare(column.Name, project.Settings.ConcurrencyToken) == 0)
-                    {
-                        mapLines.Add(new CommentLine(1, " Set concurrency token for entity"));
-                        mapLines.Add(new CodeLine(1, "builder"));
-                        mapLines.Add(new CodeLine(2, ".Property(p => p.{0})", column.GetPropertyName()));
-                        mapLines.Add(new CodeLine(2, ".ValueGeneratedOnAddOrUpdate()"));
-                        mapLines.Add(new CodeLine(2, ".IsConcurrencyToken();"));
-                        mapLines.Add(new CodeLine());
-                    }
+                if (!string.IsNullOrEmpty(project.Settings.ConcurrencyToken) && string.Compare(column.Name, project.Settings.ConcurrencyToken) == 0)
+                {
+                    mapLines.Add(new CommentLine(1, " Set concurrency token for entity"));
+                    mapLines.Add(new CodeLine(1, "builder"));
+                    mapLines.Add(new CodeLine(2, ".Property(p => p.{0})", column.GetPropertyName()));
+                    mapLines.Add(new CodeLine(2, ".ValueGeneratedOnAddOrUpdate()"));
+                    mapLines.Add(new CodeLine(2, ".IsConcurrencyToken();"));
+                    mapLines.Add(new CodeLine());
                 }
             }
 
@@ -196,7 +193,7 @@ namespace CatFactory.EfCore.Definitions
                     }
                     else
                     {
-                        // todo: add logic for key with multiple columns
+                        mapLines.Add(LineHelper.GetWarning(" Add logic for foreign key with multiple key"));
                     }
                 }
             }
@@ -213,7 +210,7 @@ namespace CatFactory.EfCore.Definitions
             return classDefinition;
         }
 
-        public static CSharpClassDefinition GetEntityTypeConfigurationClassDefinition(this IView view, EntityFrameworkCoreProject project)
+        public static CSharpClassDefinition GetEntityTypeConfigurationClassDefinition(this EntityFrameworkCoreProject project, IView view)
         {
             var classDefinition = new CSharpClassDefinition();
 
@@ -252,12 +249,56 @@ namespace CatFactory.EfCore.Definitions
 
             mapLines.Add(new CodeLine());
 
-            var columns = view.Columns;
+            var primaryKeys = project.Database.Tables.Where(item => item.PrimaryKey != null).Select(item => item.PrimaryKey?.GetColumns(item).Select(c => c.Name).First()).ToList();
 
-            mapLines.Add(new CodeLine(1, "builder.HasKey(p => new {{ {0} }});", string.Join(", ", columns.Select(item => string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item.Name))))));
-            mapLines.Add(new CodeLine());
+            var result = view.Columns.Where(item => primaryKeys.Contains(item.Name)).ToList();
+
+            if (result.Count == 0)
+            {
+
+            }
+            else
+            {
+                mapLines.Add(new CommentLine(1, "Add configuration for entity's key"));
+                mapLines.Add(new CodeLine(1, "builder.HasKey(p => new {{ {0} }});", string.Join(", ", result.Select(item => string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item.Name))))));
+                mapLines.Add(new CodeLine());
+            }
 
             mapLines.Add(new CommentLine(1, " Set configuration for columns"));
+
+            for (var i = 0; i < view.Columns.Count; i++)
+            {
+                var column = view.Columns[i];
+
+                var lines = new List<string>()
+                {
+                    string.Format("builder.Property(p => p.{0})" , column.GetPropertyName())
+                };
+
+                if (string.Compare(column.Name, column.GetPropertyName()) != 0)
+                {
+                    lines.Add(string.Format("HasColumnName(\"{0}\")", column.Name));
+                }
+
+                if (column.IsString())
+                {
+                    lines.Add(column.Length == 0 ? string.Format("HasColumnType(\"{0}(max)\")", column.Type) : string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
+                }
+                else if (column.IsDecimal())
+                {
+                    lines.Add(string.Format("HasColumnType(\"{0}({1}, {2})\")", column.Type, column.Prec, column.Scale));
+                }
+                else if (column.IsDouble() || column.IsSingle())
+                {
+                    lines.Add(string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Prec));
+                }
+                else
+                {
+                    lines.Add(string.Format("HasColumnType(\"{0}\")", column.Type));
+                }
+
+                mapLines.Add(new CodeLine(1, "{0};", string.Join(".", lines)));
+            }
 
             mapLines.Add(new CodeLine("});"));
 

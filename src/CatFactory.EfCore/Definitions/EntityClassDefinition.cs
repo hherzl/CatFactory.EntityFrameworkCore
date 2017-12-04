@@ -10,7 +10,7 @@ namespace CatFactory.EfCore.Definitions
 {
     public static class EntityClassDefinition
     {
-        public static CSharpClassDefinition GetEntityClassDefinition(this ITable table, EntityFrameworkCoreProject project)
+        public static CSharpClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, ITable table)
         {
             var classDefinition = new CSharpClassDefinition();
 
@@ -32,8 +32,8 @@ namespace CatFactory.EfCore.Definitions
             }
 
             classDefinition.Namespace = table.HasDefaultSchema() ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(table.Schema);
-
             classDefinition.Name = table.GetSingularName();
+            classDefinition.IsPartial = true;
 
             classDefinition.Constructors.Add(new ClassConstructorDefinition());
 
@@ -45,7 +45,7 @@ namespace CatFactory.EfCore.Definitions
 
                 classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(column.GetClrType(), column.GetParameterName()))
                 {
-                    Lines = new List<ILine>()
+                    Lines = new List<ILine>
                     {
                         new CodeLine("{0} = {1};", column.GetPropertyName(), column.GetParameterName())
                     }
@@ -154,15 +154,21 @@ namespace CatFactory.EfCore.Definitions
             return classDefinition;
         }
 
-        public static CSharpClassDefinition GetEntityClassDefinition(this IView view, EntityFrameworkCoreProject project)
+        public static CSharpClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, IView view)
         {
             var classDefinition = new CSharpClassDefinition();
 
             classDefinition.Namespaces.Add("System");
 
-            classDefinition.Namespace = view.HasDefaultSchema() ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(view.Schema);
+            if (project.Settings.UseDataAnnotations)
+            {
+                classDefinition.Namespaces.Add("System.ComponentModel.DataAnnotations");
+                classDefinition.Namespaces.Add("System.ComponentModel.DataAnnotations.Schema");
+            }
 
+            classDefinition.Namespace = view.HasDefaultSchema() ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(view.Schema);
             classDefinition.Name = view.GetSingularName();
+            classDefinition.IsPartial = true;
 
             classDefinition.Constructors.Add(new ClassConstructorDefinition());
 

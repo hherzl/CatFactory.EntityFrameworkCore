@@ -12,6 +12,8 @@ namespace CatFactory.EfCore
             switch (column.Type)
             {
                 case "decimal":
+                case "money":
+                case "smallmoney":
                     return true;
 
                 default:

@@ -11,7 +11,7 @@ namespace CatFactory.EfCore
         {
             classDefinition.Attributes.Add(new MetadataAttribute("Table", string.Format("\"{0}\"", table.Name))
             {
-                Sets = new List<MetadataAttributeSet>()
+                Sets = new List<MetadataAttributeSet>
                 {
                     new MetadataAttributeSet("Schema", string.Format("\"{0}\"", table.Schema))
                 }
@@ -22,7 +22,7 @@ namespace CatFactory.EfCore
         {
             classDefinition.Attributes.Add(new MetadataAttribute("Table", string.Format("\"{0}\"", table.Name))
             {
-                Sets = new List<MetadataAttributeSet>()
+                Sets = new List<MetadataAttributeSet>
                 {
                     new MetadataAttributeSet("Schema", string.Format("\"{0}\"", table.Schema))
                 }

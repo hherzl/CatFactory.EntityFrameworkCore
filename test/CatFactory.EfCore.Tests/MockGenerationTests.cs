@@ -5,7 +5,7 @@ namespace CatFactory.EfCore.Tests
     public class MockGenerationTests
     {
         [Fact]
-        public void ProjectGenerationWithDefaultsFromMockDatabaseTest()
+        public void ProjectScaffoldingWithDefaultsFromMockDatabaseTest()
         {
             // Create instance of EF Core Project
             var project = new EntityFrameworkCoreProject
@@ -31,7 +31,7 @@ namespace CatFactory.EfCore.Tests
         }
 
         [Fact]
-        public void ProjectGenerationWithDataBindingsFromMockDatabaseTest()
+        public void ProjectScaffoldingWithDataBindingsFromMockDatabaseTest()
         {
             // Create instance of EF Core Project
             var project = new EntityFrameworkCoreProject
@@ -58,7 +58,7 @@ namespace CatFactory.EfCore.Tests
         }
 
         [Fact]
-        public void ProjectGenerationWithDefaultsFromClassicMockDatabaseTest()
+        public void ProjectScaffoldingWithDefaultsFromClassicMockDatabaseTest()
         {
             // Create instance of EF Core Project
             var project = new EntityFrameworkCoreProject
@@ -81,7 +81,7 @@ namespace CatFactory.EfCore.Tests
         }
 
         [Fact]
-        public void ProjectGenerationWithDbSetPropertiesAndDataAnnotationsTest()
+        public void ProjectScaffoldingWithDbSetPropertiesAndDataAnnotationsTest()
         {
             // Create instance of EF Core Project
             var project = new EntityFrameworkCoreProject
@@ -106,7 +106,7 @@ namespace CatFactory.EfCore.Tests
         }
 
         [Fact]
-        public void ProjectGenerationWithModifiedNamespacesFromMockDatabaseTest()
+        public void ProjectScaffoldingWithModifiedNamespacesFromMockDatabaseTest()
         {
             // Create instance of EF Core Project
             var project = new EntityFrameworkCoreProject
@@ -130,29 +130,5 @@ namespace CatFactory.EfCore.Tests
                 .ScaffoldEntityLayer()
                 .ScaffoldDataLayer();
         }
-
-        // todo: add logic to this feature
-        //[Fact]
-        //public void ProjectGenerationWithTddFromMockDatabaseTest()
-        //{
-        //    var project = new EntityFrameworkCoreProject
-        //    {
-        //        Name = "Store",
-        //        Database = Databases.Store,
-        //        OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\Store.Tdd.Mock",
-        //    };
-
-        //    project.Settings.ForceOverwrite = true;
-        //    project.Settings.ConcurrencyToken = "Timestamp";
-        //    project.Settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
-
-        //    project.UpdateExclusions.AddRange(new string[] { "CreationUser", "CreationDateTime" });
-
-        //    project.BuildFeatures();
-
-        //    project
-        //        .GenerateEntityLayer()
-        //        .GenerateDataLayer();
-        //}
     }
 }
