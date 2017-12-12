@@ -233,7 +233,7 @@ namespace CatFactory.EfCore.Definitions
                     {
                         if (foreignTable == null)
                         {
-                            lines.Add(LineHelper.GetWarning(" There isn't definition for '{0}' in your current database", foreignKey.References));
+                            lines.Add(LineHelper.Warning(" There isn't definition for '{0}' in your current database", foreignKey.References));
                         }
                         else
                         {
@@ -255,7 +255,7 @@ namespace CatFactory.EfCore.Definitions
                     }
                     else
                     {
-                        lines.Add(LineHelper.GetWarning(" Add logic for foreign key with multiple key"));
+                        lines.Add(LineHelper.Warning(" Add logic for foreign key with multiple key"));
                     }
                 }
 
@@ -476,7 +476,7 @@ namespace CatFactory.EfCore.Definitions
                     }
                     else
                     {
-                        lines.Add(LineHelper.GetWarning("Add logic for foreign key with multiple key"));
+                        lines.Add(LineHelper.Warning("Add logic for foreign key with multiple key"));
                     }
                 }
 

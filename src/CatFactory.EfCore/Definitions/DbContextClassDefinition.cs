@@ -89,7 +89,7 @@ namespace CatFactory.EfCore.Definitions
 
                     if (result.Count == 0)
                     {
-                        lines.Add(LineHelper.GetWarning(" Add configuration for {0} entity", view.GetSingularName()));
+                        lines.Add(LineHelper.Warning(" Add configuration for {0} entity", view.GetSingularName()));
                     }
                     else
                     {

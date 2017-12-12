@@ -53,7 +53,7 @@ namespace CatFactory.EfCore.Definitions
 
             if (table.PrimaryKey == null || table.PrimaryKey.Key.Count == 0)
             {
-                mapLines.Add(LineHelper.GetWarning("Add configuration for entity's key"));
+                mapLines.Add(LineHelper.Warning("Add configuration for entity's key"));
                 mapLines.Add(new CodeLine());
             }
             else
@@ -193,7 +193,7 @@ namespace CatFactory.EfCore.Definitions
                     }
                     else
                     {
-                        mapLines.Add(LineHelper.GetWarning(" Add logic for foreign key with multiple key"));
+                        mapLines.Add(LineHelper.Warning(" Add logic for foreign key with multiple key"));
                     }
                 }
             }

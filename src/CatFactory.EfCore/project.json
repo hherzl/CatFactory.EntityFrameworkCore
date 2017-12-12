@@ -1,11 +1,11 @@
 {
-  "version": "3.0.0-alpha-build13",
+  "version": "3.0.0-alpha-build14",
   "title": "CatFactory.EfCore",
   "description": "CatFactory package for Entity Framework Core scaffolding with enterprise patterns",
   "packOptions": {
     "summary": "CatFactory package for Entity Framework Core scaffolding with enterprise patterns",
     "tags": [ "Entity Framework Core" ],
-    "releaseNotes": "3.0.0-alpha-build13 version: DotNetCore Package update; add code fix for views: data annotations, configuration for columns for fluent api and GetAll method in repositories; code refactor for naming extensions; addition of money and smallmoney for IsDecimal method and use of CSharpCodeBuilder class to generate files.\r\nQuick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory",
+    "releaseNotes": "3.0.0-alpha-build14 version: DotNetCore Package update and remove of LineHelper class.\r\n\r\nQuick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory",
     "requireLicenseAcceptance": false,
     "repository": {
       "type": "git",
@@ -18,7 +18,7 @@
 
   "dependencies": {
     "NETStandard.Library": "1.6.1",
-    "CatFactory.DotNetCore": "3.0.0-alpha-build08",
+    "CatFactory.DotNetCore": "3.0.0-alpha-build10",
     "System.Runtime": "4.3.0"
   },
 
