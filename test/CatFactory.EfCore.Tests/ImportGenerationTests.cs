@@ -13,7 +13,7 @@ namespace CatFactory.EfCore.Tests
             var database = SqlServerDatabaseFactory
                 .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Store;integrated security=yes;", "dbo.sysdiagrams");
 
-            // Create instance of EF Core Project
+            // Create instance of Entity Framework Core Project
             var project = new EntityFrameworkCoreProject
             {
                 Name = "Store",
@@ -21,7 +21,7 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\Store"
             };
 
-            // Apply settings for EF Core project
+            // Apply settings for Entity Framework Core project
             project.Settings.ForceOverwrite = true;
             project.Settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
             project.Settings.ConcurrencyToken = "Timestamp";
@@ -43,7 +43,7 @@ namespace CatFactory.EfCore.Tests
             var database = SqlServerDatabaseFactory
                 .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Store;integrated security=yes;", "dbo.sysdiagrams");
 
-            // Create instance of EF Core Project
+            // Create instance of Entity Framework Core Project
             var project = new EntityFrameworkCoreProject
             {
                 Name = "StoreWithDataAnnotations",
@@ -51,7 +51,7 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\StoreWithDataAnnotations"
             };
 
-            // Apply settings for EF Core project
+            // Apply settings for Entity Framework Core project
             project.Settings.ForceOverwrite = true;
             project.Settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
             project.Settings.ConcurrencyToken = "Timestamp";
@@ -74,7 +74,7 @@ namespace CatFactory.EfCore.Tests
             var database = SqlServerDatabaseFactory
                 .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
 
-            // Create instance of EF Core Project
+            // Create instance of Entity Framework Core Project
             var project = new EntityFrameworkCoreProject
             {
                 Name = "Northwind",
@@ -82,7 +82,7 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\ModifiedNorthwind"
             };
 
-            // Apply settings for EF Core project
+            // Apply settings for Entity Framework Core project
             project.Settings.ForceOverwrite = true;
 
             // Set custom namespaces
@@ -108,7 +108,7 @@ namespace CatFactory.EfCore.Tests
             var database = SqlServerDatabaseFactory
                 .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
 
-            // Create instance of EF Core Project
+            // Create instance of Entity Framework Core Project
             var project = new EntityFrameworkCoreProject
             {
                 Name = "Northwind",
@@ -116,7 +116,7 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\VsCode\\Northwind\\src"
             };
 
-            // Apply settings for EF Core project
+            // Apply settings for Entity Framework Core project
             project.Settings.ForceOverwrite = true;
 
             // Build features for project, group all entities by schema into a feature
@@ -147,7 +147,7 @@ namespace CatFactory.EfCore.Tests
             // Import database
             var database = factory.Import();
 
-            // Create instance of EF Core Project
+            // Create instance of Entity Framework Core Project
             var project = new EntityFrameworkCoreProject
             {
                 Name = "AdventureWorks",
@@ -155,7 +155,7 @@ namespace CatFactory.EfCore.Tests
                 OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\AdventureWorks"
             };
 
-            // Apply settings for EF Core project
+            // Apply settings for Entity Framework Core project
             project.Settings.ForceOverwrite = true;
 
             // Build features for project, group all entities by schema into a feature

@@ -1,11 +1,11 @@
 {
-  "version": "3.0.0-alpha-build14",
+  "version": "3.0.0-alpha-build15",
   "title": "CatFactory.EfCore",
   "description": "CatFactory package for Entity Framework Core scaffolding with enterprise patterns",
   "packOptions": {
     "summary": "CatFactory package for Entity Framework Core scaffolding with enterprise patterns",
     "tags": [ "Entity Framework Core" ],
-    "releaseNotes": "3.0.0-alpha-build14 version: DotNetCore Package update and remove of LineHelper class.\r\n\r\nQuick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory",
+    "releaseNotes": "3.0.0-alpha-build15 version: Code fix for property with same name that enclosing types and addition of ForeignKey attribute for navigation properties.\r\n\r\nQuick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory",
     "requireLicenseAcceptance": false,
     "repository": {
       "type": "git",

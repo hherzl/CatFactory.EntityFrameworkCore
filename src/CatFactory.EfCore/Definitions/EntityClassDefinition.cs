@@ -61,21 +61,21 @@ namespace CatFactory.EfCore.Definitions
             {
                 if (project.Settings.EnableDataBindings)
                 {
-                    classDefinition.AddViewModelProperty(column.GetClrType(), column.GetPropertyName());
+                    classDefinition.AddViewModelProperty(column.GetClrType(), column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : column.GetPropertyName());
                 }
                 else
                 {
                     if (project.Settings.BackingFields.Contains(table.GetFullColumnName(column)))
                     {
-                        classDefinition.AddPropertyWithField(column.GetClrType(), column.GetPropertyName());
+                        classDefinition.AddPropertyWithField(column.GetClrType(), column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : column.GetPropertyName());
                     }
                     else if (project.Settings.UseAutomaticPropertiesForEntities)
                     {
-                        classDefinition.Properties.Add(new PropertyDefinition(column.GetClrType(), column.GetPropertyName()));
+                        classDefinition.Properties.Add(new PropertyDefinition(column.GetClrType(), column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : column.GetPropertyName()));
                     }
                     else
                     {
-                        classDefinition.AddPropertyWithField(column.GetClrType(), column.GetPropertyName());
+                        classDefinition.AddPropertyWithField(column.GetClrType(), column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : column.GetPropertyName());
                     }
                 }
             }
@@ -179,7 +179,7 @@ namespace CatFactory.EfCore.Definitions
 
             foreach (var column in view.Columns)
             {
-                classDefinition.Properties.Add(new PropertyDefinition(column.GetClrType(), column.GetPropertyName()));
+                classDefinition.Properties.Add(new PropertyDefinition(column.GetClrType(), column.HasSameNameEnclosingType(view) ? column.GetNameForEnclosing() : column.GetPropertyName()));
             }
 
             if (project.Settings.SimplifyDataTypes)

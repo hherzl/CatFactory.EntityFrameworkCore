@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using CatFactory.CodeFactory;
 using CatFactory.DotNetCore;
 using CatFactory.Mapping;
@@ -61,8 +60,7 @@ namespace CatFactory.EfCore
 
             return new PropertyDefinition(propertyType, table.GetPluralName())
             {
-                IsVirtual = project.Settings.DeclareNavigationPropertiesAsVirtual,
-                Attributes = project.Settings.UseDataAnnotations ? new List<MetadataAttribute> { new MetadataAttribute("ForeignKey", string.Format("\"{0}\"", string.Join(",", foreignKey.Key))) } : null
+                IsVirtual = project.Settings.DeclareNavigationPropertiesAsVirtual
             };
         }
     }

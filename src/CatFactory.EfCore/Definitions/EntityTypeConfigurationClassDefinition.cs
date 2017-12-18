@@ -251,18 +251,16 @@ namespace CatFactory.EfCore.Definitions
 
             var primaryKeys = project.Database.Tables.Where(item => item.PrimaryKey != null).Select(item => item.PrimaryKey?.GetColumns(item).Select(c => c.Name).First()).ToList();
 
-            var result = view.Columns.Where(item => primaryKeys.Contains(item.Name)).ToList();
+            var result = view.Columns.Where(item => !item.Nullable && primaryKeys.Contains(item.Name)).ToList();
 
             if (result.Count == 0)
             {
+                result = view.Columns.Where(item => !item.Nullable).ToList();
+            }
 
-            }
-            else
-            {
-                mapLines.Add(new CommentLine(1, "Add configuration for entity's key"));
-                mapLines.Add(new CodeLine(1, "builder.HasKey(p => new {{ {0} }});", string.Join(", ", result.Select(item => string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item.Name))))));
-                mapLines.Add(new CodeLine());
-            }
+            mapLines.Add(new CommentLine(1, " Add configuration for entity's key"));
+            mapLines.Add(new CodeLine(1, "builder.HasKey(p => new {{ {0} }});", string.Join(", ", result.Select(item => string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item.Name))))));
+            mapLines.Add(new CodeLine());
 
             mapLines.Add(new CommentLine(1, " Set configuration for columns"));
 
