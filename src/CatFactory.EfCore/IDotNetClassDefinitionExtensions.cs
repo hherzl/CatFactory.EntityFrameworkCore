@@ -62,7 +62,7 @@ namespace CatFactory.EfCore
                 }
             });
 
-            var primaryKeys = project.Database.Tables.Where(item => item.PrimaryKey != null).Select(item => item.PrimaryKey?.GetColumns(item).Select(c => c.Name).First()).ToList();
+            var primaryKeys = project.Database.Tables.Where(item => item.PrimaryKey != null).Select(item => item.GetColumnsFromConstraint(item.PrimaryKey).Select(c => c.Name).First()).ToList();
 
             var result = view.Columns.Where(item => primaryKeys.Contains(item.Name)).ToList();
 

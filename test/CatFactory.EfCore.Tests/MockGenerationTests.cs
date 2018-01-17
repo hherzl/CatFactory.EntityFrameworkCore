@@ -16,10 +16,18 @@ namespace CatFactory.EfCore.Tests
             };
 
             // Apply settings for EF Core project
-            project.Settings.ForceOverwrite = true;
-            project.Settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
-            project.Settings.ConcurrencyToken = "Timestamp";
-            project.Settings.EntitiesWithDataContracts.Add("Sales.Order");
+            project.GlobalSelection(settings =>
+            {
+                settings.ForceOverwrite = true;
+                settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
+                settings.ConcurrencyToken = "Timestamp";
+            });
+
+            project.Select("Sales.Order", settings =>
+            {
+                settings.ForceOverwrite = true;
+                settings.EntitiesWithDataContracts = true;
+            });
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
@@ -42,11 +50,19 @@ namespace CatFactory.EfCore.Tests
             };
 
             // Apply settings for EF Core project
-            project.Settings.ForceOverwrite = true;
-            project.Settings.EnableDataBindings = true;
-            project.Settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
-            project.Settings.ConcurrencyToken = "Timestamp";
-            project.Settings.EntitiesWithDataContracts.Add("Sales.Order");
+            project.GlobalSelection(settings =>
+            {
+                settings.ForceOverwrite = true;
+                settings.EnableDataBindings = true;
+                settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
+                settings.ConcurrencyToken = "Timestamp";
+            });
+
+            project.Select("Sales.Order", settings =>
+            {
+                settings.ForceOverwrite = true;
+                settings.EntitiesWithDataContracts = true;
+            });
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
@@ -69,7 +85,10 @@ namespace CatFactory.EfCore.Tests
             };
 
             // Apply settings for EF Core project
-            project.Settings.ForceOverwrite = true;
+            project.GlobalSelection(settings =>
+            {
+                settings.ForceOverwrite = true;
+            });
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
@@ -92,9 +111,12 @@ namespace CatFactory.EfCore.Tests
             };
 
             // Apply settings for EF Core project
-            project.Settings.ForceOverwrite = true;
-            project.Settings.UseDataAnnotations = true;
-            project.Settings.DeclareDbSetPropertiesInDbContext = true;
+            project.GlobalSelection(settings =>
+            {
+                settings.ForceOverwrite = true;
+                settings.UseDataAnnotations = true;
+                settings.DeclareDbSetPropertiesInDbContext = true;
+            });
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
@@ -117,7 +139,10 @@ namespace CatFactory.EfCore.Tests
             };
 
             // Apply settings for EF Core project
-            project.Settings.ForceOverwrite = true;
+            project.GlobalSelection(settings =>
+            {
+                settings.ForceOverwrite = true;
+            });
 
             project.Namespaces.EntityLayer = "EL";
             project.Namespaces.DataLayer = "DL";

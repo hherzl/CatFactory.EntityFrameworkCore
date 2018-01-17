@@ -1,14 +1,31 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using CatFactory.CodeFactory;
 using CatFactory.Mapping;
+using Microsoft.Extensions.Logging;
 
 namespace CatFactory.EfCore
 {
-    public class EntityFrameworkCoreProject : Project
+    public class EntityFrameworkCoreProject : Project<EntityFrameworkCoreProjectSettings>
     {
         public EntityFrameworkCoreProject()
         {
+        }
+
+        public EntityFrameworkCoreProject(ILogger<EntityFrameworkCoreProject> logger)
+            : base(logger)
+        {
+        }
+
+        public void Scaffolding(ICodeBuilder codeBuilder)
+        {
+            OnScaffoldingDefinition(new ScaffoldingDefinitionEventArgs(Logger, codeBuilder));
+        }
+
+        public void Scaffolded(ICodeBuilder codeBuilder)
+        {
+            OnScaffoldedDefinition(new ScaffoldedDefinitionEventArgs(Logger, codeBuilder));
         }
 
         public override void BuildFeatures()
@@ -18,9 +35,9 @@ namespace CatFactory.EfCore
                 return;
             }
 
-            if (Settings.AuditEntity != null)
+            if (this.GlobalSelection().Settings.AuditEntity != null)
             {
-                Settings.EntityInterfaceName = "IAuditEntity";
+                this.GlobalSelection().Settings.EntityInterfaceName = "IAuditEntity";
             }
 
             Features = Database
@@ -31,7 +48,7 @@ namespace CatFactory.EfCore
                 {
                     var dbObjects = GetDbObjects(Database, item);
 
-                    return new ProjectFeature(item, dbObjects)
+                    return new ProjectFeature<EntityFrameworkCoreProjectSettings>(item, dbObjects)
                     {
                         Project = this
                     };
@@ -77,10 +94,10 @@ namespace CatFactory.EfCore
         public ProjectNamespaces Namespaces
             => m_namespaces ?? (m_namespaces = new ProjectNamespaces());
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private EntityFrameworkCoreProjectSettings m_settings;
+        //[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        //private EntityFrameworkCoreProjectSettings m_settings;
 
-        public EntityFrameworkCoreProjectSettings Settings
-            => m_settings ?? (m_settings = new EntityFrameworkCoreProjectSettings());
+        //public EntityFrameworkCoreProjectSettings Settings
+        //    => m_settings ?? (m_settings = new EntityFrameworkCoreProjectSettings());
     }
 }

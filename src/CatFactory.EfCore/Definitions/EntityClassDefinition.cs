@@ -10,19 +10,19 @@ namespace CatFactory.EfCore.Definitions
 {
     public static class EntityClassDefinition
     {
-        public static CSharpClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, ITable table)
+        public static CSharpClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, ITable table, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection)
         {
             var classDefinition = new CSharpClassDefinition();
 
             classDefinition.Namespaces.Add("System");
 
-            if (project.Settings.UseDataAnnotations)
+            if (projectSelection.Settings.UseDataAnnotations)
             {
                 classDefinition.Namespaces.Add("System.ComponentModel.DataAnnotations");
                 classDefinition.Namespaces.Add("System.ComponentModel.DataAnnotations.Schema");
             }
 
-            if (project.Settings.EnableDataBindings)
+            if (projectSelection.Settings.EnableDataBindings)
             {
                 classDefinition.Namespaces.Add("System.ComponentModel");
 
@@ -41,7 +41,7 @@ namespace CatFactory.EfCore.Definitions
 
             if (table.PrimaryKey?.Key.Count == 1)
             {
-                var column = table.PrimaryKey.GetColumns(table).First();
+                var column = table.GetColumnsFromConstraint(table.PrimaryKey).First();
 
                 classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(column.GetClrType(), column.GetParameterName()))
                 {
@@ -59,17 +59,17 @@ namespace CatFactory.EfCore.Definitions
 
             foreach (var column in columns)
             {
-                if (project.Settings.EnableDataBindings)
+                if (projectSelection.Settings.EnableDataBindings)
                 {
                     classDefinition.AddViewModelProperty(column.GetClrType(), column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : column.GetPropertyName());
                 }
                 else
                 {
-                    if (project.Settings.BackingFields.Contains(table.GetFullColumnName(column)))
+                    if (projectSelection.Settings.BackingFields.Contains(table.GetFullColumnName(column)))
                     {
                         classDefinition.AddPropertyWithField(column.GetClrType(), column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : column.GetPropertyName());
                     }
-                    else if (project.Settings.UseAutomaticPropertiesForEntities)
+                    else if (projectSelection.Settings.UseAutomaticPropertiesForEntities)
                     {
                         classDefinition.Properties.Add(new PropertyDefinition(column.GetClrType(), column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : column.GetPropertyName()));
                     }
@@ -80,7 +80,7 @@ namespace CatFactory.EfCore.Definitions
                 }
             }
 
-            if (project.Settings.AuditEntity == null)
+            if (projectSelection.Settings.AuditEntity == null)
             {
                 classDefinition.Implements.Add("IEntity");
             }
@@ -90,15 +90,15 @@ namespace CatFactory.EfCore.Definitions
 
                 foreach (var column in columns)
                 {
-                    if (project.Settings.AuditEntity.Names.Contains(column.Name))
+                    if (projectSelection.Settings.AuditEntity.Names.Contains(column.Name))
                     {
                         count += 1;
                     }
                 }
 
-                if (count == project.Settings.AuditEntity.Names.Length)
+                if (count == projectSelection.Settings.AuditEntity.Names.Length)
                 {
-                    classDefinition.Implements.Add(project.Settings.EntityInterfaceName);
+                    classDefinition.Implements.Add(projectSelection.Settings.EntityInterfaceName);
                 }
                 else
                 {
@@ -108,7 +108,7 @@ namespace CatFactory.EfCore.Definitions
 
             foreach (var foreignKey in table.ForeignKeys)
             {
-                var foreignTable = project.Database.FindTableByFullName(foreignKey.References);
+                var foreignTable = project.Database.FindTable(foreignKey.References);
 
                 if (foreignTable == null)
                 {
@@ -119,7 +119,7 @@ namespace CatFactory.EfCore.Definitions
 
                 classDefinition.Namespace = table.HasDefaultSchema() ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(table.Schema);
 
-                classDefinition.Properties.Add(foreignKey.GetParentNavigationProperty(project, foreignTable));
+                classDefinition.Properties.Add(foreignKey.GetParentNavigationProperty(foreignTable, project));
             }
 
             foreach (var child in project.Database.Tables)
@@ -133,10 +133,10 @@ namespace CatFactory.EfCore.Definitions
                 {
                     if (foreignKey.References.EndsWith(table.FullName))
                     {
-                        classDefinition.Namespaces.AddUnique(project.Settings.NavigationPropertyEnumerableNamespace);
+                        classDefinition.Namespaces.AddUnique(projectSelection.Settings.NavigationPropertyEnumerableNamespace);
                         classDefinition.Namespaces.AddUnique(child.HasDefaultSchema() ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(child.Schema));
 
-                        var navigationProperty = project.GetChildNavigationProperty(child, foreignKey);
+                        var navigationProperty = project.GetChildNavigationProperty(projectSelection, child, foreignKey);
 
                         if (classDefinition.Properties.FirstOrDefault(item => item.Name == navigationProperty.Name) == null)
                         {
@@ -146,7 +146,7 @@ namespace CatFactory.EfCore.Definitions
                 }
             }
 
-            if (project.Settings.SimplifyDataTypes)
+            if (projectSelection.Settings.SimplifyDataTypes)
             {
                 classDefinition.SimplifyDataTypes();
             }
@@ -154,13 +154,13 @@ namespace CatFactory.EfCore.Definitions
             return classDefinition;
         }
 
-        public static CSharpClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, IView view)
+        public static CSharpClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, IView view, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection)
         {
             var classDefinition = new CSharpClassDefinition();
 
             classDefinition.Namespaces.Add("System");
 
-            if (project.Settings.UseDataAnnotations)
+            if (projectSelection.Settings.UseDataAnnotations)
             {
                 classDefinition.Namespaces.Add("System.ComponentModel.DataAnnotations");
                 classDefinition.Namespaces.Add("System.ComponentModel.DataAnnotations.Schema");
@@ -182,7 +182,7 @@ namespace CatFactory.EfCore.Definitions
                 classDefinition.Properties.Add(new PropertyDefinition(column.GetClrType(), column.HasSameNameEnclosingType(view) ? column.GetNameForEnclosing() : column.GetPropertyName()));
             }
 
-            if (project.Settings.SimplifyDataTypes)
+            if (projectSelection.Settings.SimplifyDataTypes)
             {
                 classDefinition.SimplifyDataTypes();
             }

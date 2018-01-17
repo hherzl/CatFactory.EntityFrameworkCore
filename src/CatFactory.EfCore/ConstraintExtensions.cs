@@ -6,14 +6,16 @@ namespace CatFactory.EfCore
 {
     public static class ConstraintExtensions
     {
-        public static PropertyDefinition GetParentNavigationProperty(this ForeignKey foreignKey, EntityFrameworkCoreProject project, ITable table)
+        public static PropertyDefinition GetParentNavigationProperty(this ForeignKey foreignKey, ITable table, EntityFrameworkCoreProject project)
         {
             var propertyType = table.GetSingularName();
 
+            var selection = project.GetSelection(table);
+
             return new PropertyDefinition(propertyType, string.Format("{0}Fk", propertyType))
             {
-                IsVirtual = project.Settings.DeclareNavigationPropertiesAsVirtual,
-                Attributes = project.Settings.UseDataAnnotations ? new List<MetadataAttribute> { new MetadataAttribute("ForeignKey", string.Format("\"{0}\"", string.Join(",", foreignKey.Key))) } : null
+                IsVirtual = selection.Settings.DeclareNavigationPropertiesAsVirtual,
+                Attributes = selection.Settings.UseDataAnnotations ? new List<MetadataAttribute> { new MetadataAttribute("ForeignKey", string.Format("\"{0}\"", string.Join(",", foreignKey.Key))) } : null
             };
         }
     }

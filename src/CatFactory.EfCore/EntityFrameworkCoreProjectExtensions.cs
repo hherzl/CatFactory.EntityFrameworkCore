@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Linq;
 using CatFactory.CodeFactory;
 using CatFactory.DotNetCore;
 using CatFactory.Mapping;
@@ -54,14 +56,63 @@ namespace CatFactory.EfCore
         public static string GetDataLayerRepositoriesDirectory(this EntityFrameworkCoreProject project)
             => Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer, project.Namespaces.Repositories);
 
-        public static PropertyDefinition GetChildNavigationProperty(this EntityFrameworkCoreProject project, ITable table, ForeignKey foreignKey)
+        public static PropertyDefinition GetChildNavigationProperty(this EntityFrameworkCoreProject project, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection, ITable table, ForeignKey foreignKey)
         {
-            var propertyType = string.Format("{0}<{1}>", project.Settings.NavigationPropertyEnumerableType, table.GetSingularName());
+            var propertyType = string.Format("{0}<{1}>", projectSelection.Settings.NavigationPropertyEnumerableType, table.GetSingularName());
 
             return new PropertyDefinition(propertyType, table.GetPluralName())
             {
-                IsVirtual = project.Settings.DeclareNavigationPropertiesAsVirtual
+                IsVirtual = projectSelection.Settings.DeclareNavigationPropertiesAsVirtual
             };
+        }
+
+        public static EntityFrameworkCoreProject GlobalSelection(this EntityFrameworkCoreProject project, Action<EntityFrameworkCoreProjectSettings> action = null)
+        {
+            var settings = new EntityFrameworkCoreProjectSettings();
+
+            var selection = project.Selections.FirstOrDefault(item => item.IsGlobal);
+
+            if (selection == null)
+            {
+                selection = new ProjectSelection<EntityFrameworkCoreProjectSettings>
+                {
+                    Pattern = ProjectSelection<EntityFrameworkCoreProjectSettings>.GlobalPattern,
+                    Settings = settings
+                };
+
+                project.Selections.Add(selection);
+            }
+            else
+            {
+                settings = selection.Settings;
+            }
+
+            action?.Invoke(settings);
+
+            return project;
+        }
+
+        public static ProjectSelection<EntityFrameworkCoreProjectSettings> GlobalSelection(this EntityFrameworkCoreProject project)
+            => project.Selections.FirstOrDefault(item => item.IsGlobal);
+
+        public static EntityFrameworkCoreProject Select(this EntityFrameworkCoreProject project, string pattern, Action<EntityFrameworkCoreProjectSettings> action = null)
+        {
+            var selection = project.Selections.FirstOrDefault(item => item.Pattern == pattern);
+
+            if (selection == null)
+            {
+                selection = new ProjectSelection<EntityFrameworkCoreProjectSettings>
+                {
+                    Pattern = pattern,
+                    Settings = new EntityFrameworkCoreProjectSettings()
+                };
+
+                project.Selections.Add(selection);
+            }
+
+            action?.Invoke(selection.Settings);
+
+            return project;
         }
     }
 }

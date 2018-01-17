@@ -16,7 +16,9 @@ namespace CatFactory.EfCore.Definitions
             classDefinition.Namespaces.Add("System.Threading.Tasks");
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
 
-            if (project.Settings.AuditEntity != null)
+            var selection = project.GlobalSelection();
+
+            if (selection.Settings.AuditEntity != null)
             {
                 classDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
             }
@@ -78,7 +80,9 @@ namespace CatFactory.EfCore.Definitions
         {
             var lines = new List<ILine>();
 
-            if (project.Settings.AuditEntity != null)
+            var selection = project.GlobalSelection();
+
+            if (selection.Settings.AuditEntity != null)
             {
                 lines.AddRange(new List<ILine>
                 {
@@ -133,7 +137,9 @@ namespace CatFactory.EfCore.Definitions
         {
             var lines = new List<ILine>();
 
-            if (project.Settings.AuditEntity != null)
+            var selection = project.GlobalSelection();
+
+            if (selection.Settings.AuditEntity != null)
             {
                 lines.AddRange(new List<ILine>
                 {

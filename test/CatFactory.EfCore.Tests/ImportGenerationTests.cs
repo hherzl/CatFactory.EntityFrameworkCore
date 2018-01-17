@@ -13,7 +13,7 @@ namespace CatFactory.EfCore.Tests
             var database = SqlServerDatabaseFactory
                 .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Store;integrated security=yes;", "dbo.sysdiagrams");
 
-            // Create instance of Entity Framework Core Project
+            // Create instance of Entity Framework Core project
             var project = new EntityFrameworkCoreProject
             {
                 Name = "Store",
@@ -22,13 +22,34 @@ namespace CatFactory.EfCore.Tests
             };
 
             // Apply settings for Entity Framework Core project
-            project.Settings.ForceOverwrite = true;
-            project.Settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
-            project.Settings.ConcurrencyToken = "Timestamp";
-            project.Settings.EntitiesWithDataContracts.Add("Sales.Order");
+            project.GlobalSelection(settings =>
+            {
+                settings.ForceOverwrite = true;
+                settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
+                settings.ConcurrencyToken = "Timestamp";
+            });
+
+            project.Select("Sales.Order", settings =>
+            {
+                settings.ForceOverwrite = true;
+                settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
+                settings.ConcurrencyToken = "Timestamp";
+                settings.EntitiesWithDataContracts = true;
+            });
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
+
+            // Add event handlers to before and after of scaffold
+            project.ScaffoldingDefinition += (source, args) =>
+            {
+                // Add code to perform operations with code builder instance before to create code file
+            };
+
+            project.ScaffoldedDefinition += (source, args) =>
+            {
+                // Add code to perform operations after of create code file
+            };
 
             // Scaffolding =^^=
             project
@@ -52,11 +73,22 @@ namespace CatFactory.EfCore.Tests
             };
 
             // Apply settings for Entity Framework Core project
-            project.Settings.ForceOverwrite = true;
-            project.Settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
-            project.Settings.ConcurrencyToken = "Timestamp";
-            project.Settings.EntitiesWithDataContracts.Add("Sales.Order");
-            project.Settings.UseDataAnnotations = true;
+            project.GlobalSelection(settings =>
+            {
+                settings.ForceOverwrite = true;
+                settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
+                settings.ConcurrencyToken = "Timestamp";
+                settings.UseDataAnnotations = true;
+            });
+
+            project.Select("Sales.Order", settings =>
+            {
+                settings.ForceOverwrite = true;
+                settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
+                settings.ConcurrencyToken = "Timestamp";
+                settings.UseDataAnnotations = true;
+                settings.EntitiesWithDataContracts = true;
+            });
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
@@ -83,7 +115,10 @@ namespace CatFactory.EfCore.Tests
             };
 
             // Apply settings for Entity Framework Core project
-            project.Settings.ForceOverwrite = true;
+            project.GlobalSelection(settings =>
+            {
+                settings.ForceOverwrite = true;
+            });
 
             // Set custom namespaces
             project.Namespaces.EntityLayer = "EL";
@@ -117,7 +152,10 @@ namespace CatFactory.EfCore.Tests
             };
 
             // Apply settings for Entity Framework Core project
-            project.Settings.ForceOverwrite = true;
+            project.GlobalSelection(settings =>
+            {
+                settings.ForceOverwrite = true;
+            });
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
@@ -156,7 +194,10 @@ namespace CatFactory.EfCore.Tests
             };
 
             // Apply settings for Entity Framework Core project
-            project.Settings.ForceOverwrite = true;
+            project.GlobalSelection(settings =>
+            {
+                settings.ForceOverwrite = true;
+            });
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();

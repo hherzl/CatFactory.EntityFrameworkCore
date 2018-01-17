@@ -7,11 +7,13 @@ namespace CatFactory.EfCore
     {
         private static void ScaffoldEntityInterface(EntityFrameworkCoreProject project)
         {
-            CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), project.Settings.ForceOverwrite, project.GetEntityInterfaceDefinition());
+            var selection = project.GlobalSelection();
 
-            if (project.Settings.AuditEntity != null)
+            CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, project.GetEntityInterfaceDefinition());
+
+            if (selection.Settings.AuditEntity != null)
             {
-                CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), project.Settings.ForceOverwrite, project.GetAuditEntityInterfaceDefinition());
+                CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, project.GetAuditEntityInterfaceDefinition());
             }
         }
 
@@ -21,26 +23,30 @@ namespace CatFactory.EfCore
 
             foreach (var table in project.Database.Tables)
             {
-                var classDefinition = project.GetEntityClassDefinition(table);
+                var selection = project.GetSelection(table);
 
-                if (project.Settings.UseDataAnnotations)
+                var classDefinition = project.GetEntityClassDefinition(table, selection);
+
+                if (selection.Settings.UseDataAnnotations)
                 {
                     classDefinition.AddDataAnnotations(table);
                 }
 
-                CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), project.Settings.ForceOverwrite, classDefinition);
+                CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, classDefinition);
             }
 
             foreach (var view in project.Database.Views)
             {
-                var classDefinition = project.GetEntityClassDefinition(view);
+                var selection = project.GetSelection(view);
 
-                if (project.Settings.UseDataAnnotations)
+                var classDefinition = project.GetEntityClassDefinition(view, selection);
+
+                if (selection.Settings.UseDataAnnotations)
                 {
                     classDefinition.AddDataAnnotations(view, project);
                 }
 
-                CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), project.Settings.ForceOverwrite, classDefinition);
+                CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, classDefinition);
             }
 
             return project;

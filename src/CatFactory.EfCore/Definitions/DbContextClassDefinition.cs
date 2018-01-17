@@ -10,20 +10,20 @@ namespace CatFactory.EfCore.Definitions
 {
     public static class DbContextClassDefinition
     {
-        public static CSharpClassDefinition GetDbContextClassDefinition(this ProjectFeature projectFeature)
+        public static CSharpClassDefinition GetDbContextClassDefinition(this ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection)
         {
             var classDefinition = new CSharpClassDefinition();
 
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
 
-            classDefinition.Namespaces.Add(projectFeature.GetEntityFrameworkCoreProject().Settings.UseDataAnnotations ? projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace() : projectFeature.GetEntityFrameworkCoreProject().GetDataLayerConfigurationsNamespace());
+            classDefinition.Namespaces.Add(projectSelection.Settings.UseDataAnnotations ? projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace() : projectFeature.GetEntityFrameworkCoreProject().GetDataLayerConfigurationsNamespace());
 
             classDefinition.Namespace = projectFeature.GetEntityFrameworkCoreProject().GetDataLayerNamespace();
             classDefinition.Name = projectFeature.Project.Database.GetDbContextName();
 
             classDefinition.BaseClass = "DbContext";
 
-            if (projectFeature.GetEntityFrameworkCoreProject().Settings.UseDataAnnotations)
+            if (projectSelection.Settings.UseDataAnnotations)
             {
                 classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(string.Format("DbContextOptions<{0}>", classDefinition.Name), "options"))
                 {
@@ -42,14 +42,14 @@ namespace CatFactory.EfCore.Definitions
                 });
             }
 
-            if (!projectFeature.GetEntityFrameworkCoreProject().Settings.UseDataAnnotations)
+            if (!projectSelection.Settings.UseDataAnnotations)
             {
                 classDefinition.Properties.Add(new PropertyDefinition("IEntityMapper", "EntityMapper") { IsReadOnly = true });
             }
 
             classDefinition.Methods.Add(GetOnModelCreatingMethod(projectFeature.GetEntityFrameworkCoreProject()));
 
-            if (projectFeature.GetEntityFrameworkCoreProject().Settings.UseDataAnnotations)
+            if (projectSelection.Settings.UseDataAnnotations)
             {
                 foreach (var table in projectFeature.Project.Database.Tables)
                 {
@@ -79,9 +79,11 @@ namespace CatFactory.EfCore.Definitions
         {
             var lines = new List<ILine>();
 
-            if (project.Settings.UseDataAnnotations)
+            var selection = project.GlobalSelection();
+
+            if (selection.Settings.UseDataAnnotations)
             {
-                var primaryKeys = project.Database.Tables.Where(item => item.PrimaryKey != null).Select(item => item.PrimaryKey?.GetColumns(item).Select(c => c.Name).First()).ToList();
+                var primaryKeys = project.Database.Tables.Where(item => item.PrimaryKey != null).Select(item => item.GetColumnsFromConstraint(item.PrimaryKey).Select(c => c.Name).First()).ToList();
 
                 foreach (var view in project.Database.Views)
                 {

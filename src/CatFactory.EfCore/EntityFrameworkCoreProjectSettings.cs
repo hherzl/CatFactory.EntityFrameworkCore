@@ -31,23 +31,10 @@ namespace CatFactory.EfCore
 
         public AuditEntity AuditEntity { get; set; }
 
+        public bool EntitiesWithDataContracts { get; set; }
+
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private List<string> m_backingFields;
-
-        public List<string> EntitiesWithDataContracts
-        {
-            get
-            {
-                return m_entitiesWithDataContracts ?? (m_entitiesWithDataContracts = new List<string>());
-            }
-            set
-            {
-                m_entitiesWithDataContracts = value;
-            }
-        }
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private List<string> m_entitiesWithDataContracts;
 
         public List<string> BackingFields
         {

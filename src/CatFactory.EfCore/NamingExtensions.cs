@@ -55,10 +55,10 @@ namespace CatFactory.EfCore
         public static string GetRemoveRepositoryMethodName(this ITable table)
             => string.Format("Remove{0}Async", table.GetSingularName());
 
-        public static string GetInterfaceRepositoryName(this ProjectFeature projectFeature)
+        public static string GetInterfaceRepositoryName(this ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature)
             => namingConvention.GetInterfaceName(string.Format("{0}Repository", projectFeature.Name));
 
-        public static string GetClassRepositoryName(this ProjectFeature projectFeature)
+        public static string GetClassRepositoryName(this ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature)
             => namingConvention.GetClassName(string.Format("{0}Repository", projectFeature.Name));
     }
 }

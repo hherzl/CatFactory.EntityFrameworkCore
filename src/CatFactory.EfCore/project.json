@@ -1,11 +1,11 @@
 {
-  "version": "3.0.0-alpha-build16",
+  "version": "3.0.0-alpha-build17",
   "title": "CatFactory.EfCore",
   "description": "CatFactory package for Entity Framework Core scaffolding with enterprise patterns",
   "packOptions": {
     "summary": "CatFactory package for Entity Framework Core scaffolding with enterprise patterns",
     "tags": [ "Entity Framework Core" ],
-    "releaseNotes": "3.0.0-alpha-build15 version: Core package update.\r\n\r\nQuick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory",
+    "releaseNotes": "3.0.0-alpha-build17 version: Core package update. Addition of extension methods to retrieve global and custom selections for entities (tables and views).\r\n\r\nQuick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory",
     "requireLicenseAcceptance": false,
     "repository": {
       "type": "git",
@@ -18,8 +18,8 @@
 
   "dependencies": {
     "NETStandard.Library": "1.6.1",
-    "CatFactory.DotNetCore": "3.0.0-alpha-build11",
-    "System.Runtime": "4.3.0"
+    "System.Runtime": "4.3.0",
+    "CatFactory.DotNetCore": "3.0.0-alpha-build12"
   },
 
   "frameworks": {

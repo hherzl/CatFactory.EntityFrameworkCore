@@ -14,7 +14,9 @@ namespace CatFactory.EfCore.Definitions
         {
             var classDefinition = new CSharpClassDefinition();
 
-            if (project.Settings.UseMefForEntitiesMapping)
+            var projectSelection = project.GetSelection(table);
+
+            if (projectSelection.Settings.UseMefForEntitiesMapping)
             {
                 classDefinition.Namespaces.Add("System.Composition");
 
@@ -128,7 +130,7 @@ namespace CatFactory.EfCore.Definitions
             {
                 var column = columns[i];
 
-                if (!string.IsNullOrEmpty(project.Settings.ConcurrencyToken) && string.Compare(column.Name, project.Settings.ConcurrencyToken) == 0)
+                if (!string.IsNullOrEmpty(projectSelection.Settings.ConcurrencyToken) && string.Compare(column.Name, projectSelection.Settings.ConcurrencyToken) == 0)
                 {
                     mapLines.Add(new CommentLine(1, " Set concurrency token for entity"));
                     mapLines.Add(new CodeLine(1, "builder"));
@@ -169,7 +171,7 @@ namespace CatFactory.EfCore.Definitions
 
                 foreach (var foreignKey in table.ForeignKeys)
                 {
-                    var foreignTable = project.Database.FindTableByFullName(foreignKey.References);
+                    var foreignTable = project.Database.FindTable(foreignKey.References);
 
                     if (foreignTable == null)
                     {
@@ -182,7 +184,7 @@ namespace CatFactory.EfCore.Definitions
                     }
                     else if (foreignKey.Key.Count == 1)
                     {
-                        var foreignProperty = foreignKey.GetParentNavigationProperty(project, foreignTable);
+                        var foreignProperty = foreignKey.GetParentNavigationProperty(foreignTable, project);
 
                         mapLines.Add(new CodeLine(1, "builder"));
                         mapLines.Add(new CodeLine(2, ".HasOne(p => p.{0})", foreignProperty.Name));
@@ -214,7 +216,9 @@ namespace CatFactory.EfCore.Definitions
         {
             var classDefinition = new CSharpClassDefinition();
 
-            if (project.Settings.UseMefForEntitiesMapping)
+            var projectSelection = project.GetSelection(view);
+
+            if (projectSelection.Settings.UseMefForEntitiesMapping)
             {
                 classDefinition.Namespaces.Add("System.Composition");
 
@@ -249,7 +253,7 @@ namespace CatFactory.EfCore.Definitions
 
             mapLines.Add(new CodeLine());
 
-            var primaryKeys = project.Database.Tables.Where(item => item.PrimaryKey != null).Select(item => item.PrimaryKey?.GetColumns(item).Select(c => c.Name).First()).ToList();
+            var primaryKeys = project.Database.Tables.Where(item => item.PrimaryKey != null).Select(item => item.GetColumnsFromConstraint(item.PrimaryKey).Select(c => c.Name).First()).ToList();
 
             var result = view.Columns.Where(item => !item.Nullable && primaryKeys.Contains(item.Name)).ToList();
 

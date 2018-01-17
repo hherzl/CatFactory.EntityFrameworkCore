@@ -19,7 +19,9 @@ namespace CatFactory.EfCore.Definitions
 
             var lines = new List<ILine>();
 
-            if (project.Settings.UseMefForEntitiesMapping)
+            var selection = project.GlobalSelection();
+
+            if (selection.Settings.UseMefForEntitiesMapping)
             {
                 classDefinition.Namespaces.Add("System.Composition.Hosting");
                 classDefinition.Namespaces.Add("System.Reflection");
