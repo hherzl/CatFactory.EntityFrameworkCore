@@ -104,7 +104,7 @@ namespace CatFactory.EfCore
                 selection = new ProjectSelection<EntityFrameworkCoreProjectSettings>
                 {
                     Pattern = pattern,
-                    Settings = new EntityFrameworkCoreProjectSettings()
+                    Settings = project.GlobalSelection().Settings
                 };
 
                 project.Selections.Add(selection);

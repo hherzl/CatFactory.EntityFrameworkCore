@@ -99,15 +99,15 @@ namespace CatFactory.EfCore.Definitions
                     lines.Add(string.Format("HasColumnName(\"{0}\")", column.Name));
                 }
 
-                if (column.IsString())
+                if (project.Database.ColumnIsString(column))
                 {
                     lines.Add(column.Length == 0 ? string.Format("HasColumnType(\"{0}(max)\")", column.Type) : string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
                 }
-                else if (column.IsDecimal())
+                else if (project.Database.ColumnIsDecimal(column))
                 {
                     lines.Add(string.Format("HasColumnType(\"{0}({1}, {2})\")", column.Type, column.Prec, column.Scale));
                 }
-                else if (column.IsDouble() || column.IsSingle())
+                else if (project.Database.ColumnIsDouble(column) || project.Database.ColumnIsSingle(column))
                 {
                     lines.Add(string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Prec));
                 }
@@ -282,15 +282,15 @@ namespace CatFactory.EfCore.Definitions
                     lines.Add(string.Format("HasColumnName(\"{0}\")", column.Name));
                 }
 
-                if (column.IsString())
+                if (project.Database.ColumnIsString(column))
                 {
                     lines.Add(column.Length == 0 ? string.Format("HasColumnType(\"{0}(max)\")", column.Type) : string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
                 }
-                else if (column.IsDecimal())
+                else if (project.Database.ColumnIsDecimal(column))
                 {
                     lines.Add(string.Format("HasColumnType(\"{0}({1}, {2})\")", column.Type, column.Prec, column.Scale));
                 }
-                else if (column.IsDouble() || column.IsSingle())
+                else if (project.Database.ColumnIsDouble(column) || project.Database.ColumnIsSingle(column))
                 {
                     lines.Add(string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Prec));
                 }

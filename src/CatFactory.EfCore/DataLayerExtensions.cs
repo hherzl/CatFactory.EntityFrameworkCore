@@ -16,9 +16,9 @@ namespace CatFactory.EfCore
             ScaffoldMappingDependencies(project);
             ScaffoldMappings(project);
             ScaffoldDbContext(project);
-            //ScaffoldDataContracts(project);
-            //ScaffoldDataRepositories(project);
-            //ScaffoldReadMe(project);
+            ScaffoldDataContracts(project);
+            ScaffoldDataRepositories(project);
+            ScaffoldReadMe(project);
 
             return project;
         }
@@ -103,7 +103,7 @@ namespace CatFactory.EfCore
 
                 foreach (var column in table.Columns)
                 {
-                    classDefinition.Properties.Add(new PropertyDefinition(column.GetClrType(), column.GetPropertyName()));
+                    classDefinition.Properties.Add(new PropertyDefinition(project.Database.ResolveType(column), column.GetPropertyName()));
                 }
 
                 foreach (var foreignKey in table.ForeignKeys)
@@ -123,7 +123,7 @@ namespace CatFactory.EfCore
 
                         if (classDefinition.Properties.Where(item => item.Name == column.GetPropertyName()).Count() == 0)
                         {
-                            classDefinition.Properties.Add(new PropertyDefinition(column.GetClrType(), target));
+                            classDefinition.Properties.Add(new PropertyDefinition(project.Database.ResolveType(column), target));
                         }
                     }
                 }
@@ -189,12 +189,12 @@ namespace CatFactory.EfCore
                 "Also you can check source code on GitHub:",
                 "https://github.com/hherzl/CatFactory.EntityFrameworkCore",
                 string.Empty,
-                "*** Soon CatFactory will scaffold code for Entity Framework Core 2.0 (December - 2017) ***",
+                "*** Soon CatFactory will scaffold code for Entity Framework Core 2.0 (February - 2018) ***",
                 string.Empty,
                 "CatFactory Development Team ==^^=="
             };
 
-            TextFileHelper.CreateFile(Path.Combine(project.OutputDirectory, "ReadMe.txt"), lines.ToStringBuilder().ToString());
+            TextFileHelper.CreateFile(Path.Combine(project.OutputDirectory, "CatFactory.EfCore.ReadMe.txt"), lines.ToStringBuilder().ToString());
         }
     }
 }

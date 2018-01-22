@@ -43,7 +43,7 @@ namespace CatFactory.EfCore.Definitions
             {
                 var column = table.GetColumnsFromConstraint(table.PrimaryKey).First();
 
-                classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(column.GetClrType(), column.GetParameterName()))
+                classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(project.Database.ResolveType(column), column.GetParameterName()))
                 {
                     Lines = new List<ILine>
                     {
@@ -61,21 +61,21 @@ namespace CatFactory.EfCore.Definitions
             {
                 if (projectSelection.Settings.EnableDataBindings)
                 {
-                    classDefinition.AddViewModelProperty(column.GetClrType(), column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : column.GetPropertyName());
+                    classDefinition.AddViewModelProperty(project.Database.ResolveType(column), column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : column.GetPropertyName());
                 }
                 else
                 {
                     if (projectSelection.Settings.BackingFields.Contains(table.GetFullColumnName(column)))
                     {
-                        classDefinition.AddPropertyWithField(column.GetClrType(), column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : column.GetPropertyName());
+                        classDefinition.AddPropertyWithField(project.Database.ResolveType(column), column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : column.GetPropertyName());
                     }
                     else if (projectSelection.Settings.UseAutomaticPropertiesForEntities)
                     {
-                        classDefinition.Properties.Add(new PropertyDefinition(column.GetClrType(), column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : column.GetPropertyName()));
+                        classDefinition.Properties.Add(new PropertyDefinition(project.Database.ResolveType(column), column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : column.GetPropertyName()));
                     }
                     else
                     {
-                        classDefinition.AddPropertyWithField(column.GetClrType(), column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : column.GetPropertyName());
+                        classDefinition.AddPropertyWithField(project.Database.ResolveType(column), column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : column.GetPropertyName());
                     }
                 }
             }
@@ -179,7 +179,7 @@ namespace CatFactory.EfCore.Definitions
 
             foreach (var column in view.Columns)
             {
-                classDefinition.Properties.Add(new PropertyDefinition(column.GetClrType(), column.HasSameNameEnclosingType(view) ? column.GetNameForEnclosing() : column.GetPropertyName()));
+                classDefinition.Properties.Add(new PropertyDefinition(project.Database.ResolveType(column), column.HasSameNameEnclosingType(view) ? column.GetNameForEnclosing() : column.GetPropertyName()));
             }
 
             if (projectSelection.Settings.SimplifyDataTypes)

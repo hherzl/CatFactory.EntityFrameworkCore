@@ -10,7 +10,7 @@ namespace CatFactory.EfCore.Definitions
 {
     public static class RepositoryClassDefinition
     {
-        public static CSharpClassDefinition GetRepositoryClassDefinition(this ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature) //, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection)
+        public static CSharpClassDefinition GetRepositoryClassDefinition(this ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature)
         {
             var entityFrameworkCoreProject = projectFeature.GetEntityFrameworkCoreProject();
 
@@ -438,9 +438,9 @@ namespace CatFactory.EfCore.Definitions
 
                         var parameterName = NamingExtensions.namingConvention.GetParameterName(column.Name);
 
-                        parameters.Add(new ParameterDefinition(column.GetClrType(), parameterName, "null"));
+                        parameters.Add(new ParameterDefinition(projectFeature.Project.Database.ResolveType(column), parameterName, "null"));
 
-                        if (column.IsString())
+                        if (projectFeature.Project.Database.ColumnIsString(column))
                         {
                             lines.Add(new CodeLine("if (!string.IsNullOrEmpty({0}))", NamingExtensions.namingConvention.GetParameterName(column.Name)));
                             lines.Add(new CodeLine("{"));
