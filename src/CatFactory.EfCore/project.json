@@ -1,11 +1,11 @@
 {
-  "version": "3.0.0-alpha-build19",
+  "version": "3.0.0-alpha-build20",
   "title": "CatFactory.EfCore",
   "description": "CatFactory package for Entity Framework Core scaffolding with enterprise patterns",
   "packOptions": {
     "summary": "CatFactory package for Entity Framework Core scaffolding with enterprise patterns",
     "tags": [ "Entity Framework Core" ],
-    "releaseNotes": "3.0.0-alpha-build19 version: Add concurrency token data annotation for entities.\r\n\r\nQuick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory",
+    "releaseNotes": "3.0.0-alpha-build20 version: Code fix for project selections: clone settings for specific selections from global settings.\r\n\r\nQuick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory",
     "requireLicenseAcceptance": false,
     "repository": {
       "type": "git",

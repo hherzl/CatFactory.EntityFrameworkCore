@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using CatFactory.Mapping;
 
 namespace CatFactory.EfCore
@@ -11,12 +12,6 @@ namespace CatFactory.EfCore
 
             if (map == null || map.ClrType == null)
                 return "object";
-
-            //// hack: Make Guid nullable
-            //if (map.ClrType.Name == "Guid")
-            //{
-            //    return "Guid?";
-            //}
 
             return map.AllowClrNullable ? string.Format("{0}?", map.ClrType.Name) : map.ClrType.Name;
         }
@@ -32,5 +27,23 @@ namespace CatFactory.EfCore
 
         public static bool ColumnIsString(this Database database, Column column)
             => database.Mappings.Where(item => item.DatabaseType == column.Type && item.ClrFullNameType == typeof(string).FullName).Count() == 0 ? false : true;
+
+        public static bool ColumnIsGuid(this Database database, Column column)
+            => database.Mappings.Where(item => item.DatabaseType == column.Type && item.ClrFullNameType == typeof(Guid).FullName).Count() == 0 ? false : true;
+
+        public static bool PrimaryKeyIsGuid(this Database database, ITable table)
+        {
+            if (table.PrimaryKey == null)
+                return false;
+
+            var columns = table.GetColumnsFromConstraint(table.PrimaryKey);
+
+            if (columns.Count() == 0)
+                return false;
+
+            var column = columns.First();
+
+            return database.Mappings.Where(item => item.DatabaseType == column.Type && item.ClrFullNameType == typeof(Guid).FullName).Count() == 0 ? false : true;
+        }
     }
 }

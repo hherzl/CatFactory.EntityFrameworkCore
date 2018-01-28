@@ -101,10 +101,30 @@ namespace CatFactory.EfCore
 
             if (selection == null)
             {
+                var globalSettings = project.GlobalSelection().Settings;
+
                 selection = new ProjectSelection<EntityFrameworkCoreProjectSettings>
                 {
                     Pattern = pattern,
-                    Settings = project.GlobalSelection().Settings
+                    Settings = new EntityFrameworkCoreProjectSettings
+                    {
+                        ForceOverwrite = globalSettings.ForceOverwrite,
+                        SimplifyDataTypes = globalSettings.SimplifyDataTypes,
+                        UseAutomaticPropertiesForEntities = globalSettings.UseAutomaticPropertiesForEntities,
+                        EnableDataBindings = globalSettings.EnableDataBindings,
+                        UseDataAnnotations = globalSettings.UseDataAnnotations,
+                        UseMefForEntitiesMapping = globalSettings.UseMefForEntitiesMapping,
+                        DeclareDbSetPropertiesInDbContext = globalSettings.DeclareDbSetPropertiesInDbContext,
+                        DeclareNavigationPropertiesAsVirtual = globalSettings.DeclareNavigationPropertiesAsVirtual,
+                        NavigationPropertyEnumerableNamespace = globalSettings.NavigationPropertyEnumerableNamespace,
+                        NavigationPropertyEnumerableType = globalSettings.NavigationPropertyEnumerableType,
+                        ConcurrencyToken = globalSettings.ConcurrencyToken,
+                        EntityInterfaceName = globalSettings.EntityInterfaceName,
+                        AuditEntity = globalSettings.AuditEntity,
+                        EntitiesWithDataContracts = globalSettings.EntitiesWithDataContracts,
+                        BackingFields = globalSettings.BackingFields,
+                        AuthorInfo = globalSettings.AuthorInfo
+                    }
                 };
 
                 project.Selections.Add(selection);

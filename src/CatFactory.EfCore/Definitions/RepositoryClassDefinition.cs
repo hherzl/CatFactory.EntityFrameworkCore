@@ -123,8 +123,6 @@ namespace CatFactory.EfCore.Definitions
 
             if (projectSelection.Settings.EntitiesWithDataContracts)
             {
-                var entityAlias = NamingConvention.GetCamelCase(table.GetEntityName());
-
                 returnType = table.GetDataContractName();
 
                 var dataContractPropertiesSets = new[]
@@ -139,6 +137,8 @@ namespace CatFactory.EfCore.Definitions
                         Target = string.Empty
                     }
                 }.ToList();
+
+                var entityAlias = NamingConvention.GetCamelCase(table.GetEntityName());
 
                 foreach (var column in table.Columns)
                 {
@@ -568,7 +568,7 @@ namespace CatFactory.EfCore.Definitions
         {
             var lines = new List<ILine>();
 
-            if (table.IsPrimaryKeyGuid())
+            if (projectFeature.Project.Database.PrimaryKeyIsGuid(table))
             {
                 lines.Add(new CommentLine(" Set value for GUID"));
                 lines.Add(new CodeLine("entity.{0} = Guid.NewGuid();", NamingExtensions.namingConvention.GetPropertyName(table.PrimaryKey.Key[0])));
