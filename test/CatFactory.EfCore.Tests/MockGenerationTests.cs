@@ -23,11 +23,7 @@ namespace CatFactory.EfCore.Tests
                 settings.ConcurrencyToken = "Timestamp";
             });
 
-            project.Select("Sales.Order", settings =>
-            {
-                settings.ForceOverwrite = true;
-                settings.EntitiesWithDataContracts = true;
-            });
+            project.Select("Sales.Order", settings => settings.EntitiesWithDataContracts = true);
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
@@ -58,11 +54,7 @@ namespace CatFactory.EfCore.Tests
                 settings.ConcurrencyToken = "Timestamp";
             });
 
-            project.Select("Sales.Order", settings =>
-            {
-                settings.ForceOverwrite = true;
-                settings.EntitiesWithDataContracts = true;
-            });
+            project.Select("Sales.Order", settings => settings.EntitiesWithDataContracts = true);
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
@@ -85,10 +77,7 @@ namespace CatFactory.EfCore.Tests
             };
 
             // Apply settings for EF Core project
-            project.GlobalSelection(settings =>
-            {
-                settings.ForceOverwrite = true;
-            });
+            project.GlobalSelection(settings => settings.ForceOverwrite = true);
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();

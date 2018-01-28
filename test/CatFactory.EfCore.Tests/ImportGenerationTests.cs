@@ -29,18 +29,13 @@ namespace CatFactory.EfCore.Tests
                 settings.ConcurrencyToken = "Timestamp";
             });
 
-            project.Select("Sales.Order", settings =>
-            {
-                settings.ForceOverwrite = true;
-                settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
-                settings.ConcurrencyToken = "Timestamp";
-                settings.EntitiesWithDataContracts = true;
-            });
+            project.Select("Sales.Order", settings => settings.EntitiesWithDataContracts = true);
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
 
             // Add event handlers to before and after of scaffold
+
             project.ScaffoldingDefinition += (source, args) =>
             {
                 // Add code to perform operations with code builder instance before to create code file
@@ -81,17 +76,22 @@ namespace CatFactory.EfCore.Tests
                 settings.UseDataAnnotations = true;
             });
 
-            project.Select("Sales.Order", settings =>
-            {
-                settings.ForceOverwrite = true;
-                settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
-                settings.ConcurrencyToken = "Timestamp";
-                settings.UseDataAnnotations = true;
-                settings.EntitiesWithDataContracts = true;
-            });
+            project.Select("Sales.Order", settings => settings.EntitiesWithDataContracts = true);
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
+
+            // Add event handlers to before and after of scaffold
+
+            project.ScaffoldingDefinition += (source, args) =>
+            {
+                // Add code to perform operations with code builder instance before to create code file
+            };
+
+            project.ScaffoldedDefinition += (source, args) =>
+            {
+                // Add code to perform operations after of create code file
+            };
 
             // Scaffolding =^^=
             project
@@ -130,6 +130,18 @@ namespace CatFactory.EfCore.Tests
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
 
+            // Add event handlers to before and after of scaffold
+
+            project.ScaffoldingDefinition += (source, args) =>
+            {
+                // Add code to perform operations with code builder instance before to create code file
+            };
+
+            project.ScaffoldedDefinition += (source, args) =>
+            {
+                // Add code to perform operations after of create code file
+            };
+
             // Scaffolding =^^=
             project
                 .ScaffoldEntityLayer()
@@ -159,6 +171,18 @@ namespace CatFactory.EfCore.Tests
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
+
+            // Add event handlers to before and after of scaffold
+
+            project.ScaffoldingDefinition += (source, args) =>
+            {
+                // Add code to perform operations with code builder instance before to create code file
+            };
+
+            project.ScaffoldedDefinition += (source, args) =>
+            {
+                // Add code to perform operations after of create code file
+            };
 
             // Scaffolding =^^=
             project
@@ -201,6 +225,18 @@ namespace CatFactory.EfCore.Tests
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
+
+            // Add event handlers to before and after of scaffold
+
+            project.ScaffoldingDefinition += (source, args) =>
+            {
+                // Add code to perform operations with code builder instance before to create code file
+            };
+
+            project.ScaffoldedDefinition += (source, args) =>
+            {
+                // Add code to perform operations after of create code file
+            };
 
             // Scaffolding =^^=
             project

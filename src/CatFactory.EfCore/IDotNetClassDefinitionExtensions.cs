@@ -8,7 +8,7 @@ namespace CatFactory.EfCore
 {
     public static class IDotNetClassDefinitionExtensions
     {
-        public static void AddDataAnnotations(this IDotNetClassDefinition classDefinition, ITable table)
+        public static void AddDataAnnotations(this IDotNetClassDefinition classDefinition, ITable table, EntityFrameworkCoreProject project, ProjectSelection<EntityFrameworkCoreProjectSettings> selection)
         {
             classDefinition.Attributes.Add(new MetadataAttribute("Table", string.Format("\"{0}\"", table.Name))
             {
@@ -43,10 +43,16 @@ namespace CatFactory.EfCore
                             property.Attributes.Add(new MetadataAttribute("Required"));
                         }
 
-                        if (column.Type.Contains("char") && column.Length > 0)
+                        if (project.Database.ColumnIsString(column) && column.Length > 0)
                         {
                             property.Attributes.Add(new MetadataAttribute("StringLength", column.Length.ToString()));
                         }
+
+                        if (!string.IsNullOrEmpty(selection.Settings.ConcurrencyToken) && selection.Settings.ConcurrencyToken == column.Name)
+                        {
+                            property.Attributes.Add(new MetadataAttribute("Timestamp"));
+                        }
+
                     }
                 }
             }
@@ -62,7 +68,12 @@ namespace CatFactory.EfCore
                 }
             });
 
-            var primaryKeys = project.Database.Tables.Where(item => item.PrimaryKey != null).Select(item => item.GetColumnsFromConstraint(item.PrimaryKey).Select(c => c.Name).First()).ToList();
+            var primaryKeys = project
+                .Database
+                .Tables
+                .Where(item => item.PrimaryKey != null)
+                .Select(item => item.GetColumnsFromConstraint(item.PrimaryKey).Select(c => c.Name).First())
+                .ToList();
 
             var result = view.Columns.Where(item => primaryKeys.Contains(item.Name)).ToList();
 
@@ -94,6 +105,7 @@ namespace CatFactory.EfCore
                     }
                 }
             }
+
         }
     }
 }

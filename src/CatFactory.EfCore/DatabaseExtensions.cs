@@ -12,11 +12,11 @@ namespace CatFactory.EfCore
             if (map == null || map.ClrType == null)
                 return "object";
 
-            // hack: Make Guid nullable
-            if (map.ClrType.Name == "Guid")
-            {
-                return "Guid?";
-            }
+            //// hack: Make Guid nullable
+            //if (map.ClrType.Name == "Guid")
+            //{
+            //    return "Guid?";
+            //}
 
             return map.AllowClrNullable ? string.Format("{0}?", map.ClrType.Name) : map.ClrType.Name;
         }

@@ -29,7 +29,7 @@ namespace CatFactory.EfCore
 
                 if (selection.Settings.UseDataAnnotations)
                 {
-                    classDefinition.AddDataAnnotations(table);
+                    classDefinition.AddDataAnnotations(table, project, selection);
                 }
 
                 CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, classDefinition);
