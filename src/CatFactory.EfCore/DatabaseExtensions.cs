@@ -10,27 +10,12 @@ namespace CatFactory.EfCore
         {
             var map = database.Mappings.FirstOrDefault(item => item.DatabaseType == column.Type);
 
-            if (map == null || map.ClrType == null)
+            if (map == null || map.GetClrType() == null)
                 return "object";
 
-            return map.AllowClrNullable ? string.Format("{0}?", map.ClrType.Name) : map.ClrType.Name;
+            return map.AllowClrNullable ? string.Format("{0}?", map.GetClrType().Name) : map.GetClrType().Name;
         }
-
-        public static bool ColumnIsDecimal(this Database database, Column column)
-            => database.Mappings.Where(item => item.DatabaseType == column.Type && item.ClrFullNameType == typeof(decimal).FullName).Count() == 0 ? false : true;
-
-        public static bool ColumnIsDouble(this Database database, Column column)
-            => database.Mappings.Where(item => item.DatabaseType == column.Type && item.ClrFullNameType == typeof(double).FullName).Count() == 0 ? false : true;
-
-        public static bool ColumnIsSingle(this Database database, Column column)
-            => database.Mappings.Where(item => item.DatabaseType == column.Type && item.ClrFullNameType == typeof(float).FullName).Count() == 0 ? false : true;
-
-        public static bool ColumnIsString(this Database database, Column column)
-            => database.Mappings.Where(item => item.DatabaseType == column.Type && item.ClrFullNameType == typeof(string).FullName).Count() == 0 ? false : true;
-
-        public static bool ColumnIsGuid(this Database database, Column column)
-            => database.Mappings.Where(item => item.DatabaseType == column.Type && item.ClrFullNameType == typeof(Guid).FullName).Count() == 0 ? false : true;
-
+        
         public static bool PrimaryKeyIsGuid(this Database database, ITable table)
         {
             if (table.PrimaryKey == null)

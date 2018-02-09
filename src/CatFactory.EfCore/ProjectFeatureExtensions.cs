@@ -1,4 +1,6 @@
-﻿namespace CatFactory.EfCore
+﻿using CatFactory.CodeFactory;
+
+namespace CatFactory.EfCore
 {
     public static class ProjectFeatureExtensions
     {

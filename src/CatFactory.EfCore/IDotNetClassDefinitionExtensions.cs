@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using CatFactory.CodeFactory;
 using CatFactory.DotNetCore;
 using CatFactory.Mapping;
 using CatFactory.OOP;

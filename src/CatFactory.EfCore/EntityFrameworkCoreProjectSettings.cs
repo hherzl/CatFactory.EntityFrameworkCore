@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using CatFactory.CodeFactory;
 
 namespace CatFactory.EfCore
 {

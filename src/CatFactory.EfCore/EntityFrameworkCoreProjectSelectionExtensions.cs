@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using CatFactory.CodeFactory;
 using CatFactory.Mapping;
 
 namespace CatFactory.EfCore
