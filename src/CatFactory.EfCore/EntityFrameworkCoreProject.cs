@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using CatFactory.CodeFactory;
 using CatFactory.Mapping;
@@ -31,28 +30,16 @@ namespace CatFactory.EfCore
         public override void BuildFeatures()
         {
             if (Database == null)
-            {
                 return;
-            }
 
             if (this.GlobalSelection().Settings.AuditEntity != null)
-            {
                 this.GlobalSelection().Settings.EntityInterfaceName = "IAuditEntity";
-            }
 
             Features = Database
                 .DbObjects
                 .Select(item => item.Schema)
                 .Distinct()
-                .Select(item =>
-                {
-                    var dbObjects = GetDbObjects(Database, item);
-
-                    return new ProjectFeature<EntityFrameworkCoreProjectSettings>(item, dbObjects)
-                    {
-                        Project = this
-                    };
-                })
+                .Select(item => new ProjectFeature<EntityFrameworkCoreProjectSettings>(item, GetDbObjects(Database, item)) { Project = this })
                 .ToList();
         }
 
@@ -73,31 +60,9 @@ namespace CatFactory.EfCore
             return result;
         }
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private List<string> m_updateExclusions;
+        public ProjectNamespaces Namespaces { get; set; } = new ProjectNamespaces();
 
-        public List<string> UpdateExclusions
-        {
-            get
-            {
-                return m_updateExclusions ?? (m_updateExclusions = new List<string>());
-            }
-            set
-            {
-                m_updateExclusions = value;
-            }
-        }
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private ProjectNamespaces m_namespaces;
-
-        public ProjectNamespaces Namespaces
-            => m_namespaces ?? (m_namespaces = new ProjectNamespaces());
-
-        //[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        //private EntityFrameworkCoreProjectSettings m_settings;
-
-        //public EntityFrameworkCoreProjectSettings Settings
-        //    => m_settings ?? (m_settings = new EntityFrameworkCoreProjectSettings());
+        // todo: add logic to show author's info
+        public AuthorInfo AuthorInfo { get; set; }
     }
 }

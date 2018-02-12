@@ -58,7 +58,7 @@ namespace CatFactory.EfCore
 
         public static PropertyDefinition GetChildNavigationProperty(this EntityFrameworkCoreProject project, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection, ITable table, ForeignKey foreignKey)
         {
-            var propertyType = string.Format("{0}<{1}>", projectSelection.Settings.NavigationPropertyEnumerableType, table.GetSingularName());
+            var propertyType = string.Format("{0}<{1}>", projectSelection.Settings.NavigationPropertyEnumerableType, table.GetEntityName());
 
             return new PropertyDefinition(propertyType, table.GetPluralName())
             {
@@ -123,7 +123,8 @@ namespace CatFactory.EfCore
                         AuditEntity = globalSettings.AuditEntity,
                         EntitiesWithDataContracts = globalSettings.EntitiesWithDataContracts,
                         BackingFields = globalSettings.BackingFields,
-                        AuthorInfo = globalSettings.AuthorInfo
+                        InsertExclusions = globalSettings.InsertExclusions,
+                        UpdateExclusions = globalSettings.UpdateExclusions
                     }
                 };
 

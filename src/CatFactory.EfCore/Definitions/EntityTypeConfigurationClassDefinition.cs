@@ -35,19 +35,15 @@ namespace CatFactory.EfCore.Definitions
 
             var mapLines = new List<ILine>();
 
-            mapLines.Add(new CodeLine("modelBuilder.Entity<{0}>(builder =>", table.GetSingularName()));
+            mapLines.Add(new CodeLine("modelBuilder.Entity<{0}>(builder =>", table.GetEntityName()));
             mapLines.Add(new CodeLine("{"));
 
             mapLines.Add(new CommentLine(1, " Set configuration for entity"));
 
             if (string.IsNullOrEmpty(table.Schema))
-            {
                 mapLines.Add(new CodeLine(1, "builder.ToTable(\"{0}\");", table.Name));
-            }
             else
-            {
                 mapLines.Add(new CodeLine(1, "builder.ToTable(\"{0}\", \"{1}\");", table.Name, table.Schema));
-            }
 
             mapLines.Add(new CodeLine());
 
@@ -89,37 +85,25 @@ namespace CatFactory.EfCore.Definitions
             {
                 var column = columns[i];
 
-                var lines = new List<string>()
+                var lines = new List<string>
                 {
                     string.Format("builder.Property(p => p.{0})" , column.GetPropertyName())
                 };
 
                 if (string.Compare(column.Name, column.GetPropertyName()) != 0)
-                {
                     lines.Add(string.Format("HasColumnName(\"{0}\")", column.Name));
-                }
 
                 if (project.Database.ColumnIsString(column))
-                {
                     lines.Add(column.Length == 0 ? string.Format("HasColumnType(\"{0}(max)\")", column.Type) : string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
-                }
                 else if (project.Database.ColumnIsDecimal(column))
-                {
                     lines.Add(string.Format("HasColumnType(\"{0}({1}, {2})\")", column.Type, column.Prec, column.Scale));
-                }
                 else if (project.Database.ColumnIsDouble(column) || project.Database.ColumnIsSingle(column))
-                {
                     lines.Add(string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Prec));
-                }
                 else
-                {
                     lines.Add(string.Format("HasColumnType(\"{0}\")", column.Type));
-                }
 
                 if (!column.Nullable)
-                {
                     lines.Add("IsRequired()");
-                }
 
                 mapLines.Add(new CodeLine(1, "{0};", string.Join(".", lines)));
             }
@@ -174,9 +158,7 @@ namespace CatFactory.EfCore.Definitions
                     var foreignTable = project.Database.FindTable(foreignKey.References);
 
                     if (foreignTable == null)
-                    {
                         continue;
-                    }
 
                     if (foreignKey.Key.Count == 0)
                     {
@@ -189,7 +171,7 @@ namespace CatFactory.EfCore.Definitions
                         mapLines.Add(new CodeLine(1, "builder"));
                         mapLines.Add(new CodeLine(2, ".HasOne(p => p.{0})", foreignProperty.Name));
                         mapLines.Add(new CodeLine(2, ".WithMany(b => b.{0})", table.GetPluralName()));
-                        mapLines.Add(new CodeLine(2, ".HasForeignKey(p => {0})", string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(foreignKey.Key[0]))));
+                        mapLines.Add(new CodeLine(2, ".HasForeignKey(p => {0})", string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(foreignKey.Key.First()))));
                         mapLines.Add(new CodeLine(2, ".HasConstraintName(\"{0}\");", foreignKey.ConstraintName));
                         mapLines.Add(new CodeLine());
                     }
@@ -237,19 +219,15 @@ namespace CatFactory.EfCore.Definitions
 
             var mapLines = new List<ILine>();
 
-            mapLines.Add(new CodeLine("modelBuilder.Entity<{0}>(builder =>", view.GetSingularName()));
+            mapLines.Add(new CodeLine("modelBuilder.Entity<{0}>(builder =>", view.GetEntityName()));
             mapLines.Add(new CodeLine("{"));
 
             mapLines.Add(new CommentLine(1, " Set configuration for entity"));
 
             if (string.IsNullOrEmpty(view.Schema))
-            {
                 mapLines.Add(new CodeLine(1, "builder.ToTable(\"{0}\");", view.Name));
-            }
             else
-            {
                 mapLines.Add(new CodeLine(1, "builder.ToTable(\"{0}\", \"{1}\");", view.Name, view.Schema));
-            }
 
             mapLines.Add(new CodeLine());
 
@@ -258,9 +236,7 @@ namespace CatFactory.EfCore.Definitions
             var result = view.Columns.Where(item => !item.Nullable && primaryKeys.Contains(item.Name)).ToList();
 
             if (result.Count == 0)
-            {
                 result = view.Columns.Where(item => !item.Nullable).ToList();
-            }
 
             mapLines.Add(new CommentLine(1, " Add configuration for entity's key"));
             mapLines.Add(new CodeLine(1, "builder.HasKey(p => new {{ {0} }});", string.Join(", ", result.Select(item => string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item.Name))))));
@@ -272,32 +248,22 @@ namespace CatFactory.EfCore.Definitions
             {
                 var column = view.Columns[i];
 
-                var lines = new List<string>()
+                var lines = new List<string>
                 {
                     string.Format("builder.Property(p => p.{0})" , column.GetPropertyName())
                 };
 
                 if (string.Compare(column.Name, column.GetPropertyName()) != 0)
-                {
                     lines.Add(string.Format("HasColumnName(\"{0}\")", column.Name));
-                }
 
                 if (project.Database.ColumnIsString(column))
-                {
                     lines.Add(column.Length == 0 ? string.Format("HasColumnType(\"{0}(max)\")", column.Type) : string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
-                }
                 else if (project.Database.ColumnIsDecimal(column))
-                {
                     lines.Add(string.Format("HasColumnType(\"{0}({1}, {2})\")", column.Type, column.Prec, column.Scale));
-                }
                 else if (project.Database.ColumnIsDouble(column) || project.Database.ColumnIsSingle(column))
-                {
                     lines.Add(string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Prec));
-                }
                 else
-                {
                     lines.Add(string.Format("HasColumnType(\"{0}\")", column.Type));
-                }
 
                 mapLines.Add(new CodeLine(1, "{0};", string.Join(".", lines)));
             }

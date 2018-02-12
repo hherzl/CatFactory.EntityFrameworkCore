@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using CatFactory.CodeFactory;
 using CatFactory.DotNetCore;
 using CatFactory.Mapping;
 using CatFactory.OOP;
@@ -9,7 +8,7 @@ namespace CatFactory.EfCore
 {
     public static class IDotNetClassDefinitionExtensions
     {
-        public static void AddDataAnnotations(this IDotNetClassDefinition classDefinition, ITable table, EntityFrameworkCoreProject project, ProjectSelection<EntityFrameworkCoreProjectSettings> selection)
+        public static void AddDataAnnotations(this IDotNetClassDefinition classDefinition, ITable table, EntityFrameworkCoreProject project)
         {
             classDefinition.Attributes.Add(new MetadataAttribute("Table", string.Format("\"{0}\"", table.Name))
             {
@@ -19,42 +18,34 @@ namespace CatFactory.EfCore
                 }
             });
 
+            var selection = project.GetSelection(table);
+
             for (var i = 0; i < table.Columns.Count; i++)
             {
                 var column = table.Columns[i];
 
                 foreach (var property in classDefinition.Properties)
                 {
-                    if (column.GetPropertyName() == property.Name)
-                    {
-                        if (table.Identity?.Name == column.Name)
-                        {
-                            property.Attributes.Add(new MetadataAttribute("DatabaseGenerated", "DatabaseGeneratedOption.Identity"));
-                        }
+                    if (column.GetPropertyName() != property.Name)
+                        continue;
 
-                        if (table.PrimaryKey != null && table.PrimaryKey.Key.Contains(column.Name))
-                        {
-                            property.Attributes.Add(new MetadataAttribute("Key"));
-                        }
+                    if (table.Identity?.Name == column.Name)
+                        property.Attributes.Add(new MetadataAttribute("DatabaseGenerated", "DatabaseGeneratedOption.Identity"));
 
-                        property.Attributes.Add(new MetadataAttribute("Column", string.Format("\"{0}\"", column.Name)));
+                    if (table.PrimaryKey != null && table.PrimaryKey.Key.Contains(column.Name))
+                        property.Attributes.Add(new MetadataAttribute("Key"));
 
-                        if (!column.Nullable && table.Identity != null && table.Identity.Name != column.Name)
-                        {
-                            property.Attributes.Add(new MetadataAttribute("Required"));
-                        }
+                    property.Attributes.Add(new MetadataAttribute("Column", string.Format("\"{0}\"", column.Name)));
 
-                        if (project.Database.ColumnIsString(column) && column.Length > 0)
-                        {
-                            property.Attributes.Add(new MetadataAttribute("StringLength", column.Length.ToString()));
-                        }
+                    if (!column.Nullable && table.Identity != null && table.Identity.Name != column.Name)
+                        property.Attributes.Add(new MetadataAttribute("Required"));
 
-                        if (!string.IsNullOrEmpty(selection.Settings.ConcurrencyToken) && selection.Settings.ConcurrencyToken == column.Name)
-                        {
-                            property.Attributes.Add(new MetadataAttribute("Timestamp"));
-                        }
+                    if (project.Database.ColumnIsString(column) && column.Length > 0)
+                        property.Attributes.Add(new MetadataAttribute("StringLength", column.Length.ToString()));
 
-                    }
+                    if (!string.IsNullOrEmpty(selection.Settings.ConcurrencyToken) && selection.Settings.ConcurrencyToken == column.Name)
+                        property.Attributes.Add(new MetadataAttribute("Timestamp"));
+
                 }
             }
         }
@@ -84,26 +75,19 @@ namespace CatFactory.EfCore
 
                 foreach (var property in classDefinition.Properties)
                 {
-                    if (column.GetPropertyName() == property.Name)
+                    if (column.GetPropertyName() != property.Name)
+                        continue;
+
+                    property.Attributes.Add(new MetadataAttribute("Column", string.Format("\"{0}\"", column.Name))
                     {
-                        property.Attributes.Add(new MetadataAttribute("Column", string.Format("\"{0}\"", column.Name))
-                        {
-                            Sets = new List<MetadataAttributeSet>
-                            {
-                                new MetadataAttributeSet("Order", (i + 1).ToString())
-                            }
-                        });
+                        Sets = new List<MetadataAttributeSet> { new MetadataAttributeSet("Order", (i + 1).ToString()) }
+                    });
 
-                        if (!column.Nullable && primaryKeys.Contains(column.Name))
-                        {
-                            property.Attributes.Add(new MetadataAttribute("Key"));
-                        }
+                    if (!column.Nullable && primaryKeys.Contains(column.Name))
+                        property.Attributes.Add(new MetadataAttribute("Key"));
 
-                        if (!column.Nullable)
-                        {
-                            property.Attributes.Add(new MetadataAttribute("Required"));
-                        }
-                    }
+                    if (!column.Nullable)
+                        property.Attributes.Add(new MetadataAttribute("Required"));
                 }
             }
 

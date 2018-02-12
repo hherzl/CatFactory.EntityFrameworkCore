@@ -87,16 +87,11 @@ namespace CatFactory.EfCore
                 var selection = project.GetSelection(table);
 
                 if (!selection.Settings.EntitiesWithDataContracts)
-                {
                     continue;
-                }
 
                 var classDefinition = new CSharpClassDefinition
                 {
-                    Namespaces = new List<string>
-                    {
-                        "System"
-                    },
+                    Namespaces = new List<string> { "System" },
                     Namespace = project.GetDataLayerDataContractsNamespace(),
                     Name = table.GetDataContractName()
                 };
@@ -111,9 +106,7 @@ namespace CatFactory.EfCore
                     var foreignTable = project.Database.FindTable(foreignKey.References);
 
                     if (foreignTable == null)
-                    {
                         continue;
-                    }
 
                     var foreignKeyAlias = NamingConvention.GetCamelCase(foreignTable.GetEntityName());
 
@@ -138,7 +131,8 @@ namespace CatFactory.EfCore
 
             if (!string.IsNullOrEmpty(projectSelection.Settings.ConcurrencyToken))
             {
-                project.UpdateExclusions.Add(projectSelection.Settings.ConcurrencyToken);
+                projectSelection.Settings.InsertExclusions.Add(projectSelection.Settings.ConcurrencyToken);
+                projectSelection.Settings.UpdateExclusions.Add(projectSelection.Settings.ConcurrencyToken);
             }
 
             ScaffoldRepositoryInterface(project);

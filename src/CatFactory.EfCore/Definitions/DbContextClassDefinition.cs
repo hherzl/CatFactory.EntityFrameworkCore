@@ -43,9 +43,7 @@ namespace CatFactory.EfCore.Definitions
             }
 
             if (!projectSelection.Settings.UseDataAnnotations)
-            {
                 classDefinition.Properties.Add(new PropertyDefinition("IEntityMapper", "EntityMapper") { IsReadOnly = true });
-            }
 
             classDefinition.Methods.Add(GetOnModelCreatingMethod(projectFeature.GetEntityFrameworkCoreProject()));
 
@@ -54,9 +52,7 @@ namespace CatFactory.EfCore.Definitions
                 foreach (var table in projectFeature.Project.Database.Tables)
                 {
                     if (!table.HasDefaultSchema())
-                    {
                         classDefinition.Namespaces.AddUnique(projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace(table.Schema));
-                    }
 
                     classDefinition.Properties.Add(new PropertyDefinition(string.Format("DbSet<{0}>", table.GetEntityName()), table.GetPluralName()));
                 }
@@ -64,9 +60,7 @@ namespace CatFactory.EfCore.Definitions
                 foreach (var view in projectFeature.Project.Database.Views)
                 {
                     if (!view.HasDefaultSchema())
-                    {
                         classDefinition.Namespaces.AddUnique(projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace(view.Schema));
-                    }
 
                     classDefinition.Properties.Add(new PropertyDefinition(string.Format("DbSet<{0}>", view.GetEntityName()), view.GetPluralName()));
                 }
@@ -90,13 +84,9 @@ namespace CatFactory.EfCore.Definitions
                     var result = view.Columns.Where(item => primaryKeys.Contains(item.Name)).ToList();
 
                     if (result.Count == 0)
-                    {
-                        lines.Add(LineHelper.Warning(" Add configuration for {0} entity", view.GetSingularName()));
-                    }
+                        lines.Add(LineHelper.Warning(" Add configuration for {0} entity", view.GetEntityName()));
                     else
-                    {
-                        lines.Add(new CodeLine(1, "modelBuilder.Entity<{0}>().HasKey(p => new {{ {1} }});", view.GetSingularName(), string.Join(", ", result.Select(item => string.Format("p.{0}", NamingExtensions.namingConvention.GetPropertyName(item.Name))))));
-                    }
+                        lines.Add(new CodeLine(1, "modelBuilder.Entity<{0}>().HasKey(p => new {{ {1} }});", view.GetEntityName(), string.Join(", ", result.Select(item => string.Format("p.{0}", NamingExtensions.namingConvention.GetPropertyName(item.Name))))));
                 }
 
                 lines.Add(new CodeLine());

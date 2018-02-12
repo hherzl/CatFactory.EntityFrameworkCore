@@ -8,7 +8,7 @@ namespace CatFactory.EfCore
     {
         public static PropertyDefinition GetParentNavigationProperty(this ForeignKey foreignKey, ITable table, EntityFrameworkCoreProject project)
         {
-            var propertyType = table.GetSingularName();
+            var propertyType = table.GetEntityName();
 
             var selection = project.GetSelection(table);
 

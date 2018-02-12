@@ -10,11 +10,13 @@ namespace CatFactory.EfCore.Definitions
 {
     public static class EntityClassDefinition
     {
-        public static CSharpClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, ITable table, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection)
+        public static CSharpClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, ITable table)
         {
             var classDefinition = new CSharpClassDefinition();
 
             classDefinition.Namespaces.Add("System");
+
+            var projectSelection = project.GetSelection(table);
 
             if (projectSelection.Settings.UseDataAnnotations)
             {
@@ -32,7 +34,7 @@ namespace CatFactory.EfCore.Definitions
             }
 
             classDefinition.Namespace = table.HasDefaultSchema() ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(table.Schema);
-            classDefinition.Name = table.GetSingularName();
+            classDefinition.Name = table.GetEntityName();
             classDefinition.IsPartial = true;
 
             classDefinition.Constructors.Add(new ClassConstructorDefinition());
@@ -154,11 +156,13 @@ namespace CatFactory.EfCore.Definitions
             return classDefinition;
         }
 
-        public static CSharpClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, IView view, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection)
+        public static CSharpClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, IView view)
         {
             var classDefinition = new CSharpClassDefinition();
 
             classDefinition.Namespaces.Add("System");
+
+            var projectSelection = project.GetSelection(view);
 
             if (projectSelection.Settings.UseDataAnnotations)
             {
@@ -167,7 +171,7 @@ namespace CatFactory.EfCore.Definitions
             }
 
             classDefinition.Namespace = view.HasDefaultSchema() ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(view.Schema);
-            classDefinition.Name = view.GetSingularName();
+            classDefinition.Name = view.GetEntityName();
             classDefinition.IsPartial = true;
 
             classDefinition.Constructors.Add(new ClassConstructorDefinition());

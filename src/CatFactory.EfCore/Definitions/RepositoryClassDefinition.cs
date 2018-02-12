@@ -53,9 +53,7 @@ namespace CatFactory.EfCore.Definitions
                 var selection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(table);
 
                 if (selection.Settings.EntitiesWithDataContracts)
-                {
                     classDefinition.Namespaces.AddUnique(entityFrameworkCoreProject.GetDataLayerDataContractsNamespace());
-                }
 
                 foreach (var foreignKey in table.ForeignKeys)
                 {
@@ -64,18 +62,14 @@ namespace CatFactory.EfCore.Definitions
                         var child = projectFeature.Project.Database.FindTable(foreignKey.Child);
 
                         if (child != null)
-                        {
                             classDefinition.Namespaces.AddUnique(entityFrameworkCoreProject.GetDataLayerDataContractsNamespace());
-                        }
                     }
                 }
 
                 classDefinition.GetGetAllMethod(projectFeature, selection, table);
 
                 if (table.PrimaryKey != null)
-                {
                     classDefinition.Methods.Add(GetGetMethod(projectFeature, selection, table));
-                }
 
                 foreach (var unique in table.Uniques)
                 {
@@ -103,9 +97,7 @@ namespace CatFactory.EfCore.Definitions
                 var selection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(view);
 
                 if (selection.Settings.EntitiesWithDataContracts)
-                {
                     classDefinition.Namespaces.AddUnique(entityFrameworkCoreProject.GetDataLayerDataContractsNamespace());
-                }
 
                 classDefinition.GetGetAllMethod(projectFeature, view);
             }
@@ -160,9 +152,7 @@ namespace CatFactory.EfCore.Definitions
                     var foreignTable = projectFeature.Project.Database.FindTable(foreignKey.References);
 
                     if (foreignTable == null)
-                    {
                         continue;
-                    }
 
                     var foreignKeyAlias = NamingConvention.GetCamelCase(foreignTable.GetEntityName());
 
@@ -193,22 +183,16 @@ namespace CatFactory.EfCore.Definitions
                     var foreignTable = projectFeature.Project.Database.FindTable(foreignKey.References);
 
                     if (foreignTable == null)
-                    {
                         continue;
-                    }
 
                     var foreignKeyEntityName = foreignTable.GetEntityName();
 
                     var foreignKeyAlias = NamingConvention.GetCamelCase(foreignTable.GetEntityName());
 
                     if (foreignTable.HasDefaultSchema())
-                    {
                         classDefinition.Namespaces.AddUnique(entityFrameworkCoreProject.GetEntityLayerNamespace());
-                    }
                     else
-                    {
                         classDefinition.Namespaces.AddUnique(entityFrameworkCoreProject.GetEntityLayerNamespace(foreignTable.Schema));
-                    }
 
                     if (foreignKey.Key.Count == 0)
                     {
@@ -222,10 +206,10 @@ namespace CatFactory.EfCore.Definitions
                         }
                         else
                         {
-                            var column = table.Columns.FirstOrDefault(item => item.Name == foreignKey.Key[0]);
+                            var column = table.Columns.FirstOrDefault(item => item.Name == foreignKey.Key.First());
 
-                            var x = NamingExtensions.namingConvention.GetPropertyName(foreignKey.Key[0]);
-                            var y = NamingExtensions.namingConvention.GetPropertyName(foreignTable.PrimaryKey.Key[0]);
+                            var x = NamingExtensions.namingConvention.GetPropertyName(foreignKey.Key.First());
+                            var y = NamingExtensions.namingConvention.GetPropertyName(foreignTable.PrimaryKey.Key.First());
 
                             if (column.Nullable)
                             {
@@ -252,143 +236,90 @@ namespace CatFactory.EfCore.Definitions
                     var property = dataContractPropertiesSets[i];
 
                     if (string.IsNullOrEmpty(property.ObjectSource) && string.IsNullOrEmpty(property.Target))
-                    {
                         continue;
-                    }
 
                     if (property.IsForeign)
                     {
                         if (property.Type == "binary" || property.Type == "image" || property.Type == "varbinary")
                         {
                             if (property.Nullable)
-                            {
                                 lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Byte[]) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
                             else
-                            {
                                 lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
                         }
                         else if (property.Type == "bit")
                         {
                             if (property.Nullable)
-                            {
-                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Boolean?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(bool?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
                             else
-                            {
                                 lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
                         }
                         else if (property.Type.Contains("char") || property.Type.Contains("text"))
                         {
-                            if (property.Nullable)
-                            {
-                                lines.Add(new CodeLine(2, "{0} = {1} == null ? string.Empty : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
-                            else
-                            {
-                                lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
+                            lines.Add(new CodeLine(2, "{0} = {1} == null ? string.Empty : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
                         }
                         else if (property.Type.Contains("date"))
                         {
                             if (property.Nullable)
-                            {
                                 lines.Add(new CodeLine(2, "{0} = {1} == null ? default(DateTime?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
                             else
-                            {
                                 lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
                         }
                         else if (property.Type == "tinyint")
                         {
                             if (property.Nullable)
-                            {
                                 lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Byte?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
                             else
-                            {
                                 lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
                         }
                         else if (property.Type == "smallint")
                         {
                             if (property.Nullable)
-                            {
-                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Int16?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(short?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
                             else
-                            {
                                 lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
                         }
                         else if (property.Type == "bigint")
                         {
                             if (property.Nullable)
-                            {
-                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Int64?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(short?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
                             else
-                            {
                                 lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
                         }
                         else if (property.Type == "int")
                         {
                             if (property.Nullable)
-                            {
-                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Int32?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(int?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
                             else
-                            {
                                 lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
                         }
                         else if (property.Type == "decimal" || property.Type == "money" || property.Type == "smallmoney")
                         {
                             if (property.Nullable)
-                            {
-                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Decimal?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(decimal?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
                             else
-                            {
                                 lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
                         }
                         else if (property.Type == "float")
                         {
                             if (property.Nullable)
-                            {
-                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Double?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(double?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
                             else
-                            {
                                 lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
                         }
                         else if (property.Type == "real")
                         {
                             if (property.Nullable)
-                            {
-                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Single?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
+                                lines.Add(new CodeLine(2, "{0} = {1} == null ? default(float?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
                             else
-                            {
                                 lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
                         }
                         else if (property.Type == "uniqueidentifier")
                         {
                             if (property.Nullable)
-                            {
                                 lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Guid?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
                             else
-                            {
                                 lines.Add(new CodeLine(2, "{0} = {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                            }
                         }
                     }
                     else
@@ -402,25 +333,19 @@ namespace CatFactory.EfCore.Definitions
             }
             else
             {
-                returnType = table.GetSingularName();
+                returnType = table.GetEntityName();
 
                 lines.Add(new CommentLine(" Get query from DbSet"));
 
                 if (projectSelection.Settings.DeclareDbSetPropertiesInDbContext)
-                {
                     lines.Add(new CodeLine("var query = DbContext.{0}.AsQueryable();", table.GetPluralName()));
-                }
                 else
-                {
-                    lines.Add(new CodeLine("var query = DbContext.Set<{0}>().AsQueryable();", table.GetSingularName()));
-                }
+                    lines.Add(new CodeLine("var query = DbContext.Set<{0}>().AsQueryable();", table.GetEntityName()));
 
                 lines.Add(new CodeLine());
             }
 
-            var parameters = new List<ParameterDefinition>
-            {
-            };
+            var parameters = new List<ParameterDefinition> { };
 
             if (table.ForeignKeys.Count == 0)
             {
@@ -434,7 +359,7 @@ namespace CatFactory.EfCore.Definitions
 
                     if (foreignKey.Key.Count == 1)
                     {
-                        var column = table.Columns.First(item => item.Name == foreignKey.Key[0]);
+                        var column = table.Columns.First(item => item.Name == foreignKey.Key.First());
 
                         var parameterName = NamingExtensions.namingConvention.GetParameterName(column.Name);
 
@@ -478,14 +403,12 @@ namespace CatFactory.EfCore.Definitions
         {
             var lines = new List<ILine>
             {
-                new CodeLine("DbContext.Set<{0}>();", view.GetSingularName())
+                new CodeLine("DbContext.Set<{0}>();", view.GetEntityName())
             };
 
-            var parameters = new List<ParameterDefinition>
-            {
-            };
+            var parameters = new List<ParameterDefinition> { };
 
-            classDefinition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", view.GetSingularName()), view.GetGetAllRepositoryMethodName(), parameters.ToArray())
+            classDefinition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", view.GetEntityName()), view.GetGetAllRepositoryMethodName(), parameters.ToArray())
             {
                 Lines = lines
             });
@@ -499,12 +422,12 @@ namespace CatFactory.EfCore.Definitions
 
             var expression = string.Format("item => {0}", string.Join(" && ", unique.Key.Select(item => string.Format("item.{0} == entity.{0}", NamingExtensions.namingConvention.GetPropertyName(item)))));
 
-            return new MethodDefinition(string.Format("Task<{0}>", table.GetSingularName()), table.GetGetByUniqueRepositoryMethodName(unique), new ParameterDefinition(table.GetSingularName(), "entity"))
+            return new MethodDefinition(string.Format("Task<{0}>", table.GetEntityName()), table.GetGetByUniqueRepositoryMethodName(unique), new ParameterDefinition(table.GetEntityName(), "entity"))
             {
                 IsAsync = true,
                 Lines = new List<ILine>
                 {
-                    new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", selection.Settings.DeclareDbSetPropertiesInDbContext ? table.GetPluralName() : string.Format("Set<{0}>()", table.GetSingularName()), expression)
+                    new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", selection.Settings.DeclareDbSetPropertiesInDbContext ? table.GetPluralName() : string.Format("Set<{0}>()", table.GetEntityName()), expression)
                 }
             };
         }
@@ -516,19 +439,15 @@ namespace CatFactory.EfCore.Definitions
             var expression = string.Empty;
 
             if (table.Identity == null)
-            {
                 expression = string.Format("item => {0}", string.Join(" && ", table.PrimaryKey.Key.Select(item => string.Format("item.{0} == entity.{0}", NamingExtensions.namingConvention.GetPropertyName(item)))));
-            }
             else
-            {
                 expression = string.Format("item => item.{0} == entity.{0}", NamingExtensions.namingConvention.GetPropertyName(table.Identity.Name));
-            }
 
             if (projectSelection.Settings.EntitiesWithDataContracts)
             {
                 var lines = new List<ILine>
                 {
-                    new CodeLine("return await DbContext.{0}", projectSelection.Settings.DeclareDbSetPropertiesInDbContext ? table.GetPluralName() : string.Format("Set<{0}>()", table.GetSingularName()))
+                    new CodeLine("return await DbContext.{0}", projectSelection.Settings.DeclareDbSetPropertiesInDbContext ? table.GetPluralName() : string.Format("Set<{0}>()", table.GetEntityName()))
                 };
 
                 foreach (var foreignKey in table.ForeignKeys)
@@ -536,16 +455,14 @@ namespace CatFactory.EfCore.Definitions
                     var foreignTable = projectFeature.Project.Database.FindTable(foreignKey.References);
 
                     if (foreignKey == null)
-                    {
                         continue;
-                    }
 
                     lines.Add(new CodeLine(1, ".Include(p => p.{0})", foreignKey.GetParentNavigationProperty(foreignTable, entityFrameworkCoreProject).Name));
                 }
 
                 lines.Add(new CodeLine(1, ".FirstOrDefaultAsync({0});", expression));
 
-                return new MethodDefinition(string.Format("Task<{0}>", table.GetSingularName()), table.GetGetRepositoryMethodName(), new ParameterDefinition(table.GetSingularName(), "entity"))
+                return new MethodDefinition(string.Format("Task<{0}>", table.GetEntityName()), table.GetGetRepositoryMethodName(), new ParameterDefinition(table.GetEntityName(), "entity"))
                 {
                     IsAsync = true,
                     Lines = lines
@@ -553,12 +470,12 @@ namespace CatFactory.EfCore.Definitions
             }
             else
             {
-                return new MethodDefinition(string.Format("Task<{0}>", table.GetSingularName()), table.GetGetRepositoryMethodName(), new ParameterDefinition(table.GetSingularName(), "entity"))
+                return new MethodDefinition(string.Format("Task<{0}>", table.GetEntityName()), table.GetGetRepositoryMethodName(), new ParameterDefinition(table.GetEntityName(), "entity"))
                 {
                     IsAsync = true,
                     Lines = new List<ILine>
                     {
-                        new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", projectSelection .Settings.DeclareDbSetPropertiesInDbContext ? table.GetPluralName() : string.Format("Set<{0}>()", table.GetSingularName()), expression)
+                        new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", projectSelection .Settings.DeclareDbSetPropertiesInDbContext ? table.GetPluralName() : string.Format("Set<{0}>()", table.GetEntityName()), expression)
                     }
                 };
             }
@@ -571,7 +488,7 @@ namespace CatFactory.EfCore.Definitions
             if (projectFeature.Project.Database.PrimaryKeyIsGuid(table))
             {
                 lines.Add(new CommentLine(" Set value for GUID"));
-                lines.Add(new CodeLine("entity.{0} = Guid.NewGuid();", NamingExtensions.namingConvention.GetPropertyName(table.PrimaryKey.Key[0])));
+                lines.Add(new CodeLine("entity.{0} = Guid.NewGuid();", NamingExtensions.namingConvention.GetPropertyName(table.PrimaryKey.Key.First())));
                 lines.Add(new CodeLine());
             }
 
@@ -581,7 +498,7 @@ namespace CatFactory.EfCore.Definitions
             lines.Add(new CommentLine(" Save changes through DbContext"));
             lines.Add(new CodeLine("return await CommitChangesAsync();"));
 
-            return new MethodDefinition("Task<Int32>", table.GetAddRepositoryMethodName(), new ParameterDefinition(table.GetSingularName(), "entity"))
+            return new MethodDefinition("Task<Int32>", table.GetAddRepositoryMethodName(), new ParameterDefinition(table.GetEntityName(), "entity"))
             {
                 IsAsync = true,
                 Lines = lines
@@ -598,7 +515,7 @@ namespace CatFactory.EfCore.Definitions
             lines.Add(new CommentLine(" Save changes through DbContext"));
             lines.Add(new CodeLine("return await CommitChangesAsync();"));
 
-            return new MethodDefinition("Task<Int32>", table.GetUpdateRepositoryMethodName(), new ParameterDefinition(table.GetSingularName(), "changes"))
+            return new MethodDefinition("Task<Int32>", table.GetUpdateRepositoryMethodName(), new ParameterDefinition(table.GetEntityName(), "changes"))
             {
                 IsAsync = true,
                 Lines = lines
@@ -607,7 +524,7 @@ namespace CatFactory.EfCore.Definitions
 
         private static MethodDefinition GetRemoveMethod(ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, ITable table)
         {
-            return new MethodDefinition("Task<Int32>", table.GetRemoveRepositoryMethodName(), new ParameterDefinition(table.GetSingularName(), "entity"))
+            return new MethodDefinition("Task<Int32>", table.GetRemoveRepositoryMethodName(), new ParameterDefinition(table.GetEntityName(), "entity"))
             {
                 IsAsync = true,
                 Lines = new List<ILine>

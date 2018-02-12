@@ -164,10 +164,7 @@ namespace CatFactory.EfCore.Tests
             };
 
             // Apply settings for Entity Framework Core project
-            project.GlobalSelection(settings =>
-            {
-                settings.ForceOverwrite = true;
-            });
+            project.GlobalSelection(settings => settings.ForceOverwrite = true);
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();

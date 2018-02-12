@@ -12,9 +12,7 @@ namespace CatFactory.EfCore
             CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, project.GetEntityInterfaceDefinition());
 
             if (selection.Settings.AuditEntity != null)
-            {
                 CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, project.GetAuditEntityInterfaceDefinition());
-            }
         }
 
         public static EntityFrameworkCoreProject ScaffoldEntityLayer(this EntityFrameworkCoreProject project)
@@ -25,12 +23,10 @@ namespace CatFactory.EfCore
             {
                 var selection = project.GetSelection(table);
 
-                var classDefinition = project.GetEntityClassDefinition(table, selection);
+                var classDefinition = project.GetEntityClassDefinition(table);
 
                 if (selection.Settings.UseDataAnnotations)
-                {
-                    classDefinition.AddDataAnnotations(table, project, selection);
-                }
+                    classDefinition.AddDataAnnotations(table, project);
 
                 CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, classDefinition);
             }
@@ -39,12 +35,10 @@ namespace CatFactory.EfCore
             {
                 var selection = project.GetSelection(view);
 
-                var classDefinition = project.GetEntityClassDefinition(view, selection);
+                var classDefinition = project.GetEntityClassDefinition(view);
 
                 if (selection.Settings.UseDataAnnotations)
-                {
                     classDefinition.AddDataAnnotations(view, project);
-                }
 
                 CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, classDefinition);
             }
