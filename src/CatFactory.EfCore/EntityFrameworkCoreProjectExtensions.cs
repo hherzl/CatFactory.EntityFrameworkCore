@@ -120,11 +120,17 @@ namespace CatFactory.EfCore
                         NavigationPropertyEnumerableType = globalSettings.NavigationPropertyEnumerableType,
                         ConcurrencyToken = globalSettings.ConcurrencyToken,
                         EntityInterfaceName = globalSettings.EntityInterfaceName,
-                        AuditEntity = globalSettings.AuditEntity,
+                        AuditEntity = new AuditEntity
+                        {
+                            CreationUserColumnName = globalSettings.AuditEntity.CreationUserColumnName,
+                            CreationDateTimeColumnName = globalSettings.AuditEntity.CreationDateTimeColumnName,
+                            LastUpdateUserColumnName = globalSettings.AuditEntity.LastUpdateUserColumnName,
+                            LastUpdateDateTimeColumnName = globalSettings.AuditEntity.LastUpdateDateTimeColumnName
+                        },
                         EntitiesWithDataContracts = globalSettings.EntitiesWithDataContracts,
-                        BackingFields = globalSettings.BackingFields,
-                        InsertExclusions = globalSettings.InsertExclusions,
-                        UpdateExclusions = globalSettings.UpdateExclusions
+                        BackingFields = globalSettings.BackingFields.Select(item => item).ToList(),
+                        InsertExclusions = globalSettings.InsertExclusions.Select(item => item).ToList(),
+                        UpdateExclusions = globalSettings.UpdateExclusions.Select(item => item).ToList()
                     }
                 };
 

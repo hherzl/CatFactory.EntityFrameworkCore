@@ -1,5 +1,5 @@
 ﻿using CatFactory.DotNetCore;
-using CatFactory.EfCore.Definitions;
+using CatFactory.EfCore.Definitions.Extensions;
 
 namespace CatFactory.EfCore
 {

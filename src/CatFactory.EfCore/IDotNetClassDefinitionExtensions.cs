@@ -45,7 +45,6 @@ namespace CatFactory.EfCore
 
                     if (!string.IsNullOrEmpty(selection.Settings.ConcurrencyToken) && selection.Settings.ConcurrencyToken == column.Name)
                         property.Attributes.Add(new MetadataAttribute("Timestamp"));
-
                 }
             }
         }
@@ -80,7 +79,10 @@ namespace CatFactory.EfCore
 
                     property.Attributes.Add(new MetadataAttribute("Column", string.Format("\"{0}\"", column.Name))
                     {
-                        Sets = new List<MetadataAttributeSet> { new MetadataAttributeSet("Order", (i + 1).ToString()) }
+                        Sets = new List<MetadataAttributeSet>
+                        {
+                            new MetadataAttributeSet("Order", (i + 1).ToString())
+                        }
                     });
 
                     if (!column.Nullable && primaryKeys.Contains(column.Name))
@@ -90,7 +92,6 @@ namespace CatFactory.EfCore
                         property.Attributes.Add(new MetadataAttribute("Required"));
                 }
             }
-
         }
     }
 }

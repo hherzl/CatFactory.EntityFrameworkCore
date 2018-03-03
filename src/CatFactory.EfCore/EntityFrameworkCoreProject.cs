@@ -17,16 +17,6 @@ namespace CatFactory.EfCore
         {
         }
 
-        public void Scaffolding(ICodeBuilder codeBuilder)
-        {
-            OnScaffoldingDefinition(new ScaffoldingDefinitionEventArgs(Logger, codeBuilder));
-        }
-
-        public void Scaffolded(ICodeBuilder codeBuilder)
-        {
-            OnScaffoldedDefinition(new ScaffoldedDefinitionEventArgs(Logger, codeBuilder));
-        }
-
         public override void BuildFeatures()
         {
             if (Database == null)
@@ -50,12 +40,12 @@ namespace CatFactory.EfCore
             result.AddRange(Database
                 .Tables
                 .Where(x => x.Schema == schema)
-                .Select(y => new DbObject { Schema = y.Schema, Name = y.Name, Type = "USER_TABLE" }));
+                .Select(y => new DbObject { Schema = y.Schema, Name = y.Name, Type = "Table" }));
 
             result.AddRange(Database
                 .Views
                 .Where(x => x.Schema == schema)
-                .Select(y => new DbObject { Schema = y.Schema, Name = y.Name, Type = "VIEW" }));
+                .Select(y => new DbObject { Schema = y.Schema, Name = y.Name, Type = "View" }));
 
             return result;
         }

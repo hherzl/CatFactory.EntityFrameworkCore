@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using CatFactory.Collections;
 using CatFactory.DotNetCore;
-using CatFactory.EfCore.Definitions;
+using CatFactory.EfCore.Definitions.Extensions;
 using CatFactory.Mapping;
 using CatFactory.OOP;
 

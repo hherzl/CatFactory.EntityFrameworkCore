@@ -1,11 +1,11 @@
 {
-  "version": "3.0.0-alpha-build22",
+  "version": "3.0.0-alpha-build23",
   "title": "CatFactory.EfCore",
   "description": "CatFactory package for Entity Framework Core scaffolding with enterprise patterns",
   "packOptions": {
     "summary": "CatFactory package for Entity Framework Core scaffolding with enterprise patterns",
     "tags": [ "Entity Framework Core" ],
-    "releaseNotes": "3.0.0-alpha-build22 version: Code clean up and addition of exclusions for insert and update in entity framework project settings.\r\n\r\nQuick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory",
+    "releaseNotes": "3.0.0-alpha-build23 version: Addition of class and interface definitions. Code fix for settings cloning. Remove of non null columns for linq queries in repositories.\r\n\r\nQuick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory",
     "requireLicenseAcceptance": false,
     "repository": {
       "type": "git",
