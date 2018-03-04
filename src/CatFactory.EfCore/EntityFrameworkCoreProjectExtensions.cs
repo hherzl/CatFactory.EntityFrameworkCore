@@ -120,7 +120,7 @@ namespace CatFactory.EfCore
                         NavigationPropertyEnumerableType = globalSettings.NavigationPropertyEnumerableType,
                         ConcurrencyToken = globalSettings.ConcurrencyToken,
                         EntityInterfaceName = globalSettings.EntityInterfaceName,
-                        AuditEntity = new AuditEntity
+                        AuditEntity = globalSettings.AuditEntity == null ? null : new AuditEntity
                         {
                             CreationUserColumnName = globalSettings.AuditEntity.CreationUserColumnName,
                             CreationDateTimeColumnName = globalSettings.AuditEntity.CreationDateTimeColumnName,

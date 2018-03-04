@@ -166,6 +166,8 @@ namespace CatFactory.EfCore.Tests
             // Apply settings for Entity Framework Core project
             project.GlobalSelection(settings => settings.ForceOverwrite = true);
 
+            project.Select("Orders", settings => settings.EntitiesWithDataContracts = true);
+
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
 
@@ -237,6 +239,34 @@ namespace CatFactory.EfCore.Tests
 
             // Scaffolding =^^=
             project
+                .ScaffoldEntityLayer()
+                .ScaffoldDataLayer();
+        }
+
+        [Fact]
+        public void Foo()
+        {
+            // Import database
+            var database = SqlServerDatabaseFactory
+                .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
+
+            // Create instance of Entity Framework Core Project
+            var entityFrameworkProject = new EntityFrameworkCoreProject
+            {
+                Name = "Northwind",
+                Database = database,
+                OutputDirectory = "C:\\Temp\\CatFactory.AspNetCore\\CatFactory.AspNetCore.Demo\\src\\Northwind.Core"
+            };
+
+            // Apply settings for project
+            entityFrameworkProject.GlobalSelection(settings => settings.ForceOverwrite = true);
+            entityFrameworkProject.Select("Sales.Order", settings => settings.EntitiesWithDataContracts = true);
+
+            // Build features for project, group all entities by schema into a feature
+            entityFrameworkProject.BuildFeatures();
+
+            // Scaffolding =^^=
+            entityFrameworkProject
                 .ScaffoldEntityLayer()
                 .ScaffoldDataLayer();
         }
