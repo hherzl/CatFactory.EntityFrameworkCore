@@ -1,11 +1,11 @@
 {
-  "version": "3.0.0-alpha-build24",
+  "version": "3.0.0-alpha-build25",
   "title": "CatFactory.EfCore",
   "description": "CatFactory package for Entity Framework Core scaffolding with enterprise patterns",
   "packOptions": {
     "summary": "CatFactory package for Entity Framework Core scaffolding with enterprise patterns",
     "tags": [ "Entity Framework Core" ],
-    "releaseNotes": "3.0.0-alpha-build24 version: Code fix for cloning selections in project instance.\r\n\r\nQuick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory",
+    "releaseNotes": "3.0.0-alpha-build25 version: Addition of translating feature in code builder.\r\n\r\nQuick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory",
     "requireLicenseAcceptance": false,
     "repository": {
       "type": "git",
@@ -19,7 +19,7 @@
   "dependencies": {
     "NETStandard.Library": "1.6.1",
     "System.Runtime": "4.3.0",
-    "CatFactory.DotNetCore": "3.0.0-alpha-build13"
+    "CatFactory.DotNetCore": "3.0.0-alpha-build16"
   },
 
   "frameworks": {
