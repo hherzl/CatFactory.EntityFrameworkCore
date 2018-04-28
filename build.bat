@@ -1,7 +1,7 @@
 cls
 set initialPath=%cd%
-set srcPath=%cd%\src\CatFactory.EfCore
-set testPath=%cd%\test\CatFactory.EfCore.Tests
+set srcPath=%cd%\CatFactory.EntityFrameworkCore\CatFactory.EntityFrameworkCore
+set testPath=%cd%\CatFactory.EntityFrameworkCore\CatFactory.EntityFrameworkCore.Tests
 cd %srcPath%
 dotnet build
 cd %testPath%

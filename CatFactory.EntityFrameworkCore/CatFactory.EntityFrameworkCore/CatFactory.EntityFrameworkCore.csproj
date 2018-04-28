@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <Version>1.0.0-beta-sun-build00</Version>
+    <Authors>H. Herzl</Authors>
+    <Company>H. Herzl</Company>
+    <Description>CatFactory package for Entity Framework Core scaffolding with enterprise patterns</Description>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</RepositoryUrl>
+    <PackageTags>Entity Framework Core</PackageTags>
+    <PackageReleaseNotes>1.0.0-beta-sun-build00 Version: Upgrade for .NET Core 2.0.
+
+Quick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory</PackageReleaseNotes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CatFactory.NetCore" Version="1.0.0-beta-sun-build00" />
+  </ItemGroup>
+
+</Project>
