@@ -2,11 +2,11 @@
 using System.IO;
 using System.Linq;
 using CatFactory.CodeFactory;
-using CatFactory.DotNetCore;
+using CatFactory.NetCore;
 using CatFactory.Mapping;
 using CatFactory.OOP;
 
-namespace CatFactory.EfCore
+namespace CatFactory.EntityFrameworkCore
 {
     public static class EntityFrameworkCoreProjectExtensions
     {

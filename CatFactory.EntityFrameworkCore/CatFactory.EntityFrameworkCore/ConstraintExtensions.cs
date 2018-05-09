@@ -2,7 +2,7 @@
 using CatFactory.Mapping;
 using CatFactory.OOP;
 
-namespace CatFactory.EfCore
+namespace CatFactory.EntityFrameworkCore
 {
     public static class ConstraintExtensions
     {

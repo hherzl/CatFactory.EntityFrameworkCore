@@ -1,7 +1,7 @@
 ﻿using CatFactory.SqlServer;
 using Xunit;
 
-namespace CatFactory.EfCore.Tests
+namespace CatFactory.EntityFrameworkCore.Tests
 {
     public class ProjectSelectionTests
     {

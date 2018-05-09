@@ -2,12 +2,12 @@
 using System.IO;
 using System.Linq;
 using CatFactory.Collections;
-using CatFactory.DotNetCore;
-using CatFactory.EfCore.Definitions.Extensions;
+using CatFactory.EntityFrameworkCore.Definitions.Extensions;
 using CatFactory.Mapping;
+using CatFactory.NetCore;
 using CatFactory.OOP;
 
-namespace CatFactory.EfCore
+namespace CatFactory.EntityFrameworkCore
 {
     public static class DataLayerExtensions
     {
@@ -169,7 +169,7 @@ namespace CatFactory.EfCore
                 string.Empty,
 
                 "2. Register your DbContext and repositories in ConfigureServices method (Startup class):",
-                string.Format(" services.AddDbContext<{0}>(options => options.UseSqlServer(Configuration[\"ConnectionString\"]));", project.Database.GetDbContextName()),
+                string.Format(" services.AddDbContext<{0}>(options => options.UseSqlServer(\"ConnectionString\"));", project.Database.GetDbContextName()),
 
                 " services.AddScoped<IDboRepository, DboRepository>();",
                 string.Empty,
@@ -183,12 +183,12 @@ namespace CatFactory.EfCore
                 "Also you can check source code on GitHub:",
                 "https://github.com/hherzl/CatFactory.EntityFrameworkCore",
                 string.Empty,
-                "*** Soon CatFactory will scaffold code for Entity Framework Core 2.0 (February - 2018) ***",
+                "*** Soon CatFactory will scaffold code for Entity Framework Core 2.0 (May - 2018) ***",
                 string.Empty,
                 "CatFactory Development Team ==^^=="
             };
 
-            TextFileHelper.CreateFile(Path.Combine(project.OutputDirectory, "CatFactory.EfCore.ReadMe.txt"), lines.ToStringBuilder().ToString());
+            TextFileHelper.CreateFile(Path.Combine(project.OutputDirectory, "CatFactory.EntityFrameworkCore.ReadMe.txt"), lines.ToStringBuilder().ToString());
         }
     }
 }

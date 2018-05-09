@@ -1,6 +1,6 @@
 ﻿using CatFactory.OOP;
 
-namespace CatFactory.EfCore.Definitions.Extensions
+namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 {
     public static class EntityMapperInterfaceBuilder
     {

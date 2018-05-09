@@ -2,11 +2,11 @@
 using System.Linq;
 using CatFactory.CodeFactory;
 using CatFactory.Collections;
-using CatFactory.DotNetCore;
+using CatFactory.NetCore;
 using CatFactory.Mapping;
 using CatFactory.OOP;
 
-namespace CatFactory.EfCore.Definitions.Extensions
+namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 {
     public static class EntityClassBuilder
     {

@@ -1,4 +1,4 @@
-﻿namespace CatFactory.EfCore
+﻿namespace CatFactory.EntityFrameworkCore
 {
     public class AuditEntity
     {

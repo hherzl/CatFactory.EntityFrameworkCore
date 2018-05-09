@@ -1,7 +1,7 @@
 ﻿using CatFactory.Mapping;
 using Xunit;
 
-namespace CatFactory.EfCore.Tests
+namespace CatFactory.EntityFrameworkCore.Tests
 {
     public class NamingConventionTests
     {

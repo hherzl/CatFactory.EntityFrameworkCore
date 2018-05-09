@@ -2,7 +2,7 @@
 using CatFactory.CodeFactory;
 using CatFactory.Mapping;
 
-namespace CatFactory.EfCore
+namespace CatFactory.EntityFrameworkCore
 {
     public static class EntityFrameworkCoreProjectSelectionExtensions
     {

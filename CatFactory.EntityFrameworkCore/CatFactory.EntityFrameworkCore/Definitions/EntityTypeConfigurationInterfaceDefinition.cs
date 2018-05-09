@@ -1,6 +1,6 @@
-﻿using CatFactory.DotNetCore;
+﻿using CatFactory.NetCore;
 
-namespace CatFactory.EfCore.Definitions
+namespace CatFactory.EntityFrameworkCore.Definitions
 {
     public class EntityTypeConfigurationInterfaceDefinition : CSharpInterfaceDefinition
     {

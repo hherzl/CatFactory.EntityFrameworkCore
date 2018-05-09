@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using CatFactory.Mapping;
 
-namespace CatFactory.EfCore.Tests
+namespace CatFactory.EntityFrameworkCore.Tests
 {
     public static partial class Databases
     {

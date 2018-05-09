@@ -1,7 +1,7 @@
-﻿using CatFactory.DotNetCore;
-using CatFactory.EfCore.Definitions.Extensions;
+﻿using CatFactory.NetCore;
+using CatFactory.EntityFrameworkCore.Definitions.Extensions;
 
-namespace CatFactory.EfCore
+namespace CatFactory.EntityFrameworkCore
 {
     public static class EntityLayerExtensions
     {

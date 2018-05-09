@@ -4,7 +4,7 @@ using CatFactory.CodeFactory;
 using CatFactory.Mapping;
 using Microsoft.Extensions.Logging;
 
-namespace CatFactory.EfCore
+namespace CatFactory.EntityFrameworkCore
 {
     public class EntityFrameworkCoreProject : Project<EntityFrameworkCoreProjectSettings>
     {

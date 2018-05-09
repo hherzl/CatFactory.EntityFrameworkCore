@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace CatFactory.EfCore.Tests
+namespace CatFactory.EntityFrameworkCore.Tests
 {
     public static class LoggerMocker
     {

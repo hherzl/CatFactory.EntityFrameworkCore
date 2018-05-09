@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using CatFactory.CodeFactory;
 
-namespace CatFactory.EfCore
+namespace CatFactory.EntityFrameworkCore
 {
     public class EntityFrameworkCoreProjectSettings : ProjectSettings
     {
