@@ -2,8 +2,8 @@
 using System.Linq;
 using CatFactory.CodeFactory;
 using CatFactory.Collections;
-using CatFactory.NetCore;
 using CatFactory.Mapping;
+using CatFactory.NetCore;
 using CatFactory.OOP;
 
 namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
@@ -23,27 +23,10 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             classDefinition.BaseClass = "DbContext";
 
-            if (projectSelection.Settings.UseDataAnnotations)
+            classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(string.Format("DbContextOptions<{0}>", classDefinition.Name), "options"))
             {
-                classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(string.Format("DbContextOptions<{0}>", classDefinition.Name), "options"))
-                {
-                    Invocation = "base(options)"
-                });
-            }
-            else
-            {
-                classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(string.Format("DbContextOptions<{0}>", classDefinition.Name), "options"), new ParameterDefinition("IEntityMapper", "entityMapper"))
-                {
-                    Invocation = "base(options)",
-                    Lines = new List<ILine>
-                    {
-                        new CodeLine("EntityMapper = entityMapper;")
-                    }
-                });
-            }
-
-            if (!projectSelection.Settings.UseDataAnnotations)
-                classDefinition.Properties.Add(new PropertyDefinition("IEntityMapper", "EntityMapper") { IsReadOnly = true });
+                Invocation = "base(options)"
+            });
 
             classDefinition.Methods.Add(GetOnModelCreatingMethod(projectFeature.GetEntityFrameworkCoreProject()));
 
@@ -86,19 +69,42 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     if (result.Count == 0)
                         lines.Add(LineHelper.Warning(" Add configuration for {0} entity", view.GetEntityName()));
                     else
-                        lines.Add(new CodeLine(1, "modelBuilder.Entity<{0}>().HasKey(p => new {{ {1} }});", view.GetEntityName(), string.Join(", ", result.Select(item => string.Format("p.{0}", NamingExtensions.namingConvention.GetPropertyName(item.Name))))));
+                        lines.Add(new CodeLine("modelBuilder.Entity<{0}>().HasKey(p => new {{ {1} }});", view.GetEntityName(), string.Join(", ", result.Select(item => string.Format("p.{0}", NamingExtensions.namingConvention.GetPropertyName(item.Name))))));
                 }
 
                 lines.Add(new CodeLine());
             }
             else
             {
-                lines.Add(new CommentLine(" This code will change for EF Core 2"));
-                lines.Add(new CodeLine("EntityMapper.ConfigureEntities(modelBuilder);"));
+                lines.Add(new CommentLine(" Apply all configurations for tables"));
                 lines.Add(new CodeLine());
+
+                lines.Add(new CodeLine("modelBuilder"));
+
+                foreach (var table in project.Database.Tables)
+                {
+                    lines.Add(new CodeLine(1, ".ApplyConfiguration(new {0}())", table.GetEntityTypeConfigurationName()));
+                }
+
+                lines.Add(new CodeLine(";"));
+
+                lines.Add(new CodeLine());
+
+                lines.Add(new CommentLine(" Apply all configurations for views"));
+                lines.Add(new CodeLine());
+
+                lines.Add(new CodeLine("modelBuilder"));
+
+                foreach (var view in project.Database.Views)
+                {
+                    lines.Add(new CodeLine(1, ".ApplyConfiguration(new {0}())", view.GetEntityTypeConfigurationName()));
+                }
+
+                lines.Add(new CodeLine(";"));
             }
 
-            lines.Add(new CodeLine(lines.Count == 0 ? 0 : 1, "base.OnModelCreating(modelBuilder);"));
+            lines.Add(new CodeLine());
+            lines.Add(new CodeLine("base.OnModelCreating(modelBuilder);"));
 
             return new MethodDefinition(AccessModifier.Protected, "void", "OnModelCreating", new ParameterDefinition("ModelBuilder", "modelBuilder"))
             {

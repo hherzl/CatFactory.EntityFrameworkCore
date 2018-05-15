@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CatFactory.EntityFrameworkCore.Tests
 {
-    public class ImportGenerationTests
+    public class ImportTests
     {
         [Fact]
         public void ProjectScaffoldingFromExistingDatabaseTest()
@@ -239,34 +239,6 @@ namespace CatFactory.EntityFrameworkCore.Tests
 
             // Scaffolding =^^=
             project
-                .ScaffoldEntityLayer()
-                .ScaffoldDataLayer();
-        }
-
-        [Fact]
-        public void Foo()
-        {
-            // Import database
-            var database = SqlServerDatabaseFactory
-                .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
-
-            // Create instance of Entity Framework Core Project
-            var entityFrameworkProject = new EntityFrameworkCoreProject
-            {
-                Name = "Northwind",
-                Database = database,
-                OutputDirectory = "C:\\Temp\\CatFactory.AspNetCore\\CatFactory.AspNetCore.Demo\\src\\Northwind.Core"
-            };
-
-            // Apply settings for project
-            entityFrameworkProject.GlobalSelection(settings => settings.ForceOverwrite = true);
-            entityFrameworkProject.Select("Sales.Order", settings => settings.EntitiesWithDataContracts = true);
-
-            // Build features for project, group all entities by schema into a feature
-            entityFrameworkProject.BuildFeatures();
-
-            // Scaffolding =^^=
-            entityFrameworkProject
                 .ScaffoldEntityLayer()
                 .ScaffoldDataLayer();
         }

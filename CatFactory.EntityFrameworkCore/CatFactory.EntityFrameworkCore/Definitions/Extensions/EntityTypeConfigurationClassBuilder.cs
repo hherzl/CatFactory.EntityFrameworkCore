@@ -18,12 +18,12 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             if (projectSelection.Settings.UseMefForEntitiesMapping)
             {
-                classDefinition.Namespaces.Add("System.Composition");
-
-                classDefinition.Attributes.Add(new MetadataAttribute("Export", "typeof(IEntityTypeConfiguration)"));
+                //classDefinition.Namespaces.Add("System.Composition");
+                //classDefinition.Attributes.Add(new MetadataAttribute("Export", "typeof(IEntityTypeConfiguration)"));
             }
 
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
+            classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore.Metadata.Builders");
 
             classDefinition.Namespaces.AddUnique(project.GetEntityLayerNamespace(table.HasDefaultSchema() ? string.Empty : table.Schema));
 
@@ -31,19 +31,17 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             classDefinition.Name = table.GetEntityTypeConfigurationName();
 
-            classDefinition.Implements.Add("IEntityTypeConfiguration");
+            classDefinition.Implements.Add(string.Format("IEntityTypeConfiguration<{0}>", table.GetEntityName()));
 
-            var mapLines = new List<ILine>();
-
-            mapLines.Add(new CodeLine("modelBuilder.Entity<{0}>(builder =>", table.GetEntityName()));
-            mapLines.Add(new CodeLine("{"));
-
-            mapLines.Add(new CommentLine(1, " Set configuration for entity"));
+            var mapLines = new List<ILine>
+            {
+                new CommentLine(" Set configuration for entity")
+            };
 
             if (string.IsNullOrEmpty(table.Schema))
-                mapLines.Add(new CodeLine(1, "builder.ToTable(\"{0}\");", table.Name));
+                mapLines.Add(new CodeLine("builder.ToTable(\"{0}\");", table.Name));
             else
-                mapLines.Add(new CodeLine(1, "builder.ToTable(\"{0}\", \"{1}\");", table.Name, table.Schema));
+                mapLines.Add(new CodeLine("builder.ToTable(\"{0}\", \"{1}\");", table.Name, table.Schema));
 
             mapLines.Add(new CodeLine());
 
@@ -56,30 +54,30 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             }
             else
             {
-                mapLines.Add(new CommentLine(1, " Set key for entity"));
+                mapLines.Add(new CommentLine(" Set key for entity"));
 
                 if (table.PrimaryKey.Key.Count == 1)
                 {
-                    mapLines.Add(new CodeLine(1, "builder.HasKey(p => p.{0});", classDefinition.NamingConvention.GetPropertyName(table.PrimaryKey.Key[0])));
+                    mapLines.Add(new CodeLine("builder.HasKey(p => p.{0});", classDefinition.NamingConvention.GetPropertyName(table.PrimaryKey.Key[0])));
                     mapLines.Add(new CodeLine());
                 }
                 else if (table.PrimaryKey.Key.Count > 1)
                 {
-                    mapLines.Add(new CodeLine(1, "builder.HasKey(p => new {{ {0} }});", string.Join(", ", table.PrimaryKey.Key.Select(item => string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item))))));
+                    mapLines.Add(new CodeLine("builder.HasKey(p => new {{ {0} }});", string.Join(", ", table.PrimaryKey.Key.Select(item => string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item))))));
                     mapLines.Add(new CodeLine());
                 }
             }
 
             if (table.Identity != null)
             {
-                mapLines.Add(new CommentLine(1, " Set identity for entity (auto increment)"));
-                mapLines.Add(new CodeLine(1, "builder.Property(p => p.{0}).UseSqlServerIdentityColumn();", classDefinition.NamingConvention.GetPropertyName(table.Identity.Name)));
+                mapLines.Add(new CommentLine(" Set identity for entity (auto increment)"));
+                mapLines.Add(new CodeLine("builder.Property(p => p.{0}).UseSqlServerIdentityColumn();", classDefinition.NamingConvention.GetPropertyName(table.Identity.Name)));
                 mapLines.Add(new CodeLine());
             }
 
             columns = table.Columns;
 
-            mapLines.Add(new CommentLine(1, " Set configuration for columns"));
+            mapLines.Add(new CommentLine(" Set configuration for columns"));
 
             for (var i = 0; i < columns.Count; i++)
             {
@@ -105,7 +103,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 if (!column.Nullable)
                     lines.Add("IsRequired()");
 
-                mapLines.Add(new CodeLine(1, "{0};", string.Join(".", lines)));
+                mapLines.Add(new CodeLine("{0};", string.Join(".", lines)));
             }
 
             mapLines.Add(new CodeLine());
@@ -116,35 +114,35 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                 if (!string.IsNullOrEmpty(projectSelection.Settings.ConcurrencyToken) && string.Compare(column.Name, projectSelection.Settings.ConcurrencyToken) == 0)
                 {
-                    mapLines.Add(new CommentLine(1, " Set concurrency token for entity"));
-                    mapLines.Add(new CodeLine(1, "builder"));
-                    mapLines.Add(new CodeLine(2, ".Property(p => p.{0})", column.GetPropertyName()));
-                    mapLines.Add(new CodeLine(2, ".ValueGeneratedOnAddOrUpdate()"));
-                    mapLines.Add(new CodeLine(2, ".IsConcurrencyToken();"));
+                    mapLines.Add(new CommentLine(" Set concurrency token for entity"));
+                    mapLines.Add(new CodeLine("builder"));
+                    mapLines.Add(new CodeLine(1, ".Property(p => p.{0})", column.GetPropertyName()));
+                    mapLines.Add(new CodeLine(1, ".ValueGeneratedOnAddOrUpdate()"));
+                    mapLines.Add(new CodeLine(1, ".IsConcurrencyToken();"));
                     mapLines.Add(new CodeLine());
                 }
             }
 
             if (table.Uniques.Count > 0)
             {
-                mapLines.Add(new CommentLine(1, " Add configuration for uniques"));
+                mapLines.Add(new CommentLine(" Add configuration for uniques"));
 
                 foreach (var unique in table.Uniques)
                 {
-                    mapLines.Add(new CodeLine(1, "builder"));
+                    mapLines.Add(new CodeLine("builder"));
 
                     if (unique.Key.Count == 1)
                     {
-                        mapLines.Add(new CodeLine(2, ".HasIndex(p => p.{0})", classDefinition.NamingConvention.GetPropertyName(unique.Key.First())));
-                        mapLines.Add(new CodeLine(2, ".IsUnique()"));
+                        mapLines.Add(new CodeLine(1, ".HasIndex(p => p.{0})", classDefinition.NamingConvention.GetPropertyName(unique.Key.First())));
+                        mapLines.Add(new CodeLine(1, ".IsUnique()"));
                     }
                     else
                     {
-                        mapLines.Add(new CodeLine(2, ".HasIndex(p => new {{ {0} }})", string.Join(", ", table.PrimaryKey.Key.Select(item => string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item))))));
-                        mapLines.Add(new CodeLine(2, ".IsUnique()"));
+                        mapLines.Add(new CodeLine(1, ".HasIndex(p => new {{ {0} }})", string.Join(", ", table.PrimaryKey.Key.Select(item => string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item))))));
+                        mapLines.Add(new CodeLine(1, ".IsUnique()"));
                     }
 
-                    mapLines.Add(new CodeLine(2, ".HasName(\"{0}\");", unique.ConstraintName));
+                    mapLines.Add(new CodeLine(1, ".HasName(\"{0}\");", unique.ConstraintName));
                     mapLines.Add(new CodeLine());
                 }
             }
@@ -168,11 +166,11 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     {
                         var foreignProperty = foreignKey.GetParentNavigationProperty(foreignTable, project);
 
-                        mapLines.Add(new CodeLine(1, "builder"));
-                        mapLines.Add(new CodeLine(2, ".HasOne(p => p.{0})", foreignProperty.Name));
-                        mapLines.Add(new CodeLine(2, ".WithMany(b => b.{0})", table.GetPluralName()));
-                        mapLines.Add(new CodeLine(2, ".HasForeignKey(p => {0})", string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(foreignKey.Key.First()))));
-                        mapLines.Add(new CodeLine(2, ".HasConstraintName(\"{0}\");", foreignKey.ConstraintName));
+                        mapLines.Add(new CodeLine("builder"));
+                        mapLines.Add(new CodeLine(1, ".HasOne(p => p.{0})", foreignProperty.Name));
+                        mapLines.Add(new CodeLine(1, ".WithMany(b => b.{0})", table.GetPluralName()));
+                        mapLines.Add(new CodeLine(1, ".HasForeignKey(p => {0})", string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(foreignKey.Key.First()))));
+                        mapLines.Add(new CodeLine(1, ".HasConstraintName(\"{0}\");", foreignKey.ConstraintName));
                         mapLines.Add(new CodeLine());
                     }
                     else
@@ -182,9 +180,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
             }
 
-            mapLines.Add(new CodeLine("});"));
-
-            var mapMethod = new MethodDefinition("void", "Configure", new ParameterDefinition("ModelBuilder", "modelBuilder"))
+            var mapMethod = new MethodDefinition("void", "Configure", new ParameterDefinition(string.Format("EntityTypeBuilder<{0}>", table.GetEntityName()), "builder"))
             {
                 Lines = mapLines
             };
@@ -202,12 +198,12 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             if (projectSelection.Settings.UseMefForEntitiesMapping)
             {
-                classDefinition.Namespaces.Add("System.Composition");
-
-                classDefinition.Attributes.Add(new MetadataAttribute("Export", "typeof(IEntityTypeConfiguration)"));
+                //classDefinition.Namespaces.Add("System.Composition");
+                //classDefinition.Attributes.Add(new MetadataAttribute("Export", "typeof(IEntityTypeConfiguration)"));
             }
 
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
+            classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore.Metadata.Builders");
 
             classDefinition.Namespaces.AddUnique(project.GetEntityLayerNamespace(view.HasDefaultSchema() ? string.Empty : view.Schema));
 
@@ -215,19 +211,17 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             classDefinition.Name = view.GetEntityTypeConfigurationName();
 
-            classDefinition.Implements.Add("IEntityTypeConfiguration");
+            classDefinition.Implements.Add(string.Format("IEntityTypeConfiguration<{0}>", view.GetEntityName()));
 
-            var mapLines = new List<ILine>();
-
-            mapLines.Add(new CodeLine("modelBuilder.Entity<{0}>(builder =>", view.GetEntityName()));
-            mapLines.Add(new CodeLine("{"));
-
-            mapLines.Add(new CommentLine(1, " Set configuration for entity"));
+            var mapLines = new List<ILine>
+            {
+                new CommentLine(" Set configuration for entity")
+            };
 
             if (string.IsNullOrEmpty(view.Schema))
-                mapLines.Add(new CodeLine(1, "builder.ToTable(\"{0}\");", view.Name));
+                mapLines.Add(new CodeLine("builder.ToTable(\"{0}\");", view.Name));
             else
-                mapLines.Add(new CodeLine(1, "builder.ToTable(\"{0}\", \"{1}\");", view.Name, view.Schema));
+                mapLines.Add(new CodeLine("builder.ToTable(\"{0}\", \"{1}\");", view.Name, view.Schema));
 
             mapLines.Add(new CodeLine());
 
@@ -238,11 +232,11 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             if (result.Count == 0)
                 result = view.Columns.Where(item => !item.Nullable).ToList();
 
-            mapLines.Add(new CommentLine(1, " Add configuration for entity's key"));
-            mapLines.Add(new CodeLine(1, "builder.HasKey(p => new {{ {0} }});", string.Join(", ", result.Select(item => string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item.Name))))));
+            mapLines.Add(new CommentLine(" Add configuration for entity's key"));
+            mapLines.Add(new CodeLine("builder.HasKey(p => new {{ {0} }});", string.Join(", ", result.Select(item => string.Format("p.{0}", classDefinition.NamingConvention.GetPropertyName(item.Name))))));
             mapLines.Add(new CodeLine());
 
-            mapLines.Add(new CommentLine(1, " Set configuration for columns"));
+            mapLines.Add(new CommentLine(" Set configuration for columns"));
 
             for (var i = 0; i < view.Columns.Count; i++)
             {
@@ -265,12 +259,10 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 else
                     lines.Add(string.Format("HasColumnType(\"{0}\")", column.Type));
 
-                mapLines.Add(new CodeLine(1, "{0};", string.Join(".", lines)));
+                mapLines.Add(new CodeLine("{0};", string.Join(".", lines)));
             }
 
-            mapLines.Add(new CodeLine("});"));
-
-            var mapMethod = new MethodDefinition("void", "Configure", new ParameterDefinition("ModelBuilder", "modelBuilder"))
+            var mapMethod = new MethodDefinition("void", "Configure", new ParameterDefinition(string.Format("EntityTypeBuilder<{0}>", view.GetEntityName()), "builder"))
             {
                 Lines = mapLines
             };

@@ -1,6 +1,6 @@
 ﻿//using Xunit;
 
-//namespace CatFactory.EfCore.Tests
+//namespace CatFactory.EntityFrameworkCore.Tests
 //{
 //    public class MockGenerationTests
 //    {

@@ -13,7 +13,6 @@ namespace CatFactory.EntityFrameworkCore
     {
         public static EntityFrameworkCoreProject ScaffoldDataLayer(this EntityFrameworkCoreProject project)
         {
-            ScaffoldMappingDependencies(project);
             ScaffoldMappings(project);
             ScaffoldDbContext(project);
             ScaffoldDataContracts(project);
@@ -21,20 +20,6 @@ namespace CatFactory.EntityFrameworkCore
             ScaffoldReadMe(project);
 
             return project;
-        }
-
-        private static void ScaffoldMappingDependencies(EntityFrameworkCoreProject project)
-        {
-            var projectSelection = project.GlobalSelection();
-
-            if (!projectSelection.Settings.UseDataAnnotations)
-            {
-                CSharpCodeBuilder
-                    .CreateFiles(project.OutputDirectory, project.GetDataLayerConfigurationsDirectory(), projectSelection.Settings.ForceOverwrite, project.GetEntityMapperInterfaceDefinition(), project.GetEntityTypeConfigurationInterfaceDefinition());
-
-                CSharpCodeBuilder
-                    .CreateFiles(project.OutputDirectory, project.GetDataLayerConfigurationsDirectory(), projectSelection.Settings.ForceOverwrite, project.GetEntityMapperClassDefinition(), project.GetDatabaseEntityMapperClassDefinition());
-            }
         }
 
         private static void ScaffoldMappings(EntityFrameworkCoreProject project)
@@ -165,7 +150,7 @@ namespace CatFactory.EntityFrameworkCore
                 "How to use this code on your ASP.NET Core Application:",
                 string.Empty,
 
-                "1. Install packages for EntityFrameworkCore and EntityFrameworkCore.SqlServer",
+                "1. Install EntityFrameworkCore.SqlServer package",
                 string.Empty,
 
                 "2. Register your DbContext and repositories in ConfigureServices method (Startup class):",
@@ -183,7 +168,7 @@ namespace CatFactory.EntityFrameworkCore
                 "Also you can check source code on GitHub:",
                 "https://github.com/hherzl/CatFactory.EntityFrameworkCore",
                 string.Empty,
-                "*** Soon CatFactory will scaffold code for Entity Framework Core 2.0 (May - 2018) ***",
+                "*** CatFactory scaffold Entity Framework Core 2.0 ==^^== ***",
                 string.Empty,
                 "CatFactory Development Team ==^^=="
             };

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using CatFactory.CodeFactory;
 
@@ -16,6 +17,7 @@ namespace CatFactory.EntityFrameworkCore
 
         public bool UseDataAnnotations { get; set; }
 
+        [Obsolete("Temporarily disabled")]
         public bool UseMefForEntitiesMapping { get; set; } = true;
 
         public bool DeclareDbSetPropertiesInDbContext { get; set; }
