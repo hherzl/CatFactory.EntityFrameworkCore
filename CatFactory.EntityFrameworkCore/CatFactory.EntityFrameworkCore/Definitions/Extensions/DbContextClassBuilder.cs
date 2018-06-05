@@ -12,16 +12,16 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
     {
         public static DbContextClassDefinition GetDbContextClassDefinition(this ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection)
         {
-            var classDefinition = new DbContextClassDefinition();
+            var classDefinition = new DbContextClassDefinition
+            {
+                Namespace = projectFeature.GetEntityFrameworkCoreProject().GetDataLayerNamespace(),
+                Name = projectFeature.Project.Database.GetDbContextName(),
+                BaseClass = "DbContext"
+            };
 
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
 
             classDefinition.Namespaces.Add(projectSelection.Settings.UseDataAnnotations ? projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace() : projectFeature.GetEntityFrameworkCoreProject().GetDataLayerConfigurationsNamespace());
-
-            classDefinition.Namespace = projectFeature.GetEntityFrameworkCoreProject().GetDataLayerNamespace();
-            classDefinition.Name = projectFeature.Project.Database.GetDbContextName();
-
-            classDefinition.BaseClass = "DbContext";
 
             classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(string.Format("DbContextOptions<{0}>", classDefinition.Name), "options"))
             {

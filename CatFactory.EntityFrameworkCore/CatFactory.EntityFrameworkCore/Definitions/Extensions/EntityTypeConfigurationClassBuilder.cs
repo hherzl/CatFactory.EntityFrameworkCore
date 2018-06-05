@@ -16,11 +16,11 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             var projectSelection = project.GetSelection(table);
 
-            if (projectSelection.Settings.UseMefForEntitiesMapping)
-            {
+            //if (projectSelection.Settings.UseMefForEntitiesMapping)
+            //{
                 //classDefinition.Namespaces.Add("System.Composition");
                 //classDefinition.Attributes.Add(new MetadataAttribute("Export", "typeof(IEntityTypeConfiguration)"));
-            }
+            //}
 
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore.Metadata.Builders");
@@ -196,11 +196,11 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             var projectSelection = project.GetSelection(view);
 
-            if (projectSelection.Settings.UseMefForEntitiesMapping)
-            {
+            //if (projectSelection.Settings.UseMefForEntitiesMapping)
+            //{
                 //classDefinition.Namespaces.Add("System.Composition");
                 //classDefinition.Attributes.Add(new MetadataAttribute("Export", "typeof(IEntityTypeConfiguration)"));
-            }
+            //}
 
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore.Metadata.Builders");

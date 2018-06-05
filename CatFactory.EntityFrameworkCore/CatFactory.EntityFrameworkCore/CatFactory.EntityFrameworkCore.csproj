@@ -2,22 +2,22 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <Version>1.0.0-beta-sun-build02</Version>
+    <Version>1.0.0-beta-sun-build03</Version>
     <Authors>H. Herzl</Authors>
-    <Company></Company>
-    <Description>CatFactory package for Entity Framework Core scaffolding with enterprise patterns</Description>
+    <Company>Herzl Corp.</Company>
+    <Description>CatFactory Package for Entity Framework Core</Description>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</RepositoryUrl>
     <PackageTags>Entity Framework Core</PackageTags>
-    <PackageReleaseNotes>1.0.0-beta-sun-build02 Version: Core package update and add full support for EF Core 2
+    <PackageReleaseNotes>1.0.0-beta-sun-build03 Version: Core Package Update
 
 Quick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CatFactory.NetCore" Version="1.0.0-beta-sun-build02" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.2" />
+    <PackageReference Include="CatFactory.NetCore" Version="1.0.0-beta-sun-build03" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.1.0" />
   </ItemGroup>
 
 </Project>
