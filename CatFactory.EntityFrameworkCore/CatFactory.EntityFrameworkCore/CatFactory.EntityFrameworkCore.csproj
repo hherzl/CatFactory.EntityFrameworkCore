@@ -2,22 +2,22 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <Version>1.0.0-beta-sun-build03</Version>
+    <Version>1.0.0-beta-sun-build04</Version>
     <Authors>H. Herzl</Authors>
     <Company>Herzl Corp.</Company>
     <Description>CatFactory Package for Entity Framework Core</Description>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</RepositoryUrl>
     <PackageTags>Entity Framework Core</PackageTags>
-    <PackageReleaseNotes>1.0.0-beta-sun-build03 Version: Core Package Update
+    <PackageReleaseNotes>1.0.0-beta-sun-build04 Version: Core Package Update and scaffold entities with no default schema in separate directories for Entity Layer, using of LogHelper class.
 
 Quick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CatFactory.NetCore" Version="1.0.0-beta-sun-build03" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.1.0" />
+    <PackageReference Include="CatFactory.NetCore" Version="1.0.0-beta-sun-build04" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.1.1" />
   </ItemGroup>
 
 </Project>

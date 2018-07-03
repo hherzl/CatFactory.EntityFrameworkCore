@@ -23,7 +23,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             foreach (var table in entityFrameworkCoreProject.Database.Tables)
             {
-                classDefinition.Namespaces.AddUnique(table.HasDefaultSchema() ? entityFrameworkCoreProject.GetEntityLayerNamespace() : entityFrameworkCoreProject.GetEntityLayerNamespace(table.Schema));
+                classDefinition.Namespaces.AddUnique(projectFeature.Project.Database.HasDefaultSchema(table) ? entityFrameworkCoreProject.GetEntityLayerNamespace() : entityFrameworkCoreProject.GetEntityLayerNamespace(table.Schema));
 
                 classDefinition.Namespaces.AddUnique(entityFrameworkCoreProject.GetDataLayerContractsNamespace());
             }
@@ -139,8 +139,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     dataContractPropertiesSets.Add(new
                     {
                         IsForeign = false,
-                        Type = column.Type,
-                        Nullable = column.Nullable,
+                        column.Type,
+                        column.Nullable,
                         ObjectSource = entityAlias,
                         PropertySource = propertyName,
                         Target = propertyName
@@ -165,8 +165,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                             dataContractPropertiesSets.Add(new
                             {
                                 IsForeign = true,
-                                Type = column.Type,
-                                Nullable = column.Nullable,
+                                column.Type,
+                                column.Nullable,
                                 ObjectSource = foreignKeyAlias,
                                 PropertySource = column.GetPropertyName(),
                                 Target = target
@@ -189,7 +189,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                     var foreignKeyAlias = NamingConvention.GetCamelCase(foreignTable.GetEntityName());
 
-                    if (foreignTable.HasDefaultSchema())
+                    if (projectFeature.Project.Database.HasDefaultSchema(foreignTable))
                         classDefinition.Namespaces.AddUnique(entityFrameworkCoreProject.GetEntityLayerNamespace());
                     else
                         classDefinition.Namespaces.AddUnique(entityFrameworkCoreProject.GetEntityLayerNamespace(foreignTable.Schema));
@@ -474,13 +474,14 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
         private static MethodDefinition GetUpdateMethod(ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, ITable table)
         {
-            var lines = new List<ILine>();
-
-            lines.Add(new CommentLine(" Update entity in DbSet"));
-            lines.Add(new CodeLine("Update(changes);"));
-            lines.Add(new CodeLine());
-            lines.Add(new CommentLine(" Save changes through DbContext"));
-            lines.Add(new CodeLine("return await CommitChangesAsync();"));
+            var lines = new List<ILine>
+            {
+                new CommentLine(" Update entity in DbSet"),
+                new CodeLine("Update(changes);"),
+                new CodeLine(),
+                new CommentLine(" Save changes through DbContext"),
+                new CodeLine("return await CommitChangesAsync();")
+            };
 
             return new MethodDefinition("Task<Int32>", table.GetUpdateRepositoryMethodName(), new ParameterDefinition(table.GetEntityName(), "changes"))
             {

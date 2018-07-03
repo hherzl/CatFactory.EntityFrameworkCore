@@ -15,7 +15,10 @@ namespace CatFactory.EntityFrameworkCore
 
             return map.AllowClrNullable ? string.Format("{0}?", map.GetClrType().Name) : map.GetClrType().Name;
         }
-        
+
+        public static bool HasDefaultSchema(this Database database, IDbObject dbObj)
+            => string.IsNullOrEmpty(dbObj.Schema) || string.Compare(dbObj.Schema, database.DefaultSchema, true) == 0;
+
         public static bool PrimaryKeyIsGuid(this Database database, ITable table)
         {
             if (table.PrimaryKey == null)

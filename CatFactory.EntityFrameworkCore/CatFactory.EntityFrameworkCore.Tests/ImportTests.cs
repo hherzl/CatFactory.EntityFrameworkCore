@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using CatFactory.SqlServer;
+﻿using CatFactory.SqlServer;
 using Xunit;
 
 namespace CatFactory.EntityFrameworkCore.Tests
@@ -11,7 +10,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
         {
             // Import database
             var database = SqlServerDatabaseFactory
-                .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Store;integrated security=yes;", "dbo.sysdiagrams");
+                .Import(LoggerHelper.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Store;integrated security=yes;", "dbo.sysdiagrams");
 
             // Create instance of Entity Framework Core project
             var project = new EntityFrameworkCoreProject
@@ -57,7 +56,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
         {
             // Import database
             var database = SqlServerDatabaseFactory
-                .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Store;integrated security=yes;", "dbo.sysdiagrams");
+                .Import(LoggerHelper.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Store;integrated security=yes;", "dbo.sysdiagrams");
 
             // Create instance of Entity Framework Core Project
             var project = new EntityFrameworkCoreProject
@@ -104,7 +103,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
         {
             // Import database
             var database = SqlServerDatabaseFactory
-                .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
+                .Import(LoggerHelper.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
 
             // Create instance of Entity Framework Core Project
             var project = new EntityFrameworkCoreProject
@@ -153,7 +152,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
         {
             // Import database
             var database = SqlServerDatabaseFactory
-                .Import(LoggerMocker.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
+                .Import(LoggerHelper.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
 
             // Create instance of Entity Framework Core Project
             var project = new EntityFrameworkCoreProject
@@ -193,15 +192,12 @@ namespace CatFactory.EntityFrameworkCore.Tests
         public void ProjectScaffoldingForAdventureWorksDatabaseTest()
         {
             // Create instance of factory for SQL Server
-            var factory = new SqlServerDatabaseFactory(LoggerMocker.GetLogger<SqlServerDatabaseFactory>())
+            var factory = new SqlServerDatabaseFactory(LoggerHelper.GetLogger<SqlServerDatabaseFactory>())
             {
                 ConnectionString = "server=(local);database=AdventureWorks2017;integrated security=yes;",
                 ImportSettings = new DatabaseImportSettings
                 {
-                    Exclusions = new List<string>
-                    {
-                        "dbo.sysdiagrams"
-                    }
+                    Exclusions = { "dbo.sysdiagrams" }
                 }
             };
 

@@ -41,6 +41,9 @@ namespace CatFactory.EntityFrameworkCore
         public static string GetEntityLayerDirectory(this EntityFrameworkCoreProject project)
             => Path.Combine(project.OutputDirectory, project.Namespaces.EntityLayer);
 
+        public static string GetEntityLayerDirectory(this EntityFrameworkCoreProject project, string schema)
+            => Path.Combine(project.OutputDirectory, project.Namespaces.EntityLayer, schema);
+
         public static string GetDataLayerDirectory(this EntityFrameworkCoreProject project)
             => Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer);
 

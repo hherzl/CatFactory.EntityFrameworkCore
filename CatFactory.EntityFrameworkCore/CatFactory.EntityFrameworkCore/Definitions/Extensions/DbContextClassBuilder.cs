@@ -34,7 +34,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             {
                 foreach (var table in projectFeature.Project.Database.Tables)
                 {
-                    if (!table.HasDefaultSchema())
+                    if (!projectFeature.Project.Database.HasDefaultSchema(table))
                         classDefinition.Namespaces.AddUnique(projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace(table.Schema));
 
                     classDefinition.Properties.Add(new PropertyDefinition(string.Format("DbSet<{0}>", table.GetEntityName()), table.GetPluralName()));
@@ -42,7 +42,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                 foreach (var view in projectFeature.Project.Database.Views)
                 {
-                    if (!view.HasDefaultSchema())
+                    if (!projectFeature.Project.Database.HasDefaultSchema(view))
                         classDefinition.Namespaces.AddUnique(projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace(view.Schema));
 
                     classDefinition.Properties.Add(new PropertyDefinition(string.Format("DbSet<{0}>", view.GetEntityName()), view.GetPluralName()));

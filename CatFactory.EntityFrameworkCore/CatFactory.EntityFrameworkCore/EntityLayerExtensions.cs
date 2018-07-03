@@ -28,7 +28,10 @@ namespace CatFactory.EntityFrameworkCore
                 if (selection.Settings.UseDataAnnotations)
                     classDefinition.AddDataAnnotations(table, project);
 
-                CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, classDefinition);
+                if (project.Database.HasDefaultSchema(table))
+                    CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, classDefinition);
+                else
+                    CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(table.Schema), selection.Settings.ForceOverwrite, classDefinition);
             }
 
             foreach (var view in project.Database.Views)
@@ -40,7 +43,10 @@ namespace CatFactory.EntityFrameworkCore
                 if (selection.Settings.UseDataAnnotations)
                     classDefinition.AddDataAnnotations(view, project);
 
-                CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, classDefinition);
+                if (project.Database.HasDefaultSchema(view))
+                    CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, classDefinition);
+                else
+                    CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(view.Schema), selection.Settings.ForceOverwrite, classDefinition);
             }
 
             return project;

@@ -18,14 +18,14 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             //if (projectSelection.Settings.UseMefForEntitiesMapping)
             //{
-                //classDefinition.Namespaces.Add("System.Composition");
-                //classDefinition.Attributes.Add(new MetadataAttribute("Export", "typeof(IEntityTypeConfiguration)"));
+            //classDefinition.Namespaces.Add("System.Composition");
+            //classDefinition.Attributes.Add(new MetadataAttribute("Export", "typeof(IEntityTypeConfiguration)"));
             //}
 
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore.Metadata.Builders");
 
-            classDefinition.Namespaces.AddUnique(project.GetEntityLayerNamespace(table.HasDefaultSchema() ? string.Empty : table.Schema));
+            classDefinition.Namespaces.AddUnique(project.GetEntityLayerNamespace(project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema));
 
             classDefinition.Namespace = project.GetDataLayerConfigurationsNamespace();
 
@@ -198,14 +198,14 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             //if (projectSelection.Settings.UseMefForEntitiesMapping)
             //{
-                //classDefinition.Namespaces.Add("System.Composition");
-                //classDefinition.Attributes.Add(new MetadataAttribute("Export", "typeof(IEntityTypeConfiguration)"));
+            //classDefinition.Namespaces.Add("System.Composition");
+            //classDefinition.Attributes.Add(new MetadataAttribute("Export", "typeof(IEntityTypeConfiguration)"));
             //}
 
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore.Metadata.Builders");
 
-            classDefinition.Namespaces.AddUnique(project.GetEntityLayerNamespace(view.HasDefaultSchema() ? string.Empty : view.Schema));
+            classDefinition.Namespaces.AddUnique(project.GetEntityLayerNamespace(project.Database.HasDefaultSchema(view) ? string.Empty : view.Schema));
 
             classDefinition.Namespace = project.GetDataLayerConfigurationsNamespace();
 
