@@ -194,9 +194,9 @@ namespace CatFactory.EntityFrameworkCore.Tests
             // Create instance of factory for SQL Server
             var factory = new SqlServerDatabaseFactory(LoggerHelper.GetLogger<SqlServerDatabaseFactory>())
             {
-                ConnectionString = "server=(local);database=AdventureWorks2017;integrated security=yes;",
                 ImportSettings = new DatabaseImportSettings
                 {
+                    ConnectionString = "server=(local);database=AdventureWorks2017;integrated security=yes;",
                     Exclusions = { "dbo.sysdiagrams" }
                 }
             };
