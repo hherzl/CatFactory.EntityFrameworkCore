@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using CatFactory.CodeFactory;
 using CatFactory.Collections;
-using CatFactory.NetCore;
 using CatFactory.Mapping;
+using CatFactory.NetCore;
 using CatFactory.OOP;
 
 namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
@@ -72,9 +73,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     classDefinition.Methods.Add(GetGetMethod(projectFeature, selection, table));
 
                 foreach (var unique in table.Uniques)
-                {
                     classDefinition.Methods.Add(GetGetByUniqueMethods(projectFeature, table, unique));
-                }
 
                 classDefinition.Methods.Add(GetAddMethod(projectFeature, table));
 
@@ -240,54 +239,41 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                     if (property.IsForeign)
                     {
-                        if (property.Type == "binary" || property.Type == "image" || property.Type == "varbinary")
-                        {
-                            lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Byte[]) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                        }
-                        else if (property.Type == "bit")
-                        {
+                        var dbType = projectFeature.Project.Database.ResolveType(property.Type);
+
+                        if (dbType == null)
+                            throw new Exception(string.Format("There isn't mapping for '{0}' type", property.Type));
+
+                        var clrType = dbType.GetClrType();
+
+                        if (clrType.FullName == typeof(byte[]).FullName)
+                            lines.Add(new CodeLine(2, "{0} = {1} == null ? default(byte[]) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                        else if (clrType.FullName == typeof(bool).FullName)
                             lines.Add(new CodeLine(2, "{0} = {1} == null ? default(bool?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                        }
-                        else if (property.Type.Contains("char") || property.Type.Contains("text"))
-                        {
+                        else if (clrType.FullName == typeof(string).FullName)
                             lines.Add(new CodeLine(2, "{0} = {1} == null ? string.Empty : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                        }
-                        else if (property.Type.Contains("date"))
-                        {
+                        else if (clrType.FullName == typeof(DateTime).FullName)
                             lines.Add(new CodeLine(2, "{0} = {1} == null ? default(DateTime?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                        }
-                        else if (property.Type == "tinyint")
-                        {
-                            lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Byte?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                        }
-                        else if (property.Type == "smallint")
-                        {
+                        else if (clrType.FullName == typeof(TimeSpan).FullName)
+                            lines.Add(new CodeLine(2, "{0} = {1} == null ? default(TimeSpan?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                        else if (clrType.FullName == typeof(byte).FullName)
+                            lines.Add(new CodeLine(2, "{0} = {1} == null ? default(byte?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                        else if (clrType.FullName == typeof(short).FullName)
                             lines.Add(new CodeLine(2, "{0} = {1} == null ? default(short?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                        }
-                        else if (property.Type == "bigint")
-                        {
-                            lines.Add(new CodeLine(2, "{0} = {1} == null ? default(short?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                        }
-                        else if (property.Type == "int")
-                        {
+                        else if (clrType.FullName == typeof(int).FullName)
                             lines.Add(new CodeLine(2, "{0} = {1} == null ? default(int?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                        }
-                        else if (property.Type == "decimal" || property.Type == "money" || property.Type == "smallmoney")
-                        {
+                        else if (clrType.FullName == typeof(long).FullName)
+                            lines.Add(new CodeLine(2, "{0} = {1} == null ? default(long?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
+                        else if (clrType.FullName == typeof(decimal).FullName)
                             lines.Add(new CodeLine(2, "{0} = {1} == null ? default(decimal?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                        }
-                        else if (property.Type == "float")
-                        {
+                        else if (clrType.FullName == typeof(double).FullName)
                             lines.Add(new CodeLine(2, "{0} = {1} == null ? default(double?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                        }
-                        else if (property.Type == "real")
-                        {
+                        else if (clrType.FullName == typeof(float).FullName)
                             lines.Add(new CodeLine(2, "{0} = {1} == null ? default(float?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                        }
-                        else if (property.Type == "uniqueidentifier")
-                        {
+                        else if (clrType.FullName == typeof(Guid).FullName)
                             lines.Add(new CodeLine(2, "{0} = {1} == null ? default(Guid?) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
-                        }
+                        else
+                            lines.Add(new CodeLine(2, "{0} = {1} == null ? default(object) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
                     }
                     else
                     {
@@ -334,7 +320,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                         if (projectFeature.Project.Database.ColumnIsString(column))
                         {
-                            lines.Add(new CodeLine("if (!string.IsNullOrEmpty({0}))", NamingExtensions.namingConvention.GetParameterName(column.Name)));
+                            lines.Add(new CodeLine("if (!string.IsNullOrEmpty({0}))", parameterName));
                             lines.Add(new CodeLine("{"));
                             lines.Add(new CommentLine(1, " Filter by: '{0}'", column.Name));
                             lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
@@ -343,7 +329,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         }
                         else
                         {
-                            lines.Add(new CodeLine("if ({0}.HasValue)", NamingExtensions.namingConvention.GetParameterName(column.Name)));
+                            lines.Add(new CodeLine("if ({0}.HasValue)", parameterName));
                             lines.Add(new CodeLine("{"));
                             lines.Add(new CommentLine(1, " Filter by: '{0}'", column.Name));
                             lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
@@ -373,9 +359,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 new CodeLine("DbContext.Set<{0}>();", view.GetEntityName())
             };
 
-            var parameters = new List<ParameterDefinition> { };
-
-            classDefinition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", view.GetEntityName()), view.GetGetAllRepositoryMethodName(), parameters.ToArray())
+            classDefinition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", view.GetEntityName()), view.GetGetAllRepositoryMethodName())
             {
                 Lines = lines
             });
@@ -491,8 +475,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
         }
 
         private static MethodDefinition GetRemoveMethod(ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, ITable table)
-        {
-            return new MethodDefinition("Task<Int32>", table.GetRemoveRepositoryMethodName(), new ParameterDefinition(table.GetEntityName(), "entity"))
+            => new MethodDefinition("Task<Int32>", table.GetRemoveRepositoryMethodName(), new ParameterDefinition(table.GetEntityName(), "entity"))
             {
                 IsAsync = true,
                 Lines = new List<ILine>
@@ -504,6 +487,5 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     new CodeLine("return await CommitChangesAsync();")
                 }
             };
-        }
     }
 }

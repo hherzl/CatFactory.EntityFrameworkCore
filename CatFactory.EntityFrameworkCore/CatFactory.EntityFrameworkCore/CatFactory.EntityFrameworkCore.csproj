@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <Version>1.0.0-beta-sun-build05</Version>
+    <Version>1.0.0-beta-sun-build06</Version>
     <Authors>H. Herzl</Authors>
     <Company>Herzl Corp.</Company>
     <Description>CatFactory Package for Entity Framework Core</Description>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</RepositoryUrl>
     <PackageTags>Entity Framework Core</PackageTags>
-    <PackageReleaseNotes>1.0.0-beta-sun-build05 Version: Core Package Update
+    <PackageReleaseNotes>1.0.0-beta-sun-build06 Version: Using database type mappings for linq queries.
 
 Quick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</PackageProjectUrl>

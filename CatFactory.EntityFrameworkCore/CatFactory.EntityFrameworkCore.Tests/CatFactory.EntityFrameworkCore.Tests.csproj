@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CatFactory.SqlServer" Version="1.0.0-beta-sun-build10" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.2" />
+    <PackageReference Include="CatFactory.SqlServer" Version="1.0.0-beta-sun-build11" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
     <PackageReference Include="xunit" Version="2.4.0-beta.1.build3958" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0-beta.1.build3958" />
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />

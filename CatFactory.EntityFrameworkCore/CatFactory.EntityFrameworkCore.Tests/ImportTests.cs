@@ -6,7 +6,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
     public class ImportTests
     {
         [Fact]
-        public void ProjectScaffoldingFromExistingDatabaseTest()
+        public void ProjectScaffoldingForStoreDatabaseTest()
         {
             // Import database
             var database = SqlServerDatabaseFactory
@@ -52,7 +52,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
         }
 
         [Fact]
-        public void ProjectScaffoldingWithDataAnnotationsFromExistingDatabaseTest()
+        public void ProjectScaffoldingWithDataAnnotationsForStoreDatabaseTest()
         {
             // Import database
             var database = SqlServerDatabaseFactory
@@ -99,7 +99,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
         }
 
         [Fact]
-        public void ProjectScaffoldingWithModifiedNamespacesFromExistingDatabaseTest()
+        public void ProjectScaffoldingWithModifiedNamespacesForNorthwindDatabaseTest()
         {
             // Import database
             var database = SqlServerDatabaseFactory
@@ -217,6 +217,45 @@ namespace CatFactory.EntityFrameworkCore.Tests
             {
                 settings.ForceOverwrite = true;
             });
+
+            // Build features for project, group all entities by schema into a feature
+            project.BuildFeatures();
+
+            // Add event handlers to before and after of scaffold
+
+            project.ScaffoldingDefinition += (source, args) =>
+            {
+                // Add code to perform operations with code builder instance before to create code file
+            };
+
+            project.ScaffoldedDefinition += (source, args) =>
+            {
+                // Add code to perform operations after of create code file
+            };
+
+            // Scaffolding =^^=
+            project
+                .ScaffoldEntityLayer()
+                .ScaffoldDataLayer();
+        }
+
+        [Fact]
+        public void ProjectScaffoldingForWideWorldImportersDatabaseTest()
+        {
+            // Import database
+            var database = SqlServerDatabaseFactory
+                .Import(LoggerHelper.GetLogger<SqlServerDatabaseFactory>(), "server=(local);database=WideWorldImporters;integrated security=yes;", "dbo.sysdiagrams");
+
+            // Create instance of Entity Framework Core project
+            var project = new EntityFrameworkCoreProject
+            {
+                Name = "Store",
+                Database = database,
+                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\WideWorldImporters"
+            };
+
+            // Apply settings for Entity Framework Core project
+            project.GlobalSelection(settings => settings.ForceOverwrite = true);
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();

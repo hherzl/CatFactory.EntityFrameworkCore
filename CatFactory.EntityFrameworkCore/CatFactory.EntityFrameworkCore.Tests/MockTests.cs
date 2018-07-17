@@ -2,10 +2,10 @@
 
 namespace CatFactory.EntityFrameworkCore.Tests
 {
-    public class MockGenerationTests
+    public class MockTests
     {
         [Fact]
-        public void ProjectScaffoldingWithDefaultsFromClassicMockDatabaseTest()
+        public void ProjectScaffoldingForMockDatabaseTest()
         {
             // Create instance of EF Core Project
             var project = new EntityFrameworkCoreProject
