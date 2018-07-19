@@ -60,7 +60,14 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             if (selection.Settings.UseDataAnnotations)
             {
-                var primaryKeys = project.Database.Tables.Where(item => item.PrimaryKey != null).Select(item => item.GetColumnsFromConstraint(item.PrimaryKey).Select(c => c.Name).First()).ToList();
+                var primaryKeys = project
+                    .Database
+                    .Tables
+                    .Where(item => item.PrimaryKey != null)
+                    .Select(item => item.GetColumnsFromConstraint(item.PrimaryKey)
+                    .Select(c => c.Name)
+                    .First())
+                    .ToList();
 
                 foreach (var view in project.Database.Views)
                 {

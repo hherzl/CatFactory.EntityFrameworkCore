@@ -10,42 +10,20 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
         {
             var classDefinition = new DatabaseEntityMapperClassDefinition
             {
+                Namespaces =
+                {
+                    "System.Collections.Generic"
+                },
                 Namespace = project.GetDataLayerConfigurationsNamespace(),
                 Name = project.Database.GetDbEntityMapperName(),
                 BaseClass = "EntityMapper"
             };
 
-            var lines = new List<ILine>();
-
-            var selection = project.GlobalSelection();
-
-            //if (selection.Settings.UseMefForEntitiesMapping)
-            //{
-            //classDefinition.Namespaces.Add("System.Composition.Hosting");
-            //classDefinition.Namespaces.Add("System.Reflection");
-
-            //lines.Add(new CommentLine(" Get current assembly"));
-            //lines.Add(new CodeLine("var currentAssembly = typeof({0}).GetTypeInfo().Assembly;", project.Database.GetDbContextName()));
-            //lines.Add(new CodeLine());
-
-            //lines.Add(new CommentLine(" Get configuration for container from current assembly"));
-            //lines.Add(new CodeLine("var configuration = new ContainerConfiguration().WithAssembly(currentAssembly);"));
-            //lines.Add(new CodeLine());
-
-            //lines.Add(new CommentLine(" Create container for exports"));
-            //lines.Add(new CodeLine("using (var container = configuration.CreateContainer())"));
-            //lines.Add(new CodeLine("{"));
-            //lines.Add(new CommentLine(1, " Get all definitions that implement IEntityMap interface"));
-            //lines.Add(new CodeLine(1, "Configurations = container.GetExports<IEntityTypeConfiguration>();"));
-            //lines.Add(new CodeLine("}"));
-            //}
-            //else
-            //{
-            classDefinition.Namespaces.Add("System.Collections.Generic");
-
-            lines.Add(new CodeLine("Configurations = new List<IEntityTypeConfiguration>()"));
-
-            lines.Add(new CodeLine("{"));
+            var lines = new List<ILine>
+            {
+                new CodeLine("Configurations = new List<IEntityTypeConfiguration>()"),
+                new CodeLine("{")
+            };
 
             for (var i = 0; i < project.Database.Tables.Count; i++)
             {
@@ -55,7 +33,6 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             }
 
             lines.Add(new CodeLine("};"));
-            //}
 
             classDefinition.Constructors.Add(new ClassConstructorDefinition { Lines = lines });
 

@@ -5,21 +5,26 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
     public static class EntityMapperInterfaceBuilder
     {
         public static EntityMapperInterfaceDefinition GetEntityMapperInterfaceDefinition(this EntityFrameworkCoreProject project)
-        {
-            var interfaceDefinition = new EntityMapperInterfaceDefinition();
-
-            interfaceDefinition.Namespaces.Add("System.Collections.Generic");
-            interfaceDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
-
-            interfaceDefinition.Namespace = project.GetDataLayerConfigurationsNamespace();
-
-            interfaceDefinition.Name = "IEntityMapper";
-
-            interfaceDefinition.Properties.Add(new PropertyDefinition("IEnumerable<IEntityTypeConfiguration>", "Configurations") { IsReadOnly = true });
-
-            interfaceDefinition.Methods.Add(new MethodDefinition("void", "ConfigureEntities", new ParameterDefinition("ModelBuilder", "modelBuilder")));
-
-            return interfaceDefinition;
-        }
+            => new EntityMapperInterfaceDefinition
+            {
+                Namespaces =
+                {
+                    "System.Collections.Generic",
+                    "Microsoft.EntityFrameworkCore"
+                },
+                Namespace = project.GetDataLayerConfigurationsNamespace(),
+                Name = "IEntityMapper",
+                Properties =
+                {
+                    new PropertyDefinition("IEnumerable<IEntityTypeConfiguration>", "Configurations")
+                    {
+                        IsReadOnly = true
+                    }
+                },
+                Methods =
+                {
+                    new MethodDefinition("void", "ConfigureEntities", new ParameterDefinition("ModelBuilder", "modelBuilder"))
+                }
+            };
     }
 }

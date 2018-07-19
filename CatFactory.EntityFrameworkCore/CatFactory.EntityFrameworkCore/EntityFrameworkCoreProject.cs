@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using CatFactory.CodeFactory;
 using CatFactory.Mapping;
@@ -47,12 +48,28 @@ namespace CatFactory.EntityFrameworkCore
                 .Where(x => x.Schema == schema)
                 .Select(y => new DbObject { Schema = y.Schema, Name = y.Name, Type = "View" }));
 
+            // todo: Add scalar functions
+            // todo: Add table functions
+
             return result;
         }
 
-        public ProjectNamespaces Namespaces { get; set; } = new ProjectNamespaces();
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private ProjectNamespaces m_namespaces;
 
-        // todo: add logic to show author's info
+        public ProjectNamespaces Namespaces
+        {
+            get
+            {
+                return m_namespaces ?? (m_namespaces = new ProjectNamespaces());
+            }
+            set
+            {
+                m_namespaces = value;
+            }
+        }
+
+        // todo: Add logic to show author's info
         public AuthorInfo AuthorInfo { get; set; }
     }
 }

@@ -2,8 +2,8 @@
 using System.Linq;
 using CatFactory.CodeFactory;
 using CatFactory.Collections;
-using CatFactory.NetCore;
 using CatFactory.Mapping;
+using CatFactory.NetCore;
 using CatFactory.OOP;
 
 namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
@@ -13,14 +13,6 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
         public static EntityTypeConfigurationClassDefinition GetEntityTypeConfigurationClassDefinition(this EntityFrameworkCoreProject project, ITable table)
         {
             var classDefinition = new EntityTypeConfigurationClassDefinition();
-
-            var projectSelection = project.GetSelection(table);
-
-            //if (projectSelection.Settings.UseMefForEntitiesMapping)
-            //{
-            //classDefinition.Namespaces.Add("System.Composition");
-            //classDefinition.Attributes.Add(new MetadataAttribute("Export", "typeof(IEntityTypeConfiguration)"));
-            //}
 
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore.Metadata.Builders");
@@ -108,6 +100,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             mapLines.Add(new CodeLine());
 
+            var projectSelection = project.GetSelection(table);
+
             for (var i = 0; i < columns.Count; i++)
             {
                 var column = columns[i];
@@ -149,7 +143,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             if (table.ForeignKeys.Count > 0)
             {
-                mapLines.Add(new CommentLine(1, " Add configuration for foreign keys"));
+                mapLines.Add(new CommentLine(" Add configuration for foreign keys"));
 
                 foreach (var foreignKey in table.ForeignKeys)
                 {
@@ -193,14 +187,6 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
         public static CSharpClassDefinition GetEntityTypeConfigurationClassDefinition(this EntityFrameworkCoreProject project, IView view)
         {
             var classDefinition = new CSharpClassDefinition();
-
-            var projectSelection = project.GetSelection(view);
-
-            //if (projectSelection.Settings.UseMefForEntitiesMapping)
-            //{
-            //classDefinition.Namespaces.Add("System.Composition");
-            //classDefinition.Attributes.Add(new MetadataAttribute("Export", "typeof(IEntityTypeConfiguration)"));
-            //}
 
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
             classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore.Metadata.Builders");

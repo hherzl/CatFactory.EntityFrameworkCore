@@ -6,7 +6,10 @@
             => new EntityInterfaceDefinition
             {
                 Namespace = project.GetEntityLayerNamespace(),
-                Namespaces = new System.Collections.Generic.List<string>() { "System" },
+                Namespaces =
+                {
+                    "System"
+                },
                 Name = "IEntity"
             };
     }
