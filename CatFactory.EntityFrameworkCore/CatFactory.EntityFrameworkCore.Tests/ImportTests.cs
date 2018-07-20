@@ -8,9 +8,23 @@ namespace CatFactory.EntityFrameworkCore.Tests
         [Fact]
         public void ProjectScaffoldingForStoreDatabaseTest()
         {
+            // Create database factory
+            var databaseFactory = new SqlServerDatabaseFactory(SqlServerDatabaseFactory.GetLogger())
+            {
+                DatabaseImportSettings = new DatabaseImportSettings
+                {
+                    ConnectionString = "server=(local);database=Store;integrated security=yes;",
+                    Exclusions =
+                    {
+                        "dbo.sysdiagrams",
+                        "dbo.fn_diagramobjects"
+                    },
+                    ImportScalarFunctions = true
+                }
+            };
+
             // Import database
-            var database = SqlServerDatabaseFactory
-                .Import(SqlServerDatabaseFactory.GetLogger(), "server=(local);database=Store;integrated security=yes;", "dbo.sysdiagrams");
+            var database = databaseFactory.Import();
 
             // Create instance of Entity Framework Core project
             var project = new EntityFrameworkCoreProject

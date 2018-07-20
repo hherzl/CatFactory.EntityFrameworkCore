@@ -49,6 +49,44 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
             }
 
+            foreach (var scalarFunction in projectFeature.Project.Database.ScalarFunctions)
+            {
+                classDefinition.Namespaces.AddUnique("System");
+
+                var returnType = projectFeature.Project.Database.ResolveType(scalarFunction.Parameters[0].Type);
+
+                var method = new MethodDefinition
+                {
+                    Attributes =
+                    {
+                        new MetadataAttribute("DbFunction")
+                        {
+                            Sets =
+                            {
+                                new MetadataAttributeSet("FunctionName", string.Format("\"{0}\"", scalarFunction.Name)),
+                                new MetadataAttributeSet("Schema", string.Format("\"{0}\"", scalarFunction.Schema))
+                            }
+                        }
+                    },
+                    IsStatic = true,
+                    Type = returnType.HasClrAliasType ? returnType.ClrAliasType : returnType.GetClrType().Name,
+                    Name = scalarFunction.GetScalarFunctionMethodName(),
+                    Lines = new List<ILine>
+                    {
+                        new CodeLine("throw new Exception();")
+                    }
+                };
+
+                var parameters = scalarFunction.Parameters.Where(item => !string.IsNullOrEmpty(item.Name)).ToList();
+
+                foreach (var parameter in parameters)
+                {
+                    method.Parameters.Add(new ParameterDefinition(parameter.Type, parameter.Name));
+                }
+
+                classDefinition.Methods.Add(method);
+            }
+
             return classDefinition;
         }
 

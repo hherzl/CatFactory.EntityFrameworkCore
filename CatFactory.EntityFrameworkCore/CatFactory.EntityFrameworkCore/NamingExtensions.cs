@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using CatFactory.CodeFactory;
-using CatFactory.NetCore;
 using CatFactory.Mapping;
+using CatFactory.NetCore;
 
 namespace CatFactory.EntityFrameworkCore
 {
@@ -57,5 +57,8 @@ namespace CatFactory.EntityFrameworkCore
 
         public static string GetClassRepositoryName(this ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature)
             => namingConvention.GetClassName(string.Format("{0}Repository", projectFeature.Name));
+
+        public static string GetScalarFunctionMethodName(this ScalarFunction scalarFunction)
+            => string.Format("{0}{1}", namingConvention.GetClassName(scalarFunction.Schema), namingConvention.GetClassName(scalarFunction.Name));
     }
 }
