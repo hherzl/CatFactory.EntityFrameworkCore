@@ -112,12 +112,17 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     var result = view.Columns.Where(item => primaryKeys.Contains(item.Name)).ToList();
 
                     if (result.Count == 0)
-                        lines.Add(LineHelper.Warning(" Add configuration for {0} entity", view.GetEntityName()));
+                    {
+                        //lines.Add(LineHelper.Warning(" Add configuration for {0} entity", view.GetEntityName()));
+                        lines.Add(new CodeLine("modelBuilder.Entity<{0}>().HasKey(p => new {{ {1} }});", view.GetEntityName(), string.Join(", ", view.Columns.Select(item => string.Format("p.{0}", NamingExtensions.namingConvention.GetPropertyName(item.Name))))));
+                        lines.Add(new CodeLine());
+                    }
                     else
+                    {
                         lines.Add(new CodeLine("modelBuilder.Entity<{0}>().HasKey(p => new {{ {1} }});", view.GetEntityName(), string.Join(", ", result.Select(item => string.Format("p.{0}", NamingExtensions.namingConvention.GetPropertyName(item.Name))))));
+                        lines.Add(new CodeLine());
+                    }
                 }
-
-                lines.Add(new CodeLine());
             }
             else
             {
@@ -146,9 +151,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
 
                 lines.Add(new CodeLine(";"));
+                lines.Add(new CodeLine());
             }
 
-            lines.Add(new CodeLine());
             lines.Add(new CodeLine("base.OnModelCreating(modelBuilder);"));
 
             return new MethodDefinition(AccessModifier.Protected, "void", "OnModelCreating", new ParameterDefinition("ModelBuilder", "modelBuilder"))

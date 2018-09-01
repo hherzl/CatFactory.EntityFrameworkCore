@@ -8,7 +8,7 @@ namespace CatFactory.EntityFrameworkCore
     {
         public static string ResolveType(this Database database, Column column)
         {
-            var map = database.Mappings.FirstOrDefault(item => item.DatabaseType == column.Type);
+            var map = database.DatabaseTypeMaps.FirstOrDefault(item => item.DatabaseType == column.Type);
 
             if (map == null || map.GetClrType() == null)
                 return "object";
@@ -31,7 +31,7 @@ namespace CatFactory.EntityFrameworkCore
 
             var column = columns.First();
 
-            return database.Mappings.Where(item => item.DatabaseType == column.Type && item.ClrFullNameType == typeof(Guid).FullName).Count() == 0 ? false : true;
+            return database.DatabaseTypeMaps.Where(item => item.DatabaseType == column.Type && item.ClrFullNameType == typeof(Guid).FullName).Count() == 0 ? false : true;
         }
     }
 }

@@ -173,7 +173,7 @@ namespace CatFactory.EntityFrameworkCore
                 "CatFactory Development Team ==^^=="
             };
 
-            TextFileHelper.CreateFile(Path.Combine(project.OutputDirectory, "CatFactory.EntityFrameworkCore.ReadMe.txt"), lines.ToStringBuilder().ToString());
+            File.WriteAllText(Path.Combine(project.OutputDirectory, "CatFactory.EntityFrameworkCore.ReadMe.txt"), lines.ToStringBuilder().ToString());
         }
     }
 }
