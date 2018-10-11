@@ -5,21 +5,57 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
     public static class RepositoryInterfaceBuilder
     {
         public static RepositoryInterfaceDefinition GetRepositoryInterfaceDefinition(this EntityFrameworkCoreProject project)
-        {
-            var interfaceDefinition = new RepositoryInterfaceDefinition();
-
-            interfaceDefinition.Namespaces.Add("System");
-            interfaceDefinition.Namespaces.Add("System.Threading.Tasks");
-
-            interfaceDefinition.Namespace = project.GetDataLayerContractsNamespace();
-            interfaceDefinition.Name = "IRepository";
-
-            interfaceDefinition.Implements.Add("IDisposable");
-
-            interfaceDefinition.Methods.Add(new MethodDefinition("Int32", "CommitChanges"));
-            interfaceDefinition.Methods.Add(new MethodDefinition("Task<Int32>", "CommitChangesAsync"));
-
-            return interfaceDefinition;
-        }
+            => new RepositoryInterfaceDefinition
+            {
+                Namespaces =
+                {
+                    "System",
+                    "System.Threading.Tasks"
+                },
+                Namespace = project.GetDataLayerContractsNamespace(),
+                Name = "IRepository",
+                Implements =
+                {
+                    "IDisposable"
+                },
+                Methods =
+                {
+                    new MethodDefinition("void", "Add", new ParameterDefinition("TEntity", "entity"))
+                    {
+                        GenericTypes =
+                        {
+                            new GenericTypeDefinition
+                            {
+                                Name = "TEntity",
+                                Constraint = "TEntity : class"
+                            }
+                        }
+                    },
+                    new MethodDefinition("void", "Update", new ParameterDefinition("TEntity", "entity"))
+                    {
+                        GenericTypes =
+                        {
+                            new GenericTypeDefinition
+                            {
+                                Name = "TEntity",
+                                Constraint = "TEntity : class"
+                            }
+                        }
+                    },
+                    new MethodDefinition("void", "Remove", new ParameterDefinition("TEntity", "entity"))
+                    {
+                        GenericTypes =
+                        {
+                            new GenericTypeDefinition
+                            {
+                                Name = "TEntity",
+                                Constraint = "TEntity : class"
+                            }
+                        }
+                    },
+                    new MethodDefinition("Int32", "CommitChanges"),
+                    new MethodDefinition("Task<Int32>", "CommitChangesAsync")
+                }
+            };
     }
 }
