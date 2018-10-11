@@ -18,9 +18,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             var selection = project.GlobalSelection();
 
             if (selection.Settings.AuditEntity != null)
-            {
                 classDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
-            }
 
             classDefinition.Namespace = project.GetDataLayerContractsNamespace();
 
@@ -31,7 +29,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(project.Database.GetDbContextName(), "dbContext"))
             {
-                Lines = new List<ILine>
+                Lines =
                 {
                     new CodeLine("DbContext = dbContext;")
                 }
@@ -39,7 +37,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             classDefinition.Methods.Add(new MethodDefinition("void", "Dispose")
             {
-                Lines = new List<ILine>
+                Lines =
                 {
                     new CodeLine("if (!Disposed)"),
                     new CodeLine("{"),
@@ -58,7 +56,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             classDefinition.Methods.Add(new MethodDefinition("Int32", "CommitChanges")
             {
-                Lines = new List<ILine>
+                Lines =
                 {
                     new CodeLine("return DbContext.SaveChanges();")
                 }
@@ -66,7 +64,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             classDefinition.Methods.Add(new MethodDefinition("Task<Int32>", "CommitChangesAsync")
             {
-                Lines = new List<ILine>
+                Lines =
                 {
                     new CodeLine("return DbContext.SaveChangesAsync();")
                 }
@@ -117,10 +115,10 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 new CodeLine("}")
             });
 
-            return new MethodDefinition(AccessModifier.Protected, "void", "Add", new ParameterDefinition("TEntity", "entity"))
+            return new MethodDefinition("void", "Add", new ParameterDefinition("TEntity", "entity"))
             {
                 IsVirtual = true,
-                GenericTypes = new List<GenericTypeDefinition>
+                GenericTypes =
                 {
                     new GenericTypeDefinition
                     {
@@ -170,10 +168,10 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 new CodeLine("entry.State = EntityState.Modified;")
             });
 
-            return new MethodDefinition(AccessModifier.Protected, "void", "Update", new ParameterDefinition("TEntity", "entity"))
+            return new MethodDefinition("void", "Update", new ParameterDefinition("TEntity", "entity"))
             {
                 IsVirtual = true,
-                GenericTypes = new List<GenericTypeDefinition>
+                GenericTypes =
                 {
                     new GenericTypeDefinition
                     {
@@ -187,10 +185,10 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
         private static MethodDefinition GetRemoveMethod(EntityFrameworkCoreProject project)
         {
-            return new MethodDefinition(AccessModifier.Protected, "void", "Remove", new ParameterDefinition("TEntity", "entity"))
+            return new MethodDefinition("void", "Remove", new ParameterDefinition("TEntity", "entity"))
             {
                 IsVirtual = true,
-                GenericTypes = new List<GenericTypeDefinition>
+                GenericTypes =
                 {
                     new GenericTypeDefinition
                     {

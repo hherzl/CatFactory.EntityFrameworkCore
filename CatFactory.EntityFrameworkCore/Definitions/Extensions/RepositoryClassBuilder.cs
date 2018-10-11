@@ -74,14 +74,6 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                 foreach (var unique in table.Uniques)
                     classDefinition.Methods.Add(GetGetByUniqueMethods(projectFeature, table, unique));
-
-                classDefinition.Methods.Add(GetAddMethod(projectFeature, table));
-
-                if (table.PrimaryKey != null)
-                {
-                    classDefinition.Methods.Add(GetUpdateMethod(projectFeature, table));
-                    classDefinition.Methods.Add(GetRemoveMethod(projectFeature, table));
-                }
             }
 
             var views = projectFeature
@@ -376,7 +368,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             return new MethodDefinition(string.Format("Task<{0}>", table.GetEntityName()), table.GetGetByUniqueRepositoryMethodName(unique), new ParameterDefinition(table.GetEntityName(), "entity"))
             {
                 IsAsync = true,
-                Lines = new List<ILine>
+                Lines =
                 {
                     new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", selection.Settings.DeclareDbSetPropertiesInDbContext ? table.GetPluralName() : string.Format("Set<{0}>()", table.GetEntityName()), expression)
                 }
@@ -424,7 +416,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 return new MethodDefinition(string.Format("Task<{0}>", table.GetEntityName()), table.GetGetRepositoryMethodName(), new ParameterDefinition(table.GetEntityName(), "entity"))
                 {
                     IsAsync = true,
-                    Lines = new List<ILine>
+                    Lines =
                     {
                         new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", projectSelection .Settings.DeclareDbSetPropertiesInDbContext ? table.GetPluralName() : string.Format("Set<{0}>()", table.GetEntityName()), expression)
                     }
@@ -455,37 +447,5 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 Lines = lines
             };
         }
-
-        private static MethodDefinition GetUpdateMethod(ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, ITable table)
-        {
-            var lines = new List<ILine>
-            {
-                new CommentLine(" Update entity in DbSet"),
-                new CodeLine("Update(changes);"),
-                new CodeLine(),
-                new CommentLine(" Save changes through DbContext"),
-                new CodeLine("return await CommitChangesAsync();")
-            };
-
-            return new MethodDefinition("Task<Int32>", table.GetUpdateRepositoryMethodName(), new ParameterDefinition(table.GetEntityName(), "changes"))
-            {
-                IsAsync = true,
-                Lines = lines
-            };
-        }
-
-        private static MethodDefinition GetRemoveMethod(ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, ITable table)
-            => new MethodDefinition("Task<Int32>", table.GetRemoveRepositoryMethodName(), new ParameterDefinition(table.GetEntityName(), "entity"))
-            {
-                IsAsync = true,
-                Lines = new List<ILine>
-                {
-                    new CommentLine(" Remove entity from DbSet"),
-                    new CodeLine("Remove(entity);"),
-                    new CodeLine(),
-                    new CommentLine(" Save changes through DbContext"),
-                    new CodeLine("return await CommitChangesAsync();")
-                }
-            };
     }
 }

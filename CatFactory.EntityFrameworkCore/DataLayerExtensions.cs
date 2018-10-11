@@ -30,14 +30,18 @@ namespace CatFactory.EntityFrameworkCore
             {
                 foreach (var table in project.Database.Tables)
                 {
-                    CSharpCodeBuilder
-                        .CreateFiles(project.OutputDirectory, project.GetDataLayerConfigurationsDirectory(), projectSelection.Settings.ForceOverwrite, project.GetEntityTypeConfigurationClassDefinition(table));
+                    if (project.Database.HasDefaultSchema(table))
+                        CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerConfigurationsDirectory(), projectSelection.Settings.ForceOverwrite, project.GetEntityTypeConfigurationClassDefinition(table));
+                    else
+                        CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerConfigurationsDirectory(table.Schema), projectSelection.Settings.ForceOverwrite, project.GetEntityTypeConfigurationClassDefinition(table));
                 }
 
                 foreach (var view in project.Database.Views)
                 {
-                    CSharpCodeBuilder
-                        .CreateFiles(project.OutputDirectory, project.GetDataLayerConfigurationsDirectory(), projectSelection.Settings.ForceOverwrite, project.GetEntityTypeConfigurationClassDefinition(view));
+                    if (project.Database.HasDefaultSchema(view))
+                        CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerConfigurationsDirectory(), projectSelection.Settings.ForceOverwrite, project.GetEntityTypeConfigurationClassDefinition(view));
+                    else
+                        CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerConfigurationsDirectory(view.Schema), projectSelection.Settings.ForceOverwrite, project.GetEntityTypeConfigurationClassDefinition(view));
                 }
             }
         }
@@ -76,7 +80,10 @@ namespace CatFactory.EntityFrameworkCore
 
                 var classDefinition = new CSharpClassDefinition
                 {
-                    Namespaces = new List<string> { "System" },
+                    Namespaces =
+                    {
+                        "System"
+                    },
                     Namespace = project.GetDataLayerDataContractsNamespace(),
                     Name = table.GetDataContractName()
                 };

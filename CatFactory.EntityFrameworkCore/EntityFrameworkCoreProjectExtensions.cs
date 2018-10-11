@@ -29,6 +29,9 @@ namespace CatFactory.EntityFrameworkCore
         public static string GetDataLayerConfigurationsNamespace(this EntityFrameworkCoreProject project)
             => string.Join(".", namingConvention.GetClassName(project.Name), project.Namespaces.DataLayer, project.Namespaces.Configurations);
 
+        public static string GetDataLayerConfigurationsNamespace(this EntityFrameworkCoreProject project, string schema)
+            => string.Join(".", namingConvention.GetClassName(project.Name), project.Namespaces.DataLayer, project.Namespaces.Configurations, schema);
+
         public static string GetDataLayerContractsNamespace(this EntityFrameworkCoreProject project)
             => string.Join(".", namingConvention.GetClassName(project.Name), project.Namespaces.DataLayer, project.Namespaces.Contracts);
 
@@ -49,6 +52,9 @@ namespace CatFactory.EntityFrameworkCore
 
         public static string GetDataLayerConfigurationsDirectory(this EntityFrameworkCoreProject project)
             => Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer, project.Namespaces.Configurations);
+
+        public static string GetDataLayerConfigurationsDirectory(this EntityFrameworkCoreProject project, string schema)
+            => Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer, project.Namespaces.Configurations, schema);
 
         public static string GetDataLayerContractsDirectory(this EntityFrameworkCoreProject project)
             => Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer, project.Namespaces.Contracts);

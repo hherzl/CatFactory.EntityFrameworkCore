@@ -3,7 +3,6 @@ using System.Linq;
 using CatFactory.CodeFactory;
 using CatFactory.Collections;
 using CatFactory.Mapping;
-using CatFactory.NetCore;
 using CatFactory.OOP;
 
 namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
@@ -46,6 +45,20 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         classDefinition.Namespaces.AddUnique(projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace(view.Schema));
 
                     classDefinition.Properties.Add(new PropertyDefinition(string.Format("DbSet<{0}>", view.GetEntityName()), view.GetPluralName()));
+                }
+            }
+            else
+            {
+                foreach (var table in projectFeature.Project.Database.Tables)
+                {
+                    if (!projectFeature.Project.Database.HasDefaultSchema(table))
+                        classDefinition.Namespaces.AddUnique(projectFeature.GetEntityFrameworkCoreProject().GetDataLayerConfigurationsNamespace(table.Schema));
+                }
+
+                foreach (var view in projectFeature.Project.Database.Views)
+                {
+                    if (!projectFeature.Project.Database.HasDefaultSchema(view))
+                        classDefinition.Namespaces.AddUnique(projectFeature.GetEntityFrameworkCoreProject().GetDataLayerConfigurationsNamespace(view.Schema));
                 }
             }
 
@@ -113,7 +126,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                     if (result.Count == 0)
                     {
-                        //lines.Add(LineHelper.Warning(" Add configuration for {0} entity", view.GetEntityName()));
+                        // todo: Check these lines
+                        // lines.Add(LineHelper.Warning(" Add configuration for {0} entity", view.GetEntityName()));
+
                         lines.Add(new CodeLine("modelBuilder.Entity<{0}>().HasKey(p => new {{ {1} }});", view.GetEntityName(), string.Join(", ", view.Columns.Select(item => string.Format("p.{0}", NamingExtensions.namingConvention.GetPropertyName(item.Name))))));
                         lines.Add(new CodeLine());
                     }

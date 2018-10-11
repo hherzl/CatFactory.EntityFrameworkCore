@@ -173,13 +173,13 @@ namespace CatFactory.EntityFrameworkCore.Tests
             {
                 Name = "Northwind",
                 Database = database,
-                OutputDirectory = "C:\\VsCode\\Northwind\\src"
+                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\Northwind"
             };
 
             // Apply settings for Entity Framework Core project
             project.GlobalSelection(settings => settings.ForceOverwrite = true);
 
-            project.Select("Orders", settings => settings.EntitiesWithDataContracts = true);
+            project.Select("dbo.Orders", settings => settings.EntitiesWithDataContracts = true);
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
@@ -206,17 +206,20 @@ namespace CatFactory.EntityFrameworkCore.Tests
         public void ProjectScaffoldingForAdventureWorksDatabaseTest()
         {
             // Create instance of factory for SQL Server
-            var factory = new SqlServerDatabaseFactory(SqlServerDatabaseFactory.GetLogger())
+            var databaseFactory = new SqlServerDatabaseFactory(SqlServerDatabaseFactory.GetLogger())
             {
                 DatabaseImportSettings = new DatabaseImportSettings
                 {
                     ConnectionString = "server=(local);database=AdventureWorks2017;integrated security=yes;",
-                    Exclusions = { "dbo.sysdiagrams" }
+                    Exclusions =
+                    {
+                        "dbo.sysdiagrams"
+                    }
                 }
             };
 
             // Import database
-            var database = factory.Import();
+            var database = databaseFactory.Import();
 
             // Create instance of Entity Framework Core Project
             var project = new EntityFrameworkCoreProject
@@ -263,7 +266,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
             // Create instance of Entity Framework Core project
             var project = new EntityFrameworkCoreProject
             {
-                Name = "Store",
+                Name = "WideWorldImporters",
                 Database = database,
                 OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\WideWorldImporters"
             };
