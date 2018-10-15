@@ -84,7 +84,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     IsStatic = true,
                     Type = returnType.HasClrAliasType ? returnType.ClrAliasType : returnType.GetClrType().Name,
                     Name = scalarFunction.GetScalarFunctionMethodName(),
-                    Lines = new List<ILine>
+                    Lines =
                     {
                         new CodeLine("throw new Exception();")
                     }

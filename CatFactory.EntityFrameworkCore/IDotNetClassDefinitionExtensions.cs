@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using CatFactory.NetCore;
+﻿using System.Linq;
 using CatFactory.Mapping;
+using CatFactory.NetCore;
 using CatFactory.OOP;
 
 namespace CatFactory.EntityFrameworkCore
@@ -12,7 +11,7 @@ namespace CatFactory.EntityFrameworkCore
         {
             classDefinition.Attributes.Add(new MetadataAttribute("Table", string.Format("\"{0}\"", table.Name))
             {
-                Sets = new List<MetadataAttributeSet>
+                Sets =
                 {
                     new MetadataAttributeSet("Schema", string.Format("\"{0}\"", table.Schema))
                 }
@@ -53,7 +52,7 @@ namespace CatFactory.EntityFrameworkCore
         {
             classDefinition.Attributes.Add(new MetadataAttribute("Table", string.Format("\"{0}\"", view.Name))
             {
-                Sets = new List<MetadataAttributeSet>
+                Sets =
                 {
                     new MetadataAttributeSet("Schema", string.Format("\"{0}\"", view.Schema))
                 }
@@ -79,7 +78,7 @@ namespace CatFactory.EntityFrameworkCore
 
                     property.Attributes.Add(new MetadataAttribute("Column", string.Format("\"{0}\"", column.Name))
                     {
-                        Sets = new List<MetadataAttributeSet>
+                        Sets =
                         {
                             new MetadataAttributeSet("Order", (i + 1).ToString())
                         }

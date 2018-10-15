@@ -15,12 +15,30 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
         {
             var entityFrameworkCoreProject = projectFeature.GetEntityFrameworkCoreProject();
 
-            var classDefinition = new RepositoryClassDefinition();
-
-            classDefinition.Namespaces.Add("System");
-            classDefinition.Namespaces.Add("System.Linq");
-            classDefinition.Namespaces.Add("System.Threading.Tasks");
-            classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
+            var classDefinition = new RepositoryClassDefinition
+            {
+                Namespaces =
+                {
+                    "System",
+                    "System.Linq",
+                    "System.Threading.Tasks",
+                    "Microsoft.EntityFrameworkCore"
+                },
+                Namespace = entityFrameworkCoreProject.GetDataLayerRepositoriesNamespace(),
+                Name = projectFeature.GetClassRepositoryName(),
+                BaseClass = "Repository",
+                Implements =
+                {
+                    projectFeature.GetInterfaceRepositoryName()
+                },
+                Constructors =
+                {
+                    new ClassConstructorDefinition(new ParameterDefinition(projectFeature.Project.Database.GetDbContextName(), "dbContext"))
+                    {
+                        Invocation = "base(dbContext)"
+                    }
+                }
+            };
 
             foreach (var table in entityFrameworkCoreProject.Database.Tables)
             {
@@ -28,19 +46,6 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                 classDefinition.Namespaces.AddUnique(entityFrameworkCoreProject.GetDataLayerContractsNamespace());
             }
-
-            classDefinition.Namespace = entityFrameworkCoreProject.GetDataLayerRepositoriesNamespace();
-
-            classDefinition.Name = projectFeature.GetClassRepositoryName();
-
-            classDefinition.BaseClass = "Repository";
-
-            classDefinition.Implements.Add(projectFeature.GetInterfaceRepositoryName());
-
-            classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(projectFeature.Project.Database.GetDbContextName(), "dbContext"))
-            {
-                Invocation = "base(dbContext)"
-            });
 
             var tables = projectFeature
                 .Project
@@ -290,7 +295,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 lines.Add(new CodeLine());
             }
 
-            var parameters = new List<ParameterDefinition> { };
+            var parameters = new List<ParameterDefinition>();
 
             if (table.ForeignKeys.Count == 0)
             {

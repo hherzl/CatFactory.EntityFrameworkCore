@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using CatFactory.CodeFactory;
+﻿using CatFactory.CodeFactory;
 using CatFactory.OOP;
 
 namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
@@ -23,7 +22,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             {
                 IsExtension = true,
                 IsStatic = true,
-                GenericTypes = new List<GenericTypeDefinition>
+                GenericTypes =
                 {
                     new GenericTypeDefinition
                     {
@@ -31,7 +30,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         Constraint = "TEntity : class"
                     }
                 },
-                Lines = new List<ILine>
+                Lines =
                 {
                     new CodeLine("var query = dbContext.Set<TEntity>().AsQueryable();"),
                     new CodeLine(),
@@ -43,7 +42,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             {
                 IsExtension = true,
                 IsStatic = true,
-                GenericTypes = new List<GenericTypeDefinition>
+                GenericTypes =
                 {
                     new GenericTypeDefinition
                     {
@@ -51,7 +50,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         Constraint = "TModel : class"
                     }
                 },
-                Lines = new List<ILine>
+                Lines =
                 {
                     new CodeLine("return pageSize > 0 && pageNumber > 0 ? query.Skip((pageNumber - 1) * pageSize).Take(pageSize) : query;")
                 }
