@@ -9,8 +9,8 @@ namespace CatFactory.EntityFrameworkCore.Tests
         public void TestMapName()
         {
             // Arrange, Act and Assert
-            Assert.True("OrderConfiguration" == new Table { Name = "Order" }.GetEntityTypeConfigurationName());
-            Assert.True("OrdersQryConfiguration" == new View { Name = "Orders Qry" }.GetEntityTypeConfigurationName());
+            Assert.True("OrderConfiguration" == new Table { Name = "Order" }.GetEntityConfigurationName());
+            Assert.True("OrdersQryConfiguration" == new View { Name = "Orders Qry" }.GetEntityConfigurationName());
         }
     }
 }

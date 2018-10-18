@@ -53,8 +53,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                             }
                         }
                     },
-                    new MethodDefinition("Int32", "CommitChanges"),
-                    new MethodDefinition("Task<Int32>", "CommitChangesAsync")
+                    new MethodDefinition("int", "CommitChanges"),
+                    new MethodDefinition("Task<int>", "CommitChangesAsync")
                 }
             };
     }

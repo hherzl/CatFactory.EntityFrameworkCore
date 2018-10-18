@@ -11,40 +11,40 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
     {
         public static DbContextClassDefinition GetDbContextClassDefinition(this ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection)
         {
-            var classDefinition = new DbContextClassDefinition
+            var definition = new DbContextClassDefinition
             {
                 Namespace = projectFeature.GetEntityFrameworkCoreProject().GetDataLayerNamespace(),
                 Name = projectFeature.Project.Database.GetDbContextName(),
                 BaseClass = "DbContext"
             };
 
-            classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
+            definition.Namespaces.Add("Microsoft.EntityFrameworkCore");
 
-            classDefinition.Namespaces.Add(projectSelection.Settings.UseDataAnnotations ? projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace() : projectFeature.GetEntityFrameworkCoreProject().GetDataLayerConfigurationsNamespace());
+            definition.Namespaces.Add(projectSelection.Settings.UseDataAnnotations ? projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace() : projectFeature.GetEntityFrameworkCoreProject().GetDataLayerConfigurationsNamespace());
 
-            classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(string.Format("DbContextOptions<{0}>", classDefinition.Name), "options"))
+            definition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(string.Format("DbContextOptions<{0}>", definition.Name), "options"))
             {
                 Invocation = "base(options)"
             });
 
-            classDefinition.Methods.Add(GetOnModelCreatingMethod(projectFeature.GetEntityFrameworkCoreProject()));
+            definition.Methods.Add(GetOnModelCreatingMethod(projectFeature.GetEntityFrameworkCoreProject()));
 
             if (projectSelection.Settings.UseDataAnnotations)
             {
                 foreach (var table in projectFeature.Project.Database.Tables)
                 {
                     if (!projectFeature.Project.Database.HasDefaultSchema(table))
-                        classDefinition.Namespaces.AddUnique(projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace(table.Schema));
+                        definition.Namespaces.AddUnique(projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace(table.Schema));
 
-                    classDefinition.Properties.Add(new PropertyDefinition(string.Format("DbSet<{0}>", table.GetEntityName()), table.GetPluralName()));
+                    definition.Properties.Add(new PropertyDefinition(string.Format("DbSet<{0}>", table.GetEntityName()), table.GetPluralName()));
                 }
 
                 foreach (var view in projectFeature.Project.Database.Views)
                 {
                     if (!projectFeature.Project.Database.HasDefaultSchema(view))
-                        classDefinition.Namespaces.AddUnique(projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace(view.Schema));
+                        definition.Namespaces.AddUnique(projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace(view.Schema));
 
-                    classDefinition.Properties.Add(new PropertyDefinition(string.Format("DbSet<{0}>", view.GetEntityName()), view.GetPluralName()));
+                    definition.Properties.Add(new PropertyDefinition(string.Format("DbSet<{0}>", view.GetEntityName()), view.GetPluralName()));
                 }
             }
             else
@@ -52,19 +52,19 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 foreach (var table in projectFeature.Project.Database.Tables)
                 {
                     if (!projectFeature.Project.Database.HasDefaultSchema(table))
-                        classDefinition.Namespaces.AddUnique(projectFeature.GetEntityFrameworkCoreProject().GetDataLayerConfigurationsNamespace(table.Schema));
+                        definition.Namespaces.AddUnique(projectFeature.GetEntityFrameworkCoreProject().GetDataLayerConfigurationsNamespace(table.Schema));
                 }
 
                 foreach (var view in projectFeature.Project.Database.Views)
                 {
                     if (!projectFeature.Project.Database.HasDefaultSchema(view))
-                        classDefinition.Namespaces.AddUnique(projectFeature.GetEntityFrameworkCoreProject().GetDataLayerConfigurationsNamespace(view.Schema));
+                        definition.Namespaces.AddUnique(projectFeature.GetEntityFrameworkCoreProject().GetDataLayerConfigurationsNamespace(view.Schema));
                 }
             }
 
             foreach (var scalarFunction in projectFeature.Project.Database.ScalarFunctions)
             {
-                classDefinition.Namespaces.AddUnique("System");
+                definition.Namespaces.AddUnique("System");
 
                 var returnType = projectFeature.Project.Database.ResolveType(scalarFunction.Parameters[0].Type);
 
@@ -97,10 +97,10 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     method.Parameters.Add(new ParameterDefinition(parameter.Type, parameter.Name));
                 }
 
-                classDefinition.Methods.Add(method);
+                definition.Methods.Add(method);
             }
 
-            return classDefinition;
+            return definition;
         }
 
         private static MethodDefinition GetOnModelCreatingMethod(EntityFrameworkCoreProject project)
@@ -126,47 +126,62 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                     if (result.Count == 0)
                     {
-                        // todo: Check these lines
-                        // lines.Add(LineHelper.Warning(" Add configuration for {0} entity", view.GetEntityName()));
+                        lines.Add(
+                            new CodeLine("modelBuilder.Entity<{0}>().HasKey(p => new {{ {1} }});",
+                                view.GetEntityName(),
+                                string.Join(", ", view.Columns.Select(item => string.Format("p.{0}", NamingExtensions.namingConvention.GetPropertyName(item.Name))))
+                            )
+                        );
 
-                        lines.Add(new CodeLine("modelBuilder.Entity<{0}>().HasKey(p => new {{ {1} }});", view.GetEntityName(), string.Join(", ", view.Columns.Select(item => string.Format("p.{0}", NamingExtensions.namingConvention.GetPropertyName(item.Name))))));
                         lines.Add(new CodeLine());
                     }
                     else
                     {
-                        lines.Add(new CodeLine("modelBuilder.Entity<{0}>().HasKey(p => new {{ {1} }});", view.GetEntityName(), string.Join(", ", result.Select(item => string.Format("p.{0}", NamingExtensions.namingConvention.GetPropertyName(item.Name))))));
+                        lines.Add(
+                            new CodeLine("modelBuilder.Entity<{0}>().HasKey(p => new {{ {1} }});",
+                                view.GetEntityName(),
+                                string.Join(", ", result.Select(item => string.Format("p.{0}", NamingExtensions.namingConvention.GetPropertyName(item.Name))))
+                            )
+                        );
+
                         lines.Add(new CodeLine());
                     }
                 }
             }
             else
             {
-                lines.Add(new CommentLine(" Apply all configurations for tables"));
-                lines.Add(new CodeLine());
-
-                lines.Add(new CodeLine("modelBuilder"));
-
-                foreach (var table in project.Database.Tables)
+                if (project.Database.Tables.Count > 0)
                 {
-                    lines.Add(new CodeLine(1, ".ApplyConfiguration(new {0}())", table.GetEntityTypeConfigurationName()));
+                    lines.Add(new CommentLine(" Apply all configurations for tables"));
+                    lines.Add(new CodeLine());
+
+                    lines.Add(new CodeLine("modelBuilder"));
+
+                    foreach (var table in project.Database.Tables)
+                    {
+                        lines.Add(new CodeLine(1, ".ApplyConfiguration(new {0}())", table.GetEntityConfigurationName()));
+                    }
+
+                    lines.Add(new CodeLine(";"));
+
+                    lines.Add(new CodeLine());
                 }
 
-                lines.Add(new CodeLine(";"));
-
-                lines.Add(new CodeLine());
-
-                lines.Add(new CommentLine(" Apply all configurations for views"));
-                lines.Add(new CodeLine());
-
-                lines.Add(new CodeLine("modelBuilder"));
-
-                foreach (var view in project.Database.Views)
+                if (project.Database.Views.Count > 0)
                 {
-                    lines.Add(new CodeLine(1, ".ApplyConfiguration(new {0}())", view.GetEntityTypeConfigurationName()));
-                }
+                    lines.Add(new CommentLine(" Apply all configurations for views"));
+                    lines.Add(new CodeLine());
 
-                lines.Add(new CodeLine(";"));
-                lines.Add(new CodeLine());
+                    lines.Add(new CodeLine("modelBuilder"));
+
+                    foreach (var view in project.Database.Views)
+                    {
+                        lines.Add(new CodeLine(1, ".ApplyConfiguration(new {0}())", view.GetEntityConfigurationName()));
+                    }
+
+                    lines.Add(new CodeLine(";"));
+                    lines.Add(new CodeLine());
+                }
             }
 
             lines.Add(new CodeLine("base.OnModelCreating(modelBuilder);"));

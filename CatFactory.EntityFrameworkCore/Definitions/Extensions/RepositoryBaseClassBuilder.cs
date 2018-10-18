@@ -8,69 +8,72 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
     {
         public static RepositoryBaseClassDefinition GetRepositoryBaseClassDefinition(this EntityFrameworkCoreProject project)
         {
-            var classDefinition = new RepositoryBaseClassDefinition();
-
-            classDefinition.Namespaces.Add("System");
-            classDefinition.Namespaces.Add("System.Linq");
-            classDefinition.Namespaces.Add("System.Threading.Tasks");
-            classDefinition.Namespaces.Add("Microsoft.EntityFrameworkCore");
+            var definition = new RepositoryBaseClassDefinition
+            {
+                Namespaces =
+                {
+                    "System",
+                    "System.Linq",
+                    "System.Threading.Tasks",
+                    "Microsoft.EntityFrameworkCore"
+                },
+                Namespace = project.GetDataLayerContractsNamespace(),
+                Name = "Repository",
+                Fields =
+                {
+                    new FieldDefinition(AccessModifier.Protected, "bool", "Disposed"),
+                    new FieldDefinition(AccessModifier.Protected, project.Database.GetDbContextName(), "DbContext")
+                },
+                Constructors =
+                {
+                    new ClassConstructorDefinition(new ParameterDefinition(project.Database.GetDbContextName(), "dbContext"))
+                    {
+                        Lines =
+                        {
+                            new CodeLine("DbContext = dbContext;")
+                        }
+                    }
+                },
+                Methods =
+                {
+                    new MethodDefinition("void", "Dispose")
+                    {
+                        Lines =
+                        {
+                            new CodeLine("if (!Disposed)"),
+                            new CodeLine("{"),
+                            new CodeLine(1, "DbContext?.Dispose();"),
+                            new CodeLine(),
+                            new CodeLine(1, "Disposed = true;"),
+                            new CodeLine("}")
+                        }
+                    },
+                    GetAddMethod(project),
+                    GetUpdateMethod(project),
+                    GetRemoveMethod(project),
+                    new MethodDefinition("int", "CommitChanges")
+                    {
+                        Lines =
+                        {
+                            new CodeLine("return DbContext.SaveChanges();")
+                        }
+                    },
+                    new MethodDefinition("Task<int>", "CommitChangesAsync")
+                    {
+                        Lines =
+                        {
+                            new CodeLine("return DbContext.SaveChangesAsync();")
+                        }
+                    }
+                }
+            };
 
             var selection = project.GlobalSelection();
 
             if (selection.Settings.AuditEntity != null)
-                classDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
+                definition.Namespaces.Add(project.GetEntityLayerNamespace());
 
-            classDefinition.Namespace = project.GetDataLayerContractsNamespace();
-
-            classDefinition.Name = "Repository";
-
-            classDefinition.Fields.Add(new FieldDefinition(AccessModifier.Protected, "Boolean", "Disposed"));
-            classDefinition.Fields.Add(new FieldDefinition(AccessModifier.Protected, project.Database.GetDbContextName(), "DbContext"));
-
-            classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(project.Database.GetDbContextName(), "dbContext"))
-            {
-                Lines =
-                {
-                    new CodeLine("DbContext = dbContext;")
-                }
-            });
-
-            classDefinition.Methods.Add(new MethodDefinition("void", "Dispose")
-            {
-                Lines =
-                {
-                    new CodeLine("if (!Disposed)"),
-                    new CodeLine("{"),
-                    new CodeLine(1, "DbContext?.Dispose();"),
-                    new CodeLine(),
-                    new CodeLine(1, "Disposed = true;"),
-                    new CodeLine("}")
-                }
-            });
-
-            classDefinition.Methods.Add(GetAddMethod(project));
-
-            classDefinition.Methods.Add(GetUpdateMethod(project));
-
-            classDefinition.Methods.Add(GetRemoveMethod(project));
-
-            classDefinition.Methods.Add(new MethodDefinition("Int32", "CommitChanges")
-            {
-                Lines =
-                {
-                    new CodeLine("return DbContext.SaveChanges();")
-                }
-            });
-
-            classDefinition.Methods.Add(new MethodDefinition("Task<Int32>", "CommitChangesAsync")
-            {
-                Lines =
-                {
-                    new CodeLine("return DbContext.SaveChangesAsync();")
-                }
-            });
-
-            return classDefinition;
+            return definition;
         }
 
         private static MethodDefinition GetAddMethod(EntityFrameworkCoreProject project)
@@ -196,7 +199,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         Constraint = "TEntity : class"
                     }
                 },
-                Lines = new List<ILine>
+                Lines =
                 {
                     new CommentLine(" Get entity's entry"),
                     new CodeLine("var entry = DbContext.Entry(entity);"),

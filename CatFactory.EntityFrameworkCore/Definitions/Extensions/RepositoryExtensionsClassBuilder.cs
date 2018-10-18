@@ -7,18 +7,21 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
     {
         public static RepositoryExtensionsClassDefinition GetRepositoryExtensionsClassDefinition(this EntityFrameworkCoreProject project)
         {
-            var classDefinition = new RepositoryExtensionsClassDefinition();
+            var definition = new RepositoryExtensionsClassDefinition
+            {
+                Namespaces =
+                {
+                    "System",
+                    "System.Linq",
+                    project.GetDataLayerNamespace(),
+                    project.GetEntityLayerNamespace()
+                },
+                Namespace = project.GetDataLayerRepositoriesNamespace(),
+                IsStatic = true,
+                Name = "RepositoryExtensions"
+            };
 
-            classDefinition.Namespaces.Add("System");
-            classDefinition.Namespaces.Add("System.Linq");
-            classDefinition.Namespaces.Add(project.GetDataLayerNamespace());
-            classDefinition.Namespaces.Add(project.GetEntityLayerNamespace());
-
-            classDefinition.Namespace = project.GetDataLayerRepositoriesNamespace();
-            classDefinition.IsStatic = true;
-            classDefinition.Name = "RepositoryExtensions";
-
-            classDefinition.Methods.Add(new MethodDefinition("IQueryable<TEntity>", "Paging", new ParameterDefinition(project.Database.GetDbContextName(), "dbContext"), new ParameterDefinition("Int32", "pageSize", "0"), new ParameterDefinition("Int32", "pageNumber", "0"))
+            definition.Methods.Add(new MethodDefinition("IQueryable<TEntity>", "Paging", new ParameterDefinition(project.Database.GetDbContextName(), "dbContext"), new ParameterDefinition("int", "pageSize", "0"), new ParameterDefinition("int", "pageNumber", "0"))
             {
                 IsExtension = true,
                 IsStatic = true,
@@ -38,7 +41,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
             });
 
-            classDefinition.Methods.Add(new MethodDefinition("IQueryable<TModel>", "Paging", new ParameterDefinition("IQueryable<TModel>", "query"), new ParameterDefinition("Int32", "pageSize", "0"), new ParameterDefinition("Int32", "pageNumber", "0"))
+            definition.Methods.Add(new MethodDefinition("IQueryable<TModel>", "Paging", new ParameterDefinition("IQueryable<TModel>", "query"), new ParameterDefinition("int", "pageSize", "0"), new ParameterDefinition("int", "pageNumber", "0"))
             {
                 IsExtension = true,
                 IsStatic = true,
@@ -56,7 +59,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
             });
 
-            return classDefinition;
+            return definition;
         }
     }
 }

@@ -11,32 +11,37 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
     {
         public static EntityClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, ITable table)
         {
-            var classDefinition = new EntityClassDefinition();
-
-            classDefinition.Namespaces.Add("System");
+            var definition = new EntityClassDefinition
+            {
+                Namespaces =
+                {
+                    "System"
+                },
+                Namespace = project.Database.HasDefaultSchema(table) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(table.Schema),
+                Name = table.GetEntityName(),
+                IsPartial = true,
+                Constructors =
+                {
+                    new ClassConstructorDefinition()
+                }
+            };
 
             var projectSelection = project.GetSelection(table);
 
             if (projectSelection.Settings.UseDataAnnotations)
             {
-                classDefinition.Namespaces.Add("System.ComponentModel.DataAnnotations");
-                classDefinition.Namespaces.Add("System.ComponentModel.DataAnnotations.Schema");
+                definition.Namespaces.Add("System.ComponentModel.DataAnnotations");
+                definition.Namespaces.Add("System.ComponentModel.DataAnnotations.Schema");
             }
 
             if (projectSelection.Settings.EnableDataBindings)
             {
-                classDefinition.Namespaces.Add("System.ComponentModel");
+                definition.Namespaces.Add("System.ComponentModel");
 
-                classDefinition.Implements.Add("INotifyPropertyChanged");
+                definition.Implements.Add("INotifyPropertyChanged");
 
-                classDefinition.Events.Add(new EventDefinition("PropertyChangedEventHandler", "PropertyChanged"));
+                definition.Events.Add(new EventDefinition("PropertyChangedEventHandler", "PropertyChanged"));
             }
-
-            classDefinition.Namespace = project.Database.HasDefaultSchema(table) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(table.Schema);
-            classDefinition.Name = table.GetEntityName();
-            classDefinition.IsPartial = true;
-
-            classDefinition.Constructors.Add(new ClassConstructorDefinition());
 
             var columns = table.Columns;
 
@@ -44,7 +49,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             {
                 var column = table.GetColumnsFromConstraint(table.PrimaryKey).First();
 
-                classDefinition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(project.Database.ResolveType(column), column.GetParameterName()))
+                definition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(project.Database.ResolveType(column), column.GetParameterName()))
                 {
                     Lines =
                     {
@@ -54,28 +59,41 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             }
 
             if (!string.IsNullOrEmpty(table.Description))
-                classDefinition.Documentation.Summary = table.Description;
+                definition.Documentation.Summary = table.Description;
 
             foreach (var column in columns)
             {
+                var propertyType = string.Empty;
+
+                if (project.Database.ColumnHasTypeMappedToClr(column))
+                {
+                    var clrType = project.Database.GetClrMapForColumnType(column);
+
+                    propertyType = clrType.AllowClrNullable ? string.Format("{0}?", clrType.GetClrType().Name) : clrType.GetClrType().Name;
+                }
+                else
+                {
+                    propertyType = "object";
+                }
+
                 if (projectSelection.Settings.EnableDataBindings)
                 {
-                    classDefinition.AddViewModelProperty(project.Database.ResolveType(column), column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : column.GetPropertyName());
+                    definition.AddViewModelProperty(propertyType, column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : table.GetPropertyNameHack(column));
                 }
                 else
                 {
                     if (projectSelection.Settings.BackingFields.Contains(table.GetFullColumnName(column)))
-                        classDefinition.AddPropertyWithField(project.Database.ResolveType(column), column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : column.GetPropertyName());
+                        definition.AddPropertyWithField(propertyType, column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : table.GetPropertyNameHack(column));
                     else if (projectSelection.Settings.UseAutomaticPropertiesForEntities)
-                        classDefinition.Properties.Add(new PropertyDefinition(project.Database.ResolveType(column), column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : column.GetPropertyName()));
+                        definition.Properties.Add(new PropertyDefinition(propertyType, column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : table.GetPropertyNameHack(column)));
                     else
-                        classDefinition.AddPropertyWithField(project.Database.ResolveType(column), column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : column.GetPropertyName());
+                        definition.AddPropertyWithField(propertyType, column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : table.GetPropertyNameHack(column));
                 }
             }
 
             if (projectSelection.Settings.AuditEntity == null)
             {
-                classDefinition.Implements.Add("IEntity");
+                definition.Implements.Add(projectSelection.Settings.EntityInterfaceName);
             }
             else
             {
@@ -88,9 +106,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
 
                 if (count == projectSelection.Settings.AuditEntity.Names.Length)
-                    classDefinition.Implements.Add(projectSelection.Settings.EntityInterfaceName);
+                    definition.Implements.Add("IAuditEntity");
                 else
-                    classDefinition.Implements.Add("IEntity");
+                    definition.Implements.Add("IEntity");
             }
 
             foreach (var foreignKey in table.ForeignKeys)
@@ -100,69 +118,89 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 if (foreignTable == null)
                     continue;
 
-                classDefinition.Namespaces.AddUnique(project.Database.HasDefaultSchema(foreignTable) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(foreignTable.Schema));
+                definition.Namespaces.AddUnique(project.Database.HasDefaultSchema(foreignTable) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(foreignTable.Schema));
 
-                classDefinition.Namespace = project.Database.HasDefaultSchema(table) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(table.Schema);
+                definition.Namespace = project.Database.HasDefaultSchema(table) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(table.Schema);
 
-                classDefinition.Properties.Add(foreignKey.GetParentNavigationProperty(foreignTable, project));
+                var fkProperty = foreignKey.GetParentNavigationProperty(foreignTable, project);
+
+                if (definition.Properties.FirstOrDefault(item => item.Name == fkProperty.Name) == null)
+                    definition.Properties.Add(fkProperty);
             }
 
             foreach (var child in project.Database.Tables)
             {
-                if (table.FullName == child.FullName)
-                    continue;
-
                 foreach (var foreignKey in child.ForeignKeys)
                 {
                     if (foreignKey.References.EndsWith(table.FullName))
                     {
-                        classDefinition.Namespaces.AddUnique(projectSelection.Settings.NavigationPropertyEnumerableNamespace);
-                        classDefinition.Namespaces.AddUnique(project.Database.HasDefaultSchema(child) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(child.Schema));
+                        definition.Namespaces.AddUnique(projectSelection.Settings.NavigationPropertyEnumerableNamespace);
+                        definition.Namespaces.AddUnique(project.Database.HasDefaultSchema(child) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(child.Schema));
 
                         var navigationProperty = project.GetChildNavigationProperty(projectSelection, child, foreignKey);
 
-                        if (classDefinition.Properties.FirstOrDefault(item => item.Name == navigationProperty.Name) == null)
-                            classDefinition.Properties.Add(navigationProperty);
+                        if (definition.Properties.FirstOrDefault(item => item.Name == navigationProperty.Name) == null)
+                            definition.Properties.Add(navigationProperty);
                     }
                 }
             }
 
             if (projectSelection.Settings.SimplifyDataTypes)
-                classDefinition.SimplifyDataTypes();
+                definition.SimplifyDataTypes();
 
-            return classDefinition;
+            return definition;
         }
 
         public static CSharpClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, IView view)
         {
-            var classDefinition = new CSharpClassDefinition();
-
-            classDefinition.Namespaces.Add("System");
+            var definition = new CSharpClassDefinition
+            {
+                Namespaces =
+                {
+                    "System"
+                },
+                Namespace = project.Database.HasDefaultSchema(view) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(view.Schema),
+                Name = view.GetEntityName(),
+                IsPartial = true,
+                Constructors =
+                {
+                    new ClassConstructorDefinition()
+                }
+            };
 
             var projectSelection = project.GetSelection(view);
 
             if (projectSelection.Settings.UseDataAnnotations)
             {
-                classDefinition.Namespaces.Add("System.ComponentModel.DataAnnotations");
-                classDefinition.Namespaces.Add("System.ComponentModel.DataAnnotations.Schema");
+                definition.Namespaces.Add("System.ComponentModel.DataAnnotations");
+                definition.Namespaces.Add("System.ComponentModel.DataAnnotations.Schema");
             }
 
-            classDefinition.Namespace = project.Database.HasDefaultSchema(view) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(view.Schema);
-            classDefinition.Name = view.GetEntityName();
-            classDefinition.IsPartial = true;
-
-            classDefinition.Constructors.Add(new ClassConstructorDefinition());
-
             if (!string.IsNullOrEmpty(view.Description))
-                classDefinition.Documentation.Summary = view.Description;
+                definition.Documentation.Summary = view.Description;
 
             foreach (var column in view.Columns)
-                classDefinition.Properties.Add(new PropertyDefinition(project.Database.ResolveType(column), column.HasSameNameEnclosingType(view) ? column.GetNameForEnclosing() : column.GetPropertyName()));
+            {
+                var propertyType = string.Empty;
+
+                if (project.Database.ColumnHasTypeMappedToClr(column))
+                {
+                    var clrType = project.Database.GetClrMapForColumnType(column);
+
+                    propertyType = clrType.AllowClrNullable ? string.Format("{0}?", clrType.GetClrType().Name) : clrType.GetClrType().Name;
+                }
+                else
+                {
+                    propertyType = "object";
+                }
+
+                definition.Properties.Add(new PropertyDefinition(propertyType, column.HasSameNameEnclosingType(view) ? column.GetNameForEnclosing() : view.GetPropertyNameHack(column)));
+            }
 
             if (projectSelection.Settings.SimplifyDataTypes)
-                classDefinition.SimplifyDataTypes();
+                definition.SimplifyDataTypes();
 
-            return classDefinition;
+            return definition;
         }
     }
 }

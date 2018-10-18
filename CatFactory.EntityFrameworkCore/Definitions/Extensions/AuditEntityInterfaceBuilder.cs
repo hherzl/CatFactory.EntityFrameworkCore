@@ -19,9 +19,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 },
                 Properties =
                 {
-                    new PropertyDefinition("String", "CreationUser"),
+                    new PropertyDefinition("string", "CreationUser"),
                     new PropertyDefinition("DateTime?", "CreationDateTime"),
-                    new PropertyDefinition("String", "LastUpdateUser"),
+                    new PropertyDefinition("string", "LastUpdateUser"),
                     new PropertyDefinition("DateTime?", "LastUpdateDateTime")
                 }
             };

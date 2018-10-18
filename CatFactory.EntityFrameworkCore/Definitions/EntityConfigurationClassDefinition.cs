@@ -2,7 +2,7 @@
 
 namespace CatFactory.EntityFrameworkCore.Definitions
 {
-    public class DatabaseEntityMapperClassDefinition : CSharpClassDefinition
+    public class EntityConfigurationClassDefinition : CSharpClassDefinition
     {
     }
 }

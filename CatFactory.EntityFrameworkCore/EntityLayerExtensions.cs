@@ -1,5 +1,5 @@
-﻿using CatFactory.NetCore;
-using CatFactory.EntityFrameworkCore.Definitions.Extensions;
+﻿using CatFactory.EntityFrameworkCore.Definitions.Extensions;
+using CatFactory.NetCore;
 
 namespace CatFactory.EntityFrameworkCore
 {

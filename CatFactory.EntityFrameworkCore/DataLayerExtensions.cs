@@ -31,9 +31,9 @@ namespace CatFactory.EntityFrameworkCore
                 foreach (var table in project.Database.Tables)
                 {
                     if (project.Database.HasDefaultSchema(table))
-                        CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerConfigurationsDirectory(), projectSelection.Settings.ForceOverwrite, project.GetEntityTypeConfigurationClassDefinition(table));
+                        CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerConfigurationsDirectory(), projectSelection.Settings.ForceOverwrite, project.GetEntityConfigurationClassDefinition(table));
                     else
-                        CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerConfigurationsDirectory(table.Schema), projectSelection.Settings.ForceOverwrite, project.GetEntityTypeConfigurationClassDefinition(table));
+                        CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerConfigurationsDirectory(table.Schema), projectSelection.Settings.ForceOverwrite, project.GetEntityConfigurationClassDefinition(table));
                 }
 
                 foreach (var view in project.Database.Views)
@@ -161,9 +161,9 @@ namespace CatFactory.EntityFrameworkCore
                 string.Empty,
 
                 "2. Register your DbContext and repositories in ConfigureServices method (Startup class):",
-                string.Format(" services.AddDbContext<{0}>(options => options.UseSqlServer(\"ConnectionString\"));", project.Database.GetDbContextName()),
+                string.Format("   services.AddDbContext<{0}>(options => options.UseSqlServer(\"ConnectionString\"));", project.Database.GetDbContextName()),
 
-                " services.AddScoped<IDboRepository, DboRepository>();",
+                "   services.AddScoped<IDboRepository, DboRepository>();",
                 string.Empty,
 
                 "Happy scaffolding!",
@@ -174,8 +174,6 @@ namespace CatFactory.EntityFrameworkCore
                 string.Empty,
                 "Also you can check source code on GitHub:",
                 "https://github.com/hherzl/CatFactory.EntityFrameworkCore",
-                string.Empty,
-                "*** CatFactory scaffold Entity Framework Core 2.0 ==^^== ***",
                 string.Empty,
                 "CatFactory Development Team ==^^=="
             };

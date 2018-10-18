@@ -10,9 +10,9 @@ namespace CatFactory.EntityFrameworkCore.Tests
             // Create instance of EF Core Project
             var project = new EntityFrameworkCoreProject
             {
-                Name = "School",
+                Name = "School.Mock",
                 Database = Databases.School,
-                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\School.Mock"
+                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\School.Mock"
             };
 
             // Apply settings for EF Core project

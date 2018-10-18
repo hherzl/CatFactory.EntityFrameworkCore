@@ -15,7 +15,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
         {
             var entityFrameworkCoreProject = projectFeature.GetEntityFrameworkCoreProject();
 
-            var classDefinition = new RepositoryClassDefinition
+            var definition = new RepositoryClassDefinition
             {
                 Namespaces =
                 {
@@ -42,9 +42,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             foreach (var table in entityFrameworkCoreProject.Database.Tables)
             {
-                classDefinition.Namespaces.AddUnique(projectFeature.Project.Database.HasDefaultSchema(table) ? entityFrameworkCoreProject.GetEntityLayerNamespace() : entityFrameworkCoreProject.GetEntityLayerNamespace(table.Schema));
+                definition.Namespaces.AddUnique(projectFeature.Project.Database.HasDefaultSchema(table) ? entityFrameworkCoreProject.GetEntityLayerNamespace() : entityFrameworkCoreProject.GetEntityLayerNamespace(table.Schema));
 
-                classDefinition.Namespaces.AddUnique(entityFrameworkCoreProject.GetDataLayerContractsNamespace());
+                definition.Namespaces.AddUnique(entityFrameworkCoreProject.GetDataLayerContractsNamespace());
             }
 
             var tables = projectFeature
@@ -59,7 +59,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 var selection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(table);
 
                 if (selection.Settings.EntitiesWithDataContracts)
-                    classDefinition.Namespaces.AddUnique(entityFrameworkCoreProject.GetDataLayerDataContractsNamespace());
+                    definition.Namespaces.AddUnique(entityFrameworkCoreProject.GetDataLayerDataContractsNamespace());
 
                 foreach (var foreignKey in table.ForeignKeys)
                 {
@@ -68,17 +68,17 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         var child = projectFeature.Project.Database.FindTable(foreignKey.Child);
 
                         if (child != null)
-                            classDefinition.Namespaces.AddUnique(entityFrameworkCoreProject.GetDataLayerDataContractsNamespace());
+                            definition.Namespaces.AddUnique(entityFrameworkCoreProject.GetDataLayerDataContractsNamespace());
                     }
                 }
 
-                classDefinition.GetGetAllMethod(projectFeature, selection, table);
+                definition.GetGetAllMethod(projectFeature, selection, table);
 
                 if (table.PrimaryKey != null)
-                    classDefinition.Methods.Add(GetGetMethod(projectFeature, selection, table));
+                    definition.Methods.Add(GetGetMethod(projectFeature, selection, table));
 
                 foreach (var unique in table.Uniques)
-                    classDefinition.Methods.Add(GetGetByUniqueMethods(projectFeature, table, unique));
+                    definition.Methods.Add(GetGetByUniqueMethods(projectFeature, table, unique));
             }
 
             var views = projectFeature
@@ -93,15 +93,15 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 var selection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(view);
 
                 if (selection.Settings.EntitiesWithDataContracts)
-                    classDefinition.Namespaces.AddUnique(entityFrameworkCoreProject.GetDataLayerDataContractsNamespace());
+                    definition.Namespaces.AddUnique(entityFrameworkCoreProject.GetDataLayerDataContractsNamespace());
 
-                classDefinition.GetGetAllMethod(projectFeature, view);
+                definition.GetGetAllMethod(projectFeature, view);
             }
 
-            return classDefinition;
+            return definition;
         }
 
-        private static void GetGetAllMethod(this CSharpClassDefinition classDefinition, ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection, ITable table)
+        private static void GetGetAllMethod(this CSharpClassDefinition definition, ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection, ITable table)
         {
             var entityFrameworkCoreProject = projectFeature.GetEntityFrameworkCoreProject();
 
@@ -186,9 +186,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     var foreignKeyAlias = NamingConvention.GetCamelCase(foreignTable.GetEntityName());
 
                     if (projectFeature.Project.Database.HasDefaultSchema(foreignTable))
-                        classDefinition.Namespaces.AddUnique(entityFrameworkCoreProject.GetEntityLayerNamespace());
+                        definition.Namespaces.AddUnique(entityFrameworkCoreProject.GetEntityLayerNamespace());
                     else
-                        classDefinition.Namespaces.AddUnique(entityFrameworkCoreProject.GetEntityLayerNamespace(foreignTable.Schema));
+                        definition.Namespaces.AddUnique(entityFrameworkCoreProject.GetEntityLayerNamespace(foreignTable.Schema));
 
                     if (foreignKey.Key.Count == 0)
                     {
@@ -324,9 +324,27 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                             lines.Add(new CodeLine("}"));
                             lines.Add(new CodeLine());
                         }
-                        else
+                        else if (projectFeature.Project.Database.ColumnIsNumber(column))
                         {
                             lines.Add(new CodeLine("if ({0}.HasValue)", parameterName));
+                            lines.Add(new CodeLine("{"));
+                            lines.Add(new CommentLine(1, " Filter by: '{0}'", column.Name));
+                            lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
+                            lines.Add(new CodeLine("}"));
+                            lines.Add(new CodeLine());
+                        }
+                        else if (projectFeature.Project.Database.ColumnIsDateTime(column))
+                        {
+                            lines.Add(new CodeLine("if ({0}.HasValue)", parameterName));
+                            lines.Add(new CodeLine("{"));
+                            lines.Add(new CommentLine(1, " Filter by: '{0}'", column.Name));
+                            lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
+                            lines.Add(new CodeLine("}"));
+                            lines.Add(new CodeLine());
+                        }
+                        else
+                        {
+                            lines.Add(new CodeLine("if ({0} != null)", parameterName));
                             lines.Add(new CodeLine("{"));
                             lines.Add(new CommentLine(1, " Filter by: '{0}'", column.Name));
                             lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
@@ -343,7 +361,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 lines.Add(new CodeLine("return query;"));
             }
 
-            classDefinition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", returnType), table.GetGetAllRepositoryMethodName(), parameters.ToArray())
+            definition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", returnType), table.GetGetAllRepositoryMethodName(), parameters.ToArray())
             {
                 Lines = lines
             });
@@ -427,30 +445,6 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     }
                 };
             }
-        }
-
-        private static MethodDefinition GetAddMethod(ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, ITable table)
-        {
-            var lines = new List<ILine>();
-
-            if (projectFeature.Project.Database.PrimaryKeyIsGuid(table))
-            {
-                lines.Add(new CommentLine(" Set value for GUID"));
-                lines.Add(new CodeLine("entity.{0} = Guid.NewGuid();", NamingExtensions.namingConvention.GetPropertyName(table.PrimaryKey.Key.First())));
-                lines.Add(new CodeLine());
-            }
-
-            lines.Add(new CommentLine(" Add entity in DbSet"));
-            lines.Add(new CodeLine("Add(entity);"));
-            lines.Add(new CodeLine());
-            lines.Add(new CommentLine(" Save changes through DbContext"));
-            lines.Add(new CodeLine("return await CommitChangesAsync();"));
-
-            return new MethodDefinition("Task<Int32>", table.GetAddRepositoryMethodName(), new ParameterDefinition(table.GetEntityName(), "entity"))
-            {
-                IsAsync = true,
-                Lines = lines
-            };
         }
     }
 }

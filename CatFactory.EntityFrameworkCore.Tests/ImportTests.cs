@@ -14,12 +14,12 @@ namespace CatFactory.EntityFrameworkCore.Tests
                 DatabaseImportSettings = new DatabaseImportSettings
                 {
                     ConnectionString = "server=(local);database=Store;integrated security=yes;",
+                    ImportScalarFunctions = true,
                     Exclusions =
                     {
                         "dbo.sysdiagrams",
                         "dbo.fn_diagramobjects"
-                    },
-                    ImportScalarFunctions = true
+                    }
                 }
             };
 
@@ -29,9 +29,9 @@ namespace CatFactory.EntityFrameworkCore.Tests
             // Create instance of Entity Framework Core project
             var project = new EntityFrameworkCoreProject
             {
-                Name = "Store",
+                Name = "Store.Core",
                 Database = database,
-                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\Store"
+                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\Store.Core"
             };
 
             // Apply settings for Entity Framework Core project
@@ -43,102 +43,6 @@ namespace CatFactory.EntityFrameworkCore.Tests
             });
 
             project.Select("Sales.Order", settings => settings.EntitiesWithDataContracts = true);
-
-            // Build features for project, group all entities by schema into a feature
-            project.BuildFeatures();
-
-            // Add event handlers to before and after of scaffold
-
-            project.ScaffoldingDefinition += (source, args) =>
-            {
-                // Add code to perform operations with code builder instance before to create code file
-            };
-
-            project.ScaffoldedDefinition += (source, args) =>
-            {
-                // Add code to perform operations after of create code file
-            };
-
-            // Scaffolding =^^=
-            project
-                .ScaffoldEntityLayer()
-                .ScaffoldDataLayer();
-        }
-
-        [Fact]
-        public void ProjectScaffoldingWithDataAnnotationsForStoreDatabaseTest()
-        {
-            // Import database
-            var database = SqlServerDatabaseFactory
-                .Import(SqlServerDatabaseFactory.GetLogger(), "server=(local);database=Store;integrated security=yes;", "dbo.sysdiagrams");
-
-            // Create instance of Entity Framework Core Project
-            var project = new EntityFrameworkCoreProject
-            {
-                Name = "StoreWithDataAnnotations",
-                Database = database,
-                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\StoreWithDataAnnotations"
-            };
-
-            // Apply settings for Entity Framework Core project
-            project.GlobalSelection(settings =>
-            {
-                settings.ForceOverwrite = true;
-                settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
-                settings.ConcurrencyToken = "Timestamp";
-                settings.UseDataAnnotations = true;
-            });
-
-            project.Select("Sales.Order", settings => settings.EntitiesWithDataContracts = true);
-
-            // Build features for project, group all entities by schema into a feature
-            project.BuildFeatures();
-
-            // Add event handlers to before and after of scaffold
-
-            project.ScaffoldingDefinition += (source, args) =>
-            {
-                // Add code to perform operations with code builder instance before to create code file
-            };
-
-            project.ScaffoldedDefinition += (source, args) =>
-            {
-                // Add code to perform operations after of create code file
-            };
-
-            // Scaffolding =^^=
-            project
-                .ScaffoldEntityLayer()
-                .ScaffoldDataLayer();
-        }
-
-        [Fact]
-        public void ProjectScaffoldingWithModifiedNamespacesForNorthwindDatabaseTest()
-        {
-            // Import database
-            var database = SqlServerDatabaseFactory
-                .Import(SqlServerDatabaseFactory.GetLogger(), "server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
-
-            // Create instance of Entity Framework Core Project
-            var project = new EntityFrameworkCoreProject
-            {
-                Name = "Northwind",
-                Database = database,
-                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\ModifiedNorthwind"
-            };
-
-            // Apply settings for Entity Framework Core project
-            project.GlobalSelection(settings =>
-            {
-                settings.ForceOverwrite = true;
-            });
-
-            // Set custom namespaces
-            project.Namespaces.EntityLayer = "EL";
-            project.Namespaces.DataLayer = "DL";
-            project.Namespaces.Contracts = "Interfaces";
-            project.Namespaces.DataContracts = "Dtos";
-            project.Namespaces.Repositories = "Implementations";
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
@@ -171,9 +75,9 @@ namespace CatFactory.EntityFrameworkCore.Tests
             // Create instance of Entity Framework Core Project
             var project = new EntityFrameworkCoreProject
             {
-                Name = "Northwind",
+                Name = "Northwind.Core",
                 Database = database,
-                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\Northwind"
+                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\Northwind.Core"
             };
 
             // Apply settings for Entity Framework Core project
@@ -183,18 +87,6 @@ namespace CatFactory.EntityFrameworkCore.Tests
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
-
-            // Add event handlers to before and after of scaffold
-
-            project.ScaffoldingDefinition += (source, args) =>
-            {
-                // Add code to perform operations with code builder instance before to create code file
-            };
-
-            project.ScaffoldedDefinition += (source, args) =>
-            {
-                // Add code to perform operations after of create code file
-            };
 
             // Scaffolding =^^=
             project
@@ -213,7 +105,14 @@ namespace CatFactory.EntityFrameworkCore.Tests
                     ConnectionString = "server=(local);database=AdventureWorks2017;integrated security=yes;",
                     Exclusions =
                     {
-                        "dbo.sysdiagrams"
+                        "dbo.sysdiagrams",
+                        "Production.Document",
+                        "Production.ProductDocument"
+                    },
+                    ExclusionTypes =
+                    {
+                        "hierarchyid",
+                        "geography"
                     }
                 }
             };
@@ -226,7 +125,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
             {
                 Name = "AdventureWorks",
                 Database = database,
-                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\AdventureWorks"
+                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\AdventureWorks.Core"
             };
 
             // Apply settings for Entity Framework Core project
@@ -238,18 +137,6 @@ namespace CatFactory.EntityFrameworkCore.Tests
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
 
-            // Add event handlers to before and after of scaffold
-
-            project.ScaffoldingDefinition += (source, args) =>
-            {
-                // Add code to perform operations with code builder instance before to create code file
-            };
-
-            project.ScaffoldedDefinition += (source, args) =>
-            {
-                // Add code to perform operations after of create code file
-            };
-
             // Scaffolding =^^=
             project
                 .ScaffoldEntityLayer()
@@ -257,37 +144,33 @@ namespace CatFactory.EntityFrameworkCore.Tests
         }
 
         [Fact]
-        public void ProjectScaffoldingForWideWorldImportersDatabaseTest()
+        public void ProjectScaffoldingWithDataAnnotationsForStoreDatabaseTest()
         {
             // Import database
             var database = SqlServerDatabaseFactory
-                .Import(SqlServerDatabaseFactory.GetLogger(), "server=(local);database=WideWorldImporters;integrated security=yes;", "dbo.sysdiagrams");
+                .Import(SqlServerDatabaseFactory.GetLogger(), "server=(local);database=Store;integrated security=yes;", "dbo.sysdiagrams");
 
-            // Create instance of Entity Framework Core project
+            // Create instance of Entity Framework Core Project
             var project = new EntityFrameworkCoreProject
             {
-                Name = "WideWorldImporters",
+                Name = "StoreWithDataAnnotations.Core",
                 Database = database,
-                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\WideWorldImporters"
+                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\StoreWithDataAnnotations.Core"
             };
 
             // Apply settings for Entity Framework Core project
-            project.GlobalSelection(settings => settings.ForceOverwrite = true);
+            project.GlobalSelection(settings =>
+            {
+                settings.ForceOverwrite = true;
+                settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
+                settings.ConcurrencyToken = "Timestamp";
+                settings.UseDataAnnotations = true;
+            });
+
+            project.Select("Sales.Order", settings => settings.EntitiesWithDataContracts = true);
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
-
-            // Add event handlers to before and after of scaffold
-
-            project.ScaffoldingDefinition += (source, args) =>
-            {
-                // Add code to perform operations with code builder instance before to create code file
-            };
-
-            project.ScaffoldedDefinition += (source, args) =>
-            {
-                // Add code to perform operations after of create code file
-            };
 
             // Scaffolding =^^=
             project
