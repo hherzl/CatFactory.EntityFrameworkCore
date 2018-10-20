@@ -5,6 +5,7 @@ using CatFactory.CodeFactory;
 using CatFactory.Collections;
 using CatFactory.Mapping;
 using CatFactory.NetCore;
+using CatFactory.NetCore.CodeFactory;
 using CatFactory.OOP;
 
 namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
@@ -371,7 +372,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
         {
             var lines = new List<ILine>
             {
-                new CodeLine("DbContext.Set<{0}>();", view.GetEntityName())
+                new CodeLine("return DbContext.Set<{0}>();", view.GetEntityName())
             };
 
             classDefinition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", view.GetEntityName()), view.GetGetAllRepositoryMethodName())

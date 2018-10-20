@@ -4,6 +4,7 @@ using CatFactory.CodeFactory;
 using CatFactory.Collections;
 using CatFactory.Mapping;
 using CatFactory.NetCore;
+using CatFactory.NetCore.CodeFactory;
 using CatFactory.OOP;
 
 namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
