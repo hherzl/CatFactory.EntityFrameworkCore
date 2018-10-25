@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using CatFactory.Mapping;
+using CatFactory.ObjectRelationalMapping;
 
 namespace CatFactory.EntityFrameworkCore
 {
@@ -16,11 +16,10 @@ namespace CatFactory.EntityFrameworkCore
             return map.AllowClrNullable ? string.Format("{0}?", map.GetClrType().Name) : map.GetClrType().Name;
         }
 
-        public static bool HasDefaultSchema(this Database database, IDbObject dbObj)
-            => string.IsNullOrEmpty(dbObj.Schema) || string.Compare(dbObj.Schema, database.DefaultSchema, true) == 0;
-
         public static bool PrimaryKeyIsGuid(this Database database, ITable table)
         {
+            // todo: Review if this extension method has a definition in core package
+
             if (table.PrimaryKey == null)
                 return false;
 

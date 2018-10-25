@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using CatFactory.CodeFactory;
-using CatFactory.Mapping;
-using CatFactory.NetCore;
+using CatFactory.NetCore.CodeFactory;
+using CatFactory.ObjectRelationalMapping;
 
 namespace CatFactory.EntityFrameworkCore
 {

@@ -1,4 +1,4 @@
-﻿using CatFactory.Mapping;
+﻿using CatFactory.ObjectRelationalMapping;
 using CatFactory.SqlServer;
 
 namespace CatFactory.EntityFrameworkCore.Tests

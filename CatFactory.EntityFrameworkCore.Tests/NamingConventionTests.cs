@@ -1,4 +1,4 @@
-﻿using CatFactory.Mapping;
+﻿using CatFactory.ObjectRelationalMapping;
 using Xunit;
 
 namespace CatFactory.EntityFrameworkCore.Tests

@@ -1,7 +1,7 @@
 ﻿using System.Linq;
-using CatFactory.Mapping;
-using CatFactory.NetCore;
-using CatFactory.OOP;
+using CatFactory.NetCore.ObjectOrientedProgramming;
+using CatFactory.ObjectOrientedProgramming;
+using CatFactory.ObjectRelationalMapping;
 
 namespace CatFactory.EntityFrameworkCore
 {

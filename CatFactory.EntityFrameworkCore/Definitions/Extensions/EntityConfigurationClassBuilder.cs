@@ -2,10 +2,10 @@
 using System.Linq;
 using CatFactory.CodeFactory;
 using CatFactory.Collections;
-using CatFactory.Mapping;
-using CatFactory.NetCore;
 using CatFactory.NetCore.CodeFactory;
-using CatFactory.OOP;
+using CatFactory.NetCore.ObjectOrientedProgramming;
+using CatFactory.ObjectOrientedProgramming;
+using CatFactory.ObjectRelationalMapping;
 
 namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 {
@@ -13,19 +13,22 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
     {
         public static EntityConfigurationClassDefinition GetEntityConfigurationClassDefinition(this EntityFrameworkCoreProject project, ITable table)
         {
-            var definition = new EntityConfigurationClassDefinition();
-
-            definition.Namespaces.Add("Microsoft.EntityFrameworkCore");
-            definition.Namespaces.Add("Microsoft.EntityFrameworkCore.Metadata.Builders");
-
+            var definition = new EntityConfigurationClassDefinition
+            {
+                Namespaces =
+                {
+                    "Microsoft.EntityFrameworkCore",
+                    "Microsoft.EntityFrameworkCore.Metadata.Builders"
+                },
+                Name = table.GetEntityConfigurationName()
+            };
+            
             definition.Namespaces.AddUnique(project.GetEntityLayerNamespace(project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema));
 
             if (project.Database.HasDefaultSchema(table))
                 definition.Namespace = project.GetDataLayerConfigurationsNamespace();
             else
                 definition.Namespace = project.GetDataLayerConfigurationsNamespace(table.Schema);
-
-            definition.Name = table.GetEntityConfigurationName();
 
             // todo: Check logic to build property's name
 

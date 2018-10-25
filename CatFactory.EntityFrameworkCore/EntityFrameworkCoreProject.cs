@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using CatFactory.CodeFactory;
-using CatFactory.Mapping;
+using CatFactory.CodeFactory.Scaffolding;
+using CatFactory.ObjectRelationalMapping;
 using Microsoft.Extensions.Logging;
 
 namespace CatFactory.EntityFrameworkCore
@@ -10,6 +10,7 @@ namespace CatFactory.EntityFrameworkCore
     public class EntityFrameworkCoreProject : Project<EntityFrameworkCoreProjectSettings>
     {
         public EntityFrameworkCoreProject()
+            : base()
         {
         }
 
@@ -48,8 +49,14 @@ namespace CatFactory.EntityFrameworkCore
                 .Where(x => x.Schema == schema)
                 .Select(y => new DbObject { Schema = y.Schema, Name = y.Name, Type = "View" }));
 
-            // todo: Add scalar functions
+            result.AddRange(Database
+                .ScalarFunctions
+                .Where(x => x.Schema == schema)
+                .Select(y => new DbObject { Schema = y.Schema, Name = y.Name, Type = "ScalarFunction" }));
+
             // todo: Add table functions
+
+            // todo: Add stored procedures
 
             return result;
         }

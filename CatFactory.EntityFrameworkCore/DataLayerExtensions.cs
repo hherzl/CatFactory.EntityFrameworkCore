@@ -3,10 +3,10 @@ using System.IO;
 using System.Linq;
 using CatFactory.Collections;
 using CatFactory.EntityFrameworkCore.Definitions.Extensions;
-using CatFactory.Mapping;
-using CatFactory.NetCore;
 using CatFactory.NetCore.CodeFactory;
-using CatFactory.OOP;
+using CatFactory.NetCore.ObjectOrientedProgramming;
+using CatFactory.ObjectOrientedProgramming;
+using CatFactory.ObjectRelationalMapping;
 
 namespace CatFactory.EntityFrameworkCore
 {

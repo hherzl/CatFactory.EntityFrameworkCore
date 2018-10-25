@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using CatFactory.CodeFactory;
+using CatFactory.CodeFactory.Scaffolding;
 using CatFactory.Collections;
-using CatFactory.Mapping;
-using CatFactory.OOP;
+using CatFactory.ObjectOrientedProgramming;
+using CatFactory.ObjectRelationalMapping;
 
 namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 {

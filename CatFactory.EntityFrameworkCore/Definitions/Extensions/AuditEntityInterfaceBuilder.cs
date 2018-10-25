@@ -1,4 +1,4 @@
-﻿using CatFactory.OOP;
+﻿using CatFactory.ObjectOrientedProgramming;
 
 namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 {

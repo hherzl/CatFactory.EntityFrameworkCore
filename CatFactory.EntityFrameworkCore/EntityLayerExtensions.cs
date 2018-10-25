@@ -1,5 +1,6 @@
 ﻿using CatFactory.EntityFrameworkCore.Definitions.Extensions;
 using CatFactory.NetCore.CodeFactory;
+using CatFactory.ObjectRelationalMapping;
 
 namespace CatFactory.EntityFrameworkCore
 {

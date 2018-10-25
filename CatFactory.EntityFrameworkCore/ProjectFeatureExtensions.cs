@@ -1,4 +1,4 @@
-﻿using CatFactory.CodeFactory;
+﻿using CatFactory.CodeFactory.Scaffolding;
 
 namespace CatFactory.EntityFrameworkCore
 {

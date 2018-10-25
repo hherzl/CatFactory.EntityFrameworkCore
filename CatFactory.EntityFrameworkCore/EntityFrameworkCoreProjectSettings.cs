@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using CatFactory.CodeFactory;
+using CatFactory.CodeFactory.Scaffolding;
 
 namespace CatFactory.EntityFrameworkCore
 {

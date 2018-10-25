@@ -1,6 +1,6 @@
 ﻿using System.Linq;
-using CatFactory.CodeFactory;
-using CatFactory.Mapping;
+using CatFactory.CodeFactory.Scaffolding;
+using CatFactory.ObjectRelationalMapping;
 
 namespace CatFactory.EntityFrameworkCore
 {

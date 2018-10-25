@@ -2,9 +2,10 @@
 using System.IO;
 using System.Linq;
 using CatFactory.CodeFactory;
-using CatFactory.Mapping;
-using CatFactory.NetCore;
-using CatFactory.OOP;
+using CatFactory.CodeFactory.Scaffolding;
+using CatFactory.NetCore.CodeFactory;
+using CatFactory.ObjectOrientedProgramming;
+using CatFactory.ObjectRelationalMapping;
 
 namespace CatFactory.EntityFrameworkCore
 {
