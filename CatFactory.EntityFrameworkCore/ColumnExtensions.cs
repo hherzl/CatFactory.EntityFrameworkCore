@@ -2,6 +2,7 @@
 using CatFactory.CodeFactory;
 using CatFactory.NetCore.CodeFactory;
 using CatFactory.ObjectRelationalMapping;
+using CatFactory.ObjectRelationalMapping.Programmability;
 
 namespace CatFactory.EntityFrameworkCore
 {
@@ -17,6 +18,16 @@ namespace CatFactory.EntityFrameworkCore
         public static string GetPropertyName(this Column column)
         {
             var name = column.Name;
+
+            foreach (var item in DotNetNamingConvention.invalidChars)
+                name = name.Replace(item, '_');
+
+            return namingConvention.GetPropertyName(name);
+        }
+
+        public static string GetPropertyName(this Parameter parameter)
+        {
+            var name = parameter.Name;
 
             foreach (var item in DotNetNamingConvention.invalidChars)
                 name = name.Replace(item, '_');

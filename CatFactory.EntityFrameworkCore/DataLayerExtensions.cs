@@ -108,9 +108,7 @@ namespace CatFactory.EntityFrameworkCore
                         var target = string.Format("{0}{1}", foreignTable.GetEntityName(), column.GetPropertyName());
 
                         if (classDefinition.Properties.Where(item => item.Name == column.GetPropertyName()).Count() == 0)
-                        {
                             classDefinition.Properties.Add(new PropertyDefinition(project.Database.ResolveType(column), target));
-                        }
                     }
                 }
 

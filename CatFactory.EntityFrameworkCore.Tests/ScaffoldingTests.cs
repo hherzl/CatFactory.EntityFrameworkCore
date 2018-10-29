@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CatFactory.EntityFrameworkCore.Tests
 {
-    public class ImportTests
+    public class ScaffoldingTests
     {
         [Fact]
         public void ProjectScaffoldingForStoreDatabaseTest()
@@ -14,7 +14,6 @@ namespace CatFactory.EntityFrameworkCore.Tests
                 DatabaseImportSettings = new DatabaseImportSettings
                 {
                     ConnectionString = "server=(local);database=Store;integrated security=yes;",
-                    ImportScalarFunctions = true,
                     Exclusions =
                     {
                         "dbo.sysdiagrams",
@@ -66,6 +65,41 @@ namespace CatFactory.EntityFrameworkCore.Tests
         }
 
         [Fact]
+        public void ProjectScaffoldingWithDataAnnotationsForStoreDatabaseTest()
+        {
+            // Import database
+            var database = SqlServerDatabaseFactory
+                .Import(SqlServerDatabaseFactory.GetLogger(), "server=(local);database=Store;integrated security=yes;", "dbo.sysdiagrams");
+
+            // Create instance of Entity Framework Core Project
+            var project = new EntityFrameworkCoreProject
+            {
+                Name = "StoreWithDataAnnotations.Core",
+                Database = database,
+                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\StoreWithDataAnnotations.Core"
+            };
+
+            // Apply settings for Entity Framework Core project
+            project.GlobalSelection(settings =>
+            {
+                settings.ForceOverwrite = true;
+                settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
+                settings.ConcurrencyToken = "Timestamp";
+                settings.UseDataAnnotations = true;
+            });
+
+            project.Select("Sales.Order", settings => settings.EntitiesWithDataContracts = true);
+
+            // Build features for project, group all entities by schema into a feature
+            project.BuildFeatures();
+
+            // Scaffolding =^^=
+            project
+                .ScaffoldEntityLayer()
+                .ScaffoldDataLayer();
+        }
+
+        [Fact]
         public void ProjectScaffoldingForNorthwindDatabaseTest()
         {
             // Import database
@@ -103,6 +137,8 @@ namespace CatFactory.EntityFrameworkCore.Tests
                 DatabaseImportSettings = new DatabaseImportSettings
                 {
                     ConnectionString = "server=(local);database=AdventureWorks2017;integrated security=yes;",
+                    ImportScalarFunctions = true,
+                    ImportTableFunctions = true,
                     Exclusions =
                     {
                         "dbo.sysdiagrams",
@@ -133,41 +169,6 @@ namespace CatFactory.EntityFrameworkCore.Tests
             {
                 settings.ForceOverwrite = true;
             });
-
-            // Build features for project, group all entities by schema into a feature
-            project.BuildFeatures();
-
-            // Scaffolding =^^=
-            project
-                .ScaffoldEntityLayer()
-                .ScaffoldDataLayer();
-        }
-
-        [Fact]
-        public void ProjectScaffoldingWithDataAnnotationsForStoreDatabaseTest()
-        {
-            // Import database
-            var database = SqlServerDatabaseFactory
-                .Import(SqlServerDatabaseFactory.GetLogger(), "server=(local);database=Store;integrated security=yes;", "dbo.sysdiagrams");
-
-            // Create instance of Entity Framework Core Project
-            var project = new EntityFrameworkCoreProject
-            {
-                Name = "StoreWithDataAnnotations.Core",
-                Database = database,
-                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\StoreWithDataAnnotations.Core"
-            };
-
-            // Apply settings for Entity Framework Core project
-            project.GlobalSelection(settings =>
-            {
-                settings.ForceOverwrite = true;
-                settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
-                settings.ConcurrencyToken = "Timestamp";
-                settings.UseDataAnnotations = true;
-            });
-
-            project.Select("Sales.Order", settings => settings.EntitiesWithDataContracts = true);
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();

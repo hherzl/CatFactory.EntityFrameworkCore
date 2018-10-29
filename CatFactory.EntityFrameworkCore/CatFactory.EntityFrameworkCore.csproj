@@ -2,19 +2,21 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <Version>1.0.0-beta-sun-build18</Version>
+    <Version>1.0.0-beta-sun-build19</Version>
     <Authors>H. Herzl</Authors>
     <Company>Herzl Corp.</Company>
     <Description>CatFactory Package for Entity Framework Core</Description>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</RepositoryUrl>
     <PackageTags>Entity Framework Core</PackageTags>
-    <PackageReleaseNotes>1.0.0-beta-sun-build18 Version:
+    <PackageReleaseNotes>1.0.0-beta-sun-build19 Version:
 
-* Core package update
-* Change OOP namespace to ObjectOrientedProgramming
-* Change Mapping namespace to ObjectRelationalMapping
-* Code review
+* Addition of constructor for entities with composed key
+* Code review for BaseRepository class's methods
+* Make DeclareDbSetPropertiesInDbContext as readonly in EntityFrameworkCoreProjectSettings class
+* Change default value for SimplifyDataTypes property in EntityFrameworkCoreProjectSettings class
+* Create instance for CodeNamingConvention in EntityFrameworkCoreProject class' constructors
+* Add validation for DeclareNavigationProperties property in EntityConfigurationClass
 
 Quick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory
 </PackageReleaseNotes>

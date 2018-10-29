@@ -86,7 +86,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             {
                 var column = columns[i];
 
-                if (project.Database.ColumnHasTypeMappedToClr(column))
+                if (project.Database.HasTypeMappedToClr(column))
                 {
                     var lines = new List<string>
                     {
@@ -121,8 +121,6 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                     configurationLines.Add(new CodeLine("{0};", string.Join(".", lines)));
                 }
-
-                var type = project.Database.DatabaseTypeMaps.FirstOrDefault(item => item.DatabaseType == column.Type);
             }
 
             configurationLines.Add(new CodeLine());
@@ -168,7 +166,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
             }
 
-            if (table.ForeignKeys.Count > 0)
+            if (projectSelection.Settings.DeclareNavigationProperties && table.ForeignKeys.Count > 0)
             {
                 configurationLines.Add(new CommentLine(" Add configuration for foreign keys"));
 
@@ -255,7 +253,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             {
                 var column = view.Columns[i];
 
-                if (project.Database.ColumnHasTypeMappedToClr(column))
+                if (project.Database.HasTypeMappedToClr(column))
                 {
                     var lines = new List<string>
                     {

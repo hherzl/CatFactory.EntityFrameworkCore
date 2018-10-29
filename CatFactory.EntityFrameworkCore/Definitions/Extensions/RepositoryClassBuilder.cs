@@ -44,7 +44,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             foreach (var table in entityFrameworkCoreProject.Database.Tables)
             {
-                definition.Namespaces.AddUnique(projectFeature.Project.Database.HasDefaultSchema(table) ? entityFrameworkCoreProject.GetEntityLayerNamespace() : entityFrameworkCoreProject.GetEntityLayerNamespace(table.Schema));
+                definition.Namespaces
+                    .AddUnique(projectFeature.Project.Database.HasDefaultSchema(table) ? entityFrameworkCoreProject.GetEntityLayerNamespace() : entityFrameworkCoreProject.GetEntityLayerNamespace(table.Schema));
 
                 definition.Namespaces.AddUnique(entityFrameworkCoreProject.GetDataLayerContractsNamespace());
             }
@@ -58,9 +59,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             foreach (var table in tables)
             {
-                var selection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(table);
+                var projectSelection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(table);
 
-                if (selection.Settings.EntitiesWithDataContracts)
+                if (projectSelection.Settings.EntitiesWithDataContracts)
                     definition.Namespaces.AddUnique(entityFrameworkCoreProject.GetDataLayerDataContractsNamespace());
 
                 foreach (var foreignKey in table.ForeignKeys)
@@ -74,13 +75,23 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     }
                 }
 
-                definition.GetGetAllMethod(projectFeature, selection, table);
+                if (table.ForeignKeys.Count == 0)
+                {
+                    definition.GetGetAllMethodWithoutForeigns(projectFeature, projectSelection, table);
+                }
+                else
+                {
+                    definition.GetGetAllMethod(projectFeature, projectSelection, table);
+                }
 
                 if (table.PrimaryKey != null)
-                    definition.Methods.Add(GetGetMethod(projectFeature, selection, table));
+                    definition.Methods.Add(GetGetMethod(projectFeature, projectSelection, table));
 
                 foreach (var unique in table.Uniques)
                     definition.Methods.Add(GetGetByUniqueMethods(projectFeature, table, unique));
+
+                if (projectSelection.Settings.SimplifyDataTypes)
+                    definition.SimplifyDataTypes();
             }
 
             var views = projectFeature
@@ -92,12 +103,15 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             foreach (var view in views)
             {
-                var selection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(view);
+                var projectSelection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(view);
 
-                if (selection.Settings.EntitiesWithDataContracts)
+                if (projectSelection.Settings.EntitiesWithDataContracts)
                     definition.Namespaces.AddUnique(entityFrameworkCoreProject.GetDataLayerDataContractsNamespace());
 
                 definition.GetGetAllMethod(projectFeature, view);
+
+                if (projectSelection.Settings.SimplifyDataTypes)
+                    definition.SimplifyDataTypes();
             }
 
             return definition;
@@ -183,7 +197,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     if (foreignTable == null)
                         continue;
 
-                    var foreignKeyEntityName = foreignTable.GetEntityName();
+                    var foreignKeyEntityName = foreignTable.GetDbSetPropertyName();
 
                     var foreignKeyAlias = NamingConvention.GetCamelCase(foreignTable.GetEntityName());
 
@@ -211,12 +225,12 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                             if (column.Nullable)
                             {
-                                lines.Add(new CodeLine(1, "join {0}Join in DbContext.Set<{1}>() on {2}.{3} equals {0}Join.{4} into {0}Temp", foreignKeyAlias, foreignKeyEntityName, entityAlias, x, y));
+                                lines.Add(new CodeLine(1, "join {0}Join in DbContext.{1} on {2}.{3} equals {0}Join.{4} into {0}Temp", foreignKeyAlias, foreignKeyEntityName, entityAlias, x, y));
                                 lines.Add(new CodeLine(2, "from {0} in {0}Temp.DefaultIfEmpty()", foreignKeyAlias, entityAlias, x, y));
                             }
                             else
                             {
-                                lines.Add(new CodeLine(1, "join {0} in DbContext.Set<{1}>() on {2}.{3} equals {0}.{4}", foreignKeyAlias, foreignKeyEntityName, entityAlias, x, y));
+                                lines.Add(new CodeLine(1, "join {0} in DbContext.{1} on {2}.{3} equals {0}.{4}", foreignKeyAlias, foreignKeyEntityName, entityAlias, x, y));
                             }
                         }
                     }
@@ -241,7 +255,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         var dbType = projectFeature.Project.Database.ResolveType(property.Type);
 
                         if (dbType == null)
-                            throw new Exception(string.Format("There isn't mapping for '{0}' type", property.Type));
+                            throw new MappingException(string.Format("There isn't mapping for '{0}' type", property.Type));
 
                         var clrType = dbType.GetClrType();
 
@@ -288,11 +302,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 returnType = table.GetEntityName();
 
                 lines.Add(new CommentLine(" Get query from DbSet"));
-
-                if (projectSelection.Settings.DeclareDbSetPropertiesInDbContext)
-                    lines.Add(new CodeLine("var query = DbContext.{0}.AsQueryable();", table.GetPluralName()));
-                else
-                    lines.Add(new CodeLine("var query = DbContext.Set<{0}>().AsQueryable();", table.GetEntityName()));
+                lines.Add(new CodeLine("var query = DbContext.{0}.AsQueryable();", table.GetDbSetPropertyName()));
 
                 lines.Add(new CodeLine());
             }
@@ -313,44 +323,36 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     {
                         var column = table.Columns.First(item => item.Name == foreignKey.Key.First());
 
-                        var parameterName = NamingExtensions.namingConvention.GetParameterName(column.Name);
+                        var parameterName = column.GetParameterName();
 
                         parameters.Add(new ParameterDefinition(projectFeature.Project.Database.ResolveType(column), parameterName, "null"));
 
-                        if (projectFeature.Project.Database.ColumnIsString(column))
+                        if (projectFeature.Project.Database.ColumnIsDateTime(column))
                         {
-                            lines.Add(new CodeLine("if (!string.IsNullOrEmpty({0}))", parameterName));
-                            lines.Add(new CodeLine("{"));
-                            lines.Add(new CommentLine(1, " Filter by: '{0}'", column.Name));
+                            lines.Add(new CommentLine(" Filter by: '{0}'", column.Name));
+                            lines.Add(new CodeLine("if ({0}.HasValue)", parameterName));
                             lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
-                            lines.Add(new CodeLine("}"));
                             lines.Add(new CodeLine());
                         }
                         else if (projectFeature.Project.Database.ColumnIsNumber(column))
                         {
+                            lines.Add(new CommentLine(" Filter by: '{0}'", column.Name));
                             lines.Add(new CodeLine("if ({0}.HasValue)", parameterName));
-                            lines.Add(new CodeLine("{"));
-                            lines.Add(new CommentLine(1, " Filter by: '{0}'", column.Name));
                             lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
-                            lines.Add(new CodeLine("}"));
                             lines.Add(new CodeLine());
                         }
-                        else if (projectFeature.Project.Database.ColumnIsDateTime(column))
+                        else if (projectFeature.Project.Database.ColumnIsString(column))
                         {
-                            lines.Add(new CodeLine("if ({0}.HasValue)", parameterName));
-                            lines.Add(new CodeLine("{"));
-                            lines.Add(new CommentLine(1, " Filter by: '{0}'", column.Name));
+                            lines.Add(new CommentLine(" Filter by: '{0}'", column.Name));
+                            lines.Add(new CodeLine("if (!string.IsNullOrEmpty({0}))", parameterName));
                             lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
-                            lines.Add(new CodeLine("}"));
                             lines.Add(new CodeLine());
                         }
                         else
                         {
+                            lines.Add(new CommentLine(" Filter by: '{0}'", column.Name));
                             lines.Add(new CodeLine("if ({0} != null)", parameterName));
-                            lines.Add(new CodeLine("{"));
-                            lines.Add(new CommentLine(1, " Filter by: '{0}'", column.Name));
                             lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
-                            lines.Add(new CodeLine("}"));
                             lines.Add(new CodeLine());
                         }
                     }
@@ -369,16 +371,25 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             });
         }
 
-        private static void GetGetAllMethod(this CSharpClassDefinition classDefinition, ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, IView view)
+        private static void GetGetAllMethodWithoutForeigns(this CSharpClassDefinition definition, ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection, ITable table)
         {
-            var lines = new List<ILine>
+            definition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", table.GetEntityName()), table.GetGetAllRepositoryMethodName())
             {
-                new CodeLine("return DbContext.Set<{0}>();", view.GetEntityName())
-            };
+                Lines =
+                {
+                    new CodeLine("return DbContext.{0};", table.GetDbSetPropertyName())
+                }
+            });
+        }
 
-            classDefinition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", view.GetEntityName()), view.GetGetAllRepositoryMethodName())
+        private static void GetGetAllMethod(this CSharpClassDefinition definition, ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, IView view)
+        {
+            definition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", view.GetEntityName()), view.GetGetAllRepositoryMethodName())
             {
-                Lines = lines
+                Lines =
+                {
+                    new CodeLine("return DbContext.{0};", view.GetDbSetPropertyName())
+                }
             });
         }
 
@@ -395,7 +406,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 IsAsync = true,
                 Lines =
                 {
-                    new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", selection.Settings.DeclareDbSetPropertiesInDbContext ? table.GetPluralName() : string.Format("Set<{0}>()", table.GetEntityName()), expression)
+                    new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", table.GetDbSetPropertyName(), expression)
                 }
             };
         }
@@ -415,7 +426,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             {
                 var lines = new List<ILine>
                 {
-                    new CodeLine("return await DbContext.{0}", projectSelection.Settings.DeclareDbSetPropertiesInDbContext ? table.GetPluralName() : string.Format("Set<{0}>()", table.GetEntityName()))
+                    new CodeLine("return await DbContext.{0}", table.GetDbSetPropertyName())
                 };
 
                 foreach (var foreignKey in table.ForeignKeys)
@@ -443,7 +454,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     IsAsync = true,
                     Lines =
                     {
-                        new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", projectSelection .Settings.DeclareDbSetPropertiesInDbContext ? table.GetPluralName() : string.Format("Set<{0}>()", table.GetEntityName()), expression)
+                        new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", table.GetDbSetPropertyName(), expression)
                     }
                 };
             }

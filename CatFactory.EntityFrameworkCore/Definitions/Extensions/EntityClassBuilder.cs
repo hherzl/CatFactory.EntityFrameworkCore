@@ -26,6 +26,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
             };
 
+            if (!string.IsNullOrEmpty(table.Description))
+                definition.Documentation.Summary = table.Description;
+
             var projectSelection = project.GetSelection(table);
 
             if (projectSelection.Settings.UseDataAnnotations)
@@ -43,31 +46,42 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 definition.Events.Add(new EventDefinition("PropertyChangedEventHandler", "PropertyChanged"));
             }
 
-            var columns = table.Columns;
-
-            if (table.PrimaryKey?.Key.Count == 1)
+            if (table.PrimaryKey != null)
             {
-                var column = table.GetColumnsFromConstraint(table.PrimaryKey).First();
+                var constructor = new ClassConstructorDefinition();
 
-                definition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(project.Database.ResolveType(column), column.GetParameterName()))
+                foreach (var key in table.GetColumnsFromConstraint(table.PrimaryKey))
                 {
-                    Lines =
+                    var propertyType = string.Empty;
+
+                    if (project.Database.HasTypeMappedToClr(key))
                     {
-                        new CodeLine("{0} = {1};", column.GetPropertyName(), column.GetParameterName())
+                        var clrType = project.Database.GetClrMapForType(key);
+
+                        propertyType = clrType.AllowClrNullable ? string.Format("{0}?", clrType.GetClrType().Name) : clrType.GetClrType().Name;
                     }
-                });
+                    else
+                    {
+                        propertyType = "object";
+                    }
+
+                    constructor.Parameters.Add(new ParameterDefinition(propertyType, key.GetParameterName()));
+
+                    constructor.Lines.Add(new CodeLine("{0} = {1};", key.GetPropertyName(), key.GetParameterName()));
+                }
+
+                definition.Constructors.Add(constructor);
             }
 
-            if (!string.IsNullOrEmpty(table.Description))
-                definition.Documentation.Summary = table.Description;
+            var columns = table.Columns;
 
             foreach (var column in columns)
             {
                 var propertyType = string.Empty;
 
-                if (project.Database.ColumnHasTypeMappedToClr(column))
+                if (project.Database.HasTypeMappedToClr(column))
                 {
-                    var clrType = project.Database.GetClrMapForColumnType(column);
+                    var clrType = project.Database.GetClrMapForType(column);
 
                     propertyType = clrType.AllowClrNullable ? string.Format("{0}?", clrType.GetClrType().Name) : clrType.GetClrType().Name;
                 }
@@ -111,42 +125,49 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     definition.Implements.Add("IEntity");
             }
 
-            foreach (var foreignKey in table.ForeignKeys)
+            if (projectSelection.Settings.SimplifyDataTypes)
+                definition.SimplifyDataTypes();
+
+            if (projectSelection.Settings.DeclareNavigationProperties)
             {
-                var foreignTable = project.Database.FindTable(foreignKey.References);
-
-                if (foreignTable == null)
-                    continue;
-
-                definition.Namespaces.AddUnique(project.Database.HasDefaultSchema(foreignTable) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(foreignTable.Schema));
-
-                definition.Namespace = project.Database.HasDefaultSchema(table) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(table.Schema);
-
-                var fkProperty = foreignKey.GetParentNavigationProperty(foreignTable, project);
-
-                if (definition.Properties.FirstOrDefault(item => item.Name == fkProperty.Name) == null)
-                    definition.Properties.Add(fkProperty);
-            }
-
-            foreach (var child in project.Database.Tables)
-            {
-                foreach (var foreignKey in child.ForeignKeys)
+                foreach (var foreignKey in table.ForeignKeys)
                 {
-                    if (foreignKey.References.EndsWith(table.FullName))
+                    var foreignTable = project.Database.FindTable(foreignKey.References);
+
+                    if (foreignTable == null)
+                        continue;
+
+                    definition.Namespaces
+                        .AddUnique(project.Database.HasDefaultSchema(foreignTable) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(foreignTable.Schema));
+
+                    definition.Namespace = project.Database.HasDefaultSchema(table) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(table.Schema);
+
+                    var fkProperty = foreignKey.GetParentNavigationProperty(foreignTable, project);
+
+                    if (definition.Properties.FirstOrDefault(item => item.Name == fkProperty.Name) == null)
+                        definition.Properties.Add(fkProperty);
+                }
+
+                foreach (var child in project.Database.Tables)
+                {
+                    foreach (var foreignKey in child.ForeignKeys)
                     {
-                        definition.Namespaces.AddUnique(projectSelection.Settings.NavigationPropertyEnumerableNamespace);
-                        definition.Namespaces.AddUnique(project.Database.HasDefaultSchema(child) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(child.Schema));
+                        if (foreignKey.References.EndsWith(table.FullName))
+                        {
+                            definition.Namespaces
+                                .AddUnique(projectSelection.Settings.NavigationPropertyEnumerableNamespace);
 
-                        var navigationProperty = project.GetChildNavigationProperty(projectSelection, child, foreignKey);
+                            definition.Namespaces
+                                .AddUnique(project.Database.HasDefaultSchema(child) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(child.Schema));
 
-                        if (definition.Properties.FirstOrDefault(item => item.Name == navigationProperty.Name) == null)
-                            definition.Properties.Add(navigationProperty);
+                            var navigationProperty = project.GetChildNavigationProperty(projectSelection, child, foreignKey);
+
+                            if (definition.Properties.FirstOrDefault(item => item.Name == navigationProperty.Name) == null)
+                                definition.Properties.Add(navigationProperty);
+                        }
                     }
                 }
             }
-
-            if (projectSelection.Settings.SimplifyDataTypes)
-                definition.SimplifyDataTypes();
 
             return definition;
         }
@@ -168,6 +189,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
             };
 
+            if (!string.IsNullOrEmpty(view.Description))
+                definition.Documentation.Summary = view.Description;
+
             var projectSelection = project.GetSelection(view);
 
             if (projectSelection.Settings.UseDataAnnotations)
@@ -176,16 +200,13 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 definition.Namespaces.Add("System.ComponentModel.DataAnnotations.Schema");
             }
 
-            if (!string.IsNullOrEmpty(view.Description))
-                definition.Documentation.Summary = view.Description;
-
             foreach (var column in view.Columns)
             {
                 var propertyType = string.Empty;
 
-                if (project.Database.ColumnHasTypeMappedToClr(column))
+                if (project.Database.HasTypeMappedToClr(column))
                 {
-                    var clrType = project.Database.GetClrMapForColumnType(column);
+                    var clrType = project.Database.GetClrMapForType(column);
 
                     propertyType = clrType.AllowClrNullable ? string.Format("{0}?", clrType.GetClrType().Name) : clrType.GetClrType().Name;
                 }

@@ -9,7 +9,7 @@ namespace CatFactory.EntityFrameworkCore
     {
         public bool ForceOverwrite { get; set; }
 
-        public bool SimplifyDataTypes { get; set; }
+        public bool SimplifyDataTypes { get; set; } = true;
 
         public bool UseAutomaticPropertiesForEntities { get; set; } = true;
 
@@ -20,7 +20,9 @@ namespace CatFactory.EntityFrameworkCore
         [Obsolete("Temporarily disabled")]
         public bool UseMefForEntitiesMapping { get; set; } = true;
 
-        public bool DeclareDbSetPropertiesInDbContext { get; set; }
+        public bool DeclareDbSetPropertiesInDbContext { get; } = true;
+
+        public bool DeclareNavigationProperties { get; set; } = true;
 
         public bool DeclareNavigationPropertiesAsVirtual { get; set; }
 

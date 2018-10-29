@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using CatFactory.CodeFactory.Scaffolding;
+using CatFactory.NetCore.CodeFactory;
 using CatFactory.ObjectRelationalMapping;
 using Microsoft.Extensions.Logging;
 
@@ -12,11 +13,13 @@ namespace CatFactory.EntityFrameworkCore
         public EntityFrameworkCoreProject()
             : base()
         {
+            CodeNamingConvention = new DotNetNamingConvention();
         }
 
         public EntityFrameworkCoreProject(ILogger<EntityFrameworkCoreProject> logger)
             : base(logger)
         {
+            CodeNamingConvention = new DotNetNamingConvention();
         }
 
         public override void BuildFeatures()

@@ -13,9 +13,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 Namespaces =
                 {
                     "System",
-                    "System.Linq",
                     "System.Threading.Tasks",
-                    "Microsoft.EntityFrameworkCore"
                 },
                 Namespace = project.GetDataLayerContractsNamespace(),
                 Name = "Repository",
@@ -82,41 +80,27 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             var selection = project.GlobalSelection();
 
-            if (selection.Settings.AuditEntity != null)
+            if (selection.Settings.AuditEntity == null)
+            {
+                lines.AddRange(new List<ILine>
+                {
+                    new CodeLine("DbContext.Add(entity);")
+                });
+            }
+            else
             {
                 lines.AddRange(new List<ILine>
                 {
                     new CommentLine(" Cast entity to IAuditEntity"),
-                    new CodeLine("var cast = entity as IAuditEntity;"),
-                    new CodeLine(),
-                    new CodeLine("if (cast != null)"),
+                    new CodeLine("if(entity is IAuditEntity cast)"),
                     new CodeLine("{"),
-                    new CodeLine(1, "if (!cast.CreationDateTime.HasValue)"),
-                    new CodeLine(1, "{"),
-                    new CommentLine(2, " Set creation date time"),
-                    new CodeLine(2, "cast.CreationDateTime = DateTime.Now;"),
-                    new CodeLine(1, "}"),
+                    new CommentLine(1, " Set creation datetime"),
+                    new CodeLine(1, "cast.CreationDateTime = DateTime.Now;"),
                     new CodeLine("}"),
-                    new CodeLine()
+                    new CodeLine(),
+                    new CodeLine("DbContext.Add(entity);"),
                 });
             }
-
-            lines.AddRange(new List<ILine>
-            {
-                new CommentLine(" Get entry from Db context"),
-                new CodeLine("var entry = DbContext.Entry(entity);"),
-                new CodeLine(),
-                new CodeLine("if (entry.State != EntityState.Detached)"),
-                new CodeLine("{"),
-                new CommentLine(1, " Set state for entity entry"),
-                new CodeLine(1, "entry.State = EntityState.Added;"),
-                new CodeLine("}"),
-                new CodeLine("else"),
-                new CodeLine("{"),
-                new CommentLine(1, " Add entity to DbSet"),
-                new CodeLine(1, "DbContext.Set<TEntity>().Add(entity);"),
-                new CodeLine("}")
-            });
 
             return new MethodDefinition("void", "Add", new ParameterDefinition("TEntity", "entity"))
             {
@@ -139,37 +123,27 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             var selection = project.GlobalSelection();
 
-            if (selection.Settings.AuditEntity != null)
+            if (selection.Settings.AuditEntity == null)
             {
                 lines.AddRange(new List<ILine>
                 {
-                    new CodeLine("var cast = entity as IAuditEntity;"),
-                    new CodeLine(),
-                    new CodeLine("if (cast != null)"),
-                    new CodeLine("{"),
-                    new CodeLine(1, "if (!cast.LastUpdateDateTime.HasValue)"),
-                    new CodeLine(1, "{"),
-                    new CommentLine(2, " Set last update date time"),
-                    new CodeLine(2, "cast.LastUpdateDateTime = DateTime.Now;"),
-                    new CodeLine(1, "}"),
-                    new CodeLine("}"),
-                    new CodeLine()
+                    new CodeLine("DbContext.Update(entity);")
                 });
             }
-
-            lines.AddRange(new List<ILine>
+            else
             {
-                new CommentLine(" Get entity's entry"),
-                new CodeLine("var entry = DbContext.Entry(entity);"),
-                new CodeLine(),
-                new CodeLine("if (entry.State == EntityState.Detached)"),
-                new CodeLine("{"),
-                new CommentLine(1, " Attach entity to DbSet"),
-                new CodeLine(1, "DbContext.Set<TEntity>().Attach(entity);"),
-                new CodeLine("}"),
-                new CodeLine(),
-                new CodeLine("entry.State = EntityState.Modified;")
-            });
+                lines.AddRange(new List<ILine>
+                {
+                    new CommentLine(" Cast entity to IAuditEntity"),
+                    new CodeLine("if (entity is IAuditEntity cast)"),
+                    new CodeLine("{"),
+                    new CommentLine(1, " Set update datetime"),
+                    new CodeLine(1, "cast.LastUpdateDateTime = DateTime.Now;"),
+                    new CodeLine("}"),
+                    new CodeLine(),
+                    new CodeLine("DbContext.Update(entity);")
+                });
+            }
 
             return new MethodDefinition("void", "Update", new ParameterDefinition("TEntity", "entity"))
             {
@@ -187,8 +161,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
         }
 
         private static MethodDefinition GetRemoveMethod(EntityFrameworkCoreProject project)
-        {
-            return new MethodDefinition("void", "Remove", new ParameterDefinition("TEntity", "entity"))
+            => new MethodDefinition("void", "Remove", new ParameterDefinition("TEntity", "entity"))
             {
                 IsVirtual = true,
                 GenericTypes =
@@ -201,25 +174,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 },
                 Lines =
                 {
-                    new CommentLine(" Get entity's entry"),
-                    new CodeLine("var entry = DbContext.Entry(entity);"),
-                    new CodeLine(),
-                    new CodeLine("if (entry.State == EntityState.Deleted)"),
-                    new CodeLine("{"),
-                    new CommentLine(1, " Create set for entity"),
-                    new CodeLine(1, "var dbSet = DbContext.Set<TEntity>();"),
-                    new CodeLine(),
-                    new CommentLine(1, " Attach and remove entity from DbSet"),
-                    new CodeLine(1, "dbSet.Attach(entity);"),
-                    new CodeLine(1, "dbSet.Remove(entity);"),
-                    new CodeLine("}"),
-                    new CodeLine("else"),
-                    new CodeLine("{"),
-                    new CommentLine(1, " Set state for entity to 'Deleted'"),
-                    new CodeLine(1, "entry.State = EntityState.Deleted;"),
-                    new CodeLine("}"),
+                    new CodeLine("DbContext.Remove(entity);")
                 }
             };
-        }
     }
 }

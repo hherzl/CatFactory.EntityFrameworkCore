@@ -123,7 +123,7 @@ namespace CatFactory.EntityFrameworkCore
                         UseAutomaticPropertiesForEntities = globalSettings.UseAutomaticPropertiesForEntities,
                         EnableDataBindings = globalSettings.EnableDataBindings,
                         UseDataAnnotations = globalSettings.UseDataAnnotations,
-                        DeclareDbSetPropertiesInDbContext = globalSettings.DeclareDbSetPropertiesInDbContext,
+                        DeclareNavigationProperties = globalSettings.DeclareNavigationProperties,
                         DeclareNavigationPropertiesAsVirtual = globalSettings.DeclareNavigationPropertiesAsVirtual,
                         NavigationPropertyEnumerableNamespace = globalSettings.NavigationPropertyEnumerableNamespace,
                         NavigationPropertyEnumerableType = globalSettings.NavigationPropertyEnumerableType,
