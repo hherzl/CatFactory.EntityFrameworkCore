@@ -255,7 +255,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         var dbType = projectFeature.Project.Database.ResolveType(property.Type);
 
                         if (dbType == null)
-                            throw new MappingException(string.Format("There isn't mapping for '{0}' type", property.Type));
+                            throw new ObjectRelationMappingException(string.Format("There isn't mapping for '{0}' type", property.Type));
 
                         var clrType = dbType.GetClrType();
 

@@ -2,21 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <Version>1.0.0-beta-sun-build19</Version>
+    <Version>1.0.0-beta-sun-build20</Version>
     <Authors>H. Herzl</Authors>
     <Company>Herzl Corp.</Company>
     <Description>CatFactory Package for Entity Framework Core</Description>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</RepositoryUrl>
     <PackageTags>Entity Framework Core</PackageTags>
-    <PackageReleaseNotes>1.0.0-beta-sun-build19 Version:
+    <PackageReleaseNotes>1.0.0-beta-sun-build20 Version:
 
-* Addition of constructor for entities with composed key
-* Code review for BaseRepository class's methods
-* Make DeclareDbSetPropertiesInDbContext as readonly in EntityFrameworkCoreProjectSettings class
-* Change default value for SimplifyDataTypes property in EntityFrameworkCoreProjectSettings class
-* Create instance for CodeNamingConvention in EntityFrameworkCoreProject class' constructors
-* Add validation for DeclareNavigationProperties property in EntityConfigurationClass
+* Addition of DataContract class definition
+* Core package update
 
 Quick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory
 </PackageReleaseNotes>
@@ -24,7 +20,7 @@ Quick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Fra
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CatFactory.NetCore" Version="1.0.0-beta-sun-build13" />
+    <PackageReference Include="CatFactory.NetCore" Version="1.0.0-beta-sun-build14" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.1.1" />
   </ItemGroup>
 

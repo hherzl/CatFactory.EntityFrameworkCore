@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using CatFactory.Collections;
 using CatFactory.EntityFrameworkCore.Definitions.Extensions;
 using CatFactory.NetCore.CodeFactory;
 using CatFactory.NetCore.ObjectOrientedProgramming;
-using CatFactory.ObjectOrientedProgramming;
 using CatFactory.ObjectRelationalMapping;
 
 namespace CatFactory.EntityFrameworkCore
@@ -79,38 +77,7 @@ namespace CatFactory.EntityFrameworkCore
                 if (!selection.Settings.EntitiesWithDataContracts)
                     continue;
 
-                var classDefinition = new CSharpClassDefinition
-                {
-                    Namespaces =
-                    {
-                        "System"
-                    },
-                    Namespace = project.GetDataLayerDataContractsNamespace(),
-                    Name = table.GetDataContractName()
-                };
-
-                foreach (var column in table.Columns)
-                {
-                    classDefinition.Properties.Add(new PropertyDefinition(project.Database.ResolveType(column), column.GetPropertyName()));
-                }
-
-                foreach (var foreignKey in table.ForeignKeys)
-                {
-                    var foreignTable = project.Database.FindTable(foreignKey.References);
-
-                    if (foreignTable == null)
-                        continue;
-
-                    var foreignKeyAlias = NamingConvention.GetCamelCase(foreignTable.GetEntityName());
-
-                    foreach (var column in foreignTable?.GetColumnsWithNoPrimaryKey())
-                    {
-                        var target = string.Format("{0}{1}", foreignTable.GetEntityName(), column.GetPropertyName());
-
-                        if (classDefinition.Properties.Where(item => item.Name == column.GetPropertyName()).Count() == 0)
-                            classDefinition.Properties.Add(new PropertyDefinition(project.Database.ResolveType(column), target));
-                    }
-                }
+                var classDefinition = project.GetDataContractClassDefinition(table);
 
                 CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerDataContractsDirectory(), selection.Settings.ForceOverwrite, classDefinition);
             }

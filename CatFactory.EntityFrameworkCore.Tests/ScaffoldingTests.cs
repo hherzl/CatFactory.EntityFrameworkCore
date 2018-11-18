@@ -14,6 +14,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
                 DatabaseImportSettings = new DatabaseImportSettings
                 {
                     ConnectionString = "server=(local);database=Store;integrated security=yes;",
+                    ImportTableFunctions = true,
                     Exclusions =
                     {
                         "dbo.sysdiagrams",
