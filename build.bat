@@ -7,9 +7,9 @@ cd %srcPath%
 dotnet build
 cd %testPath%
 dotnet test
-cd %outputBasePath%\Store.Core.Tests
+cd %outputBasePath%\OnLineStore.Core.Tests
 dotnet test
-cd %outputBasePath%\StoreWithDataAnnotations.Core.Tests
+cd %outputBasePath%\OnLineStoreWithDataAnnotations.Core.Tests
 dotnet test
 cd %outputBasePath%\Northwind.Core.Tests
 dotnet test

@@ -13,7 +13,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
             {
                 DatabaseImportSettings = new DatabaseImportSettings
                 {
-                    ConnectionString = "server=(local);database=Store;integrated security=yes;",
+                    ConnectionString = "server=(local);database=OnLineStore;integrated security=yes;",
                     ImportTableFunctions = true,
                     Exclusions =
                     {
@@ -29,9 +29,9 @@ namespace CatFactory.EntityFrameworkCore.Tests
             // Create instance of Entity Framework Core project
             var project = new EntityFrameworkCoreProject
             {
-                Name = "Store.Core",
+                Name = "OnLineStore.Core",
                 Database = database,
-                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\Store.Core"
+                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\OnLineStore.Core"
             };
 
             // Apply settings for Entity Framework Core project
@@ -42,7 +42,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
                 settings.ConcurrencyToken = "Timestamp";
             });
 
-            project.Select("Sales.Order", settings => settings.EntitiesWithDataContracts = true);
+            project.Select("Sales.OrderHeader", settings => settings.EntitiesWithDataContracts = true);
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
@@ -70,14 +70,14 @@ namespace CatFactory.EntityFrameworkCore.Tests
         {
             // Import database
             var database = SqlServerDatabaseFactory
-                .Import(SqlServerDatabaseFactory.GetLogger(), "server=(local);database=Store;integrated security=yes;", "dbo.sysdiagrams");
+                .Import(SqlServerDatabaseFactory.GetLogger(), "server=(local);database=OnLineStore;integrated security=yes;", "dbo.sysdiagrams");
 
             // Create instance of Entity Framework Core Project
             var project = new EntityFrameworkCoreProject
             {
-                Name = "StoreWithDataAnnotations.Core",
+                Name = "OnLineStoreWithDataAnnotations.Core",
                 Database = database,
-                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\StoreWithDataAnnotations.Core"
+                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\OnLineStoreWithDataAnnotations.Core"
             };
 
             // Apply settings for Entity Framework Core project
@@ -89,7 +89,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
                 settings.UseDataAnnotations = true;
             });
 
-            project.Select("Sales.Order", settings => settings.EntitiesWithDataContracts = true);
+            project.Select("Sales.OrderHeader", settings => settings.EntitiesWithDataContracts = true);
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();

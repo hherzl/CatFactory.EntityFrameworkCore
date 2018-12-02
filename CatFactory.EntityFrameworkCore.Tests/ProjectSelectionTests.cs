@@ -12,14 +12,14 @@ namespace CatFactory.EntityFrameworkCore.Tests
 
             // Import database
             var database = SqlServerDatabaseFactory
-                .Import(SqlServerDatabaseFactory.GetLogger(), "server=(local);database=Store;integrated security=yes;", "dbo.sysdiagrams");
+                .Import(SqlServerDatabaseFactory.GetLogger(), "server=(local);database=OnLineStore;integrated security=yes;", "dbo.sysdiagrams");
 
             // Create instance of Entity Framework Core project
             var project = new EntityFrameworkCoreProject
             {
-                Name = "Store",
+                Name = "OnLineStore",
                 Database = database,
-                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\Store"
+                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\OnLineStore"
             };
 
             // Act
@@ -32,11 +32,11 @@ namespace CatFactory.EntityFrameworkCore.Tests
                 settings.ConcurrencyToken = "Timestamp";
             });
 
-            project.Select("Sales.Order", settings => settings.EntitiesWithDataContracts = true);
+            project.Select("Sales.OrderHeader", settings => settings.EntitiesWithDataContracts = true);
 
-            var order = database.FindTable("Sales.Order");
+            var orderHeader = database.FindTable("Sales.OrderHeader");
 
-            var selectionForOrder = project.GetSelection(order);
+            var selectionForOrder = project.GetSelection(orderHeader);
 
             // Assert
 
