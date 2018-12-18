@@ -6,45 +6,22 @@ namespace CatFactory.EntityFrameworkCore
 {
     public static class EntityFrameworkCoreProjectSelectionExtensions
     {
-        public static ProjectSelection<EntityFrameworkCoreProjectSettings> GetSelection(this EntityFrameworkCoreProject project, ITable table)
+        public static ProjectSelection<EntityFrameworkCoreProjectSettings> GetSelection(this EntityFrameworkCoreProject project, IDbObject dbObj)
         {
-            // Sales.Order
-            var selectionForFullName = project.Selections.FirstOrDefault(item => item.Pattern == table.FullName);
+            // Sales.OrderHeader
+            var selectionForFullName = project.Selections.FirstOrDefault(item => item.Pattern == dbObj.FullName);
 
             if (selectionForFullName != null)
                 return selectionForFullName;
 
             // Sales.*
-            var selectionForSchema = project.Selections.FirstOrDefault(item => item.Pattern == string.Format("{0}.*", table.Schema));
+            var selectionForSchema = project.Selections.FirstOrDefault(item => item.Pattern == string.Format("{0}.*", dbObj.Schema));
 
             if (selectionForSchema != null)
                 return selectionForSchema;
 
-            // *.Order
-            var selectionForName = project.Selections.FirstOrDefault(item => item.Pattern == string.Format("*.{0}", table.Name));
-
-            if (selectionForName != null)
-                return selectionForName;
-
-            return project.GlobalSelection();
-        }
-
-        public static ProjectSelection<EntityFrameworkCoreProjectSettings> GetSelection(this EntityFrameworkCoreProject project, IView view)
-        {
-            // Sales.Order
-            var selectionForFullName = project.Selections.FirstOrDefault(item => item.Pattern == view.FullName);
-
-            if (selectionForFullName != null)
-                return selectionForFullName;
-
-            // Sales.*
-            var selectionForSchema = project.Selections.FirstOrDefault(item => item.Pattern == string.Format("{0}.*", view.Schema));
-
-            if (selectionForSchema != null)
-                return selectionForSchema;
-
-            // *.Order
-            var selectionForName = project.Selections.FirstOrDefault(item => item.Pattern == string.Format("*.{0}", view.Name));
+            // *.OrderHeader
+            var selectionForName = project.Selections.FirstOrDefault(item => item.Pattern == string.Format("*.{0}", dbObj.Name));
 
             if (selectionForName != null)
                 return selectionForName;

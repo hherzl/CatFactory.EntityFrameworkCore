@@ -38,11 +38,17 @@ namespace CatFactory.EntityFrameworkCore.Tests
             project.GlobalSelection(settings =>
             {
                 settings.ForceOverwrite = true;
-                settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
                 settings.ConcurrencyToken = "Timestamp";
+                settings.AuditEntity = new AuditEntity
+                {
+                    CreationUserColumnName = "CreationUser",
+                    CreationDateTimeColumnName = "CreationDateTime",
+                    LastUpdateUserColumnName = "LastUpdateUser",
+                    LastUpdateDateTimeColumnName = "LastUpdateDateTime"
+                };
             });
 
-            project.Select("Sales.OrderHeader", settings => settings.EntitiesWithDataContracts = true);
+            project.Selection("Sales.OrderHeader", settings => settings.EntitiesWithDataContracts = true);
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
@@ -84,12 +90,18 @@ namespace CatFactory.EntityFrameworkCore.Tests
             project.GlobalSelection(settings =>
             {
                 settings.ForceOverwrite = true;
-                settings.AuditEntity = new AuditEntity("CreationUser", "CreationDateTime", "LastUpdateUser", "LastUpdateDateTime");
-                settings.ConcurrencyToken = "Timestamp";
                 settings.UseDataAnnotations = true;
+                settings.ConcurrencyToken = "Timestamp";
+                settings.AuditEntity = new AuditEntity
+                {
+                    CreationUserColumnName = "CreationUser",
+                    CreationDateTimeColumnName = "CreationDateTime",
+                    LastUpdateUserColumnName = "LastUpdateUser",
+                    LastUpdateDateTimeColumnName = "LastUpdateDateTime"
+                };
             });
 
-            project.Select("Sales.OrderHeader", settings => settings.EntitiesWithDataContracts = true);
+            project.Selection("Sales.OrderHeader", settings => settings.EntitiesWithDataContracts = true);
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
@@ -118,7 +130,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
             // Apply settings for Entity Framework Core project
             project.GlobalSelection(settings => settings.ForceOverwrite = true);
 
-            project.Select("dbo.Orders", settings => settings.EntitiesWithDataContracts = true);
+            project.Selection("dbo.Orders", settings => settings.EntitiesWithDataContracts = true);
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();

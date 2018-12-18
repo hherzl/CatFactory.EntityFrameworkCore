@@ -6,13 +6,13 @@
         {
         }
 
-        public AuditEntity(string creationUserColumnName, string creationDateTimeColumnName, string lastUpdateUserColumnName, string lastUpdateDateTimeColumnName)
-        {
-            CreationUserColumnName = creationUserColumnName;
-            CreationDateTimeColumnName = creationDateTimeColumnName;
-            LastUpdateUserColumnName = lastUpdateUserColumnName;
-            LastUpdateDateTimeColumnName = lastUpdateDateTimeColumnName;
-        }
+        //public AuditEntity(string creationUserColumnName, string creationDateTimeColumnName, string lastUpdateUserColumnName, string lastUpdateDateTimeColumnName)
+        //{
+        //    CreationUserColumnName = creationUserColumnName;
+        //    CreationDateTimeColumnName = creationDateTimeColumnName;
+        //    LastUpdateUserColumnName = lastUpdateUserColumnName;
+        //    LastUpdateDateTimeColumnName = lastUpdateDateTimeColumnName;
+        //}
 
         public string CreationUserColumnName { get; set; }
 
@@ -23,12 +23,6 @@
         public string LastUpdateDateTimeColumnName { get; set; }
 
         public string[] Names
-            => new string[]
-            {
-                CreationUserColumnName,
-                CreationDateTimeColumnName,
-                LastUpdateUserColumnName,
-                LastUpdateDateTimeColumnName
-            };
+            => new string[] { CreationUserColumnName, CreationDateTimeColumnName, LastUpdateUserColumnName, LastUpdateDateTimeColumnName };
     }
 }

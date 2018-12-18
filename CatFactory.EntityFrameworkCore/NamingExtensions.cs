@@ -17,6 +17,9 @@ namespace CatFactory.EntityFrameworkCore
             namingService = new NamingService();
         }
 
+        public static string GetParameterName(this Column column)
+            => namingConvention.GetParameterName(column.Name);
+
         public static string GetNavigationPropertyName(this IDbObject dbObject)
             => string.Format("{0}List", namingConvention.GetClassName(dbObject.Name));
 

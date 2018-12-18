@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using CatFactory.NetCore;
 using CatFactory.ObjectOrientedProgramming;
 using CatFactory.ObjectRelationalMapping;
 
@@ -20,7 +21,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             foreach (var column in table.Columns)
             {
-                classDefinition.Properties.Add(new PropertyDefinition(project.Database.ResolveType(column), column.GetPropertyName()));
+                classDefinition.Properties.Add(new PropertyDefinition(project.Database.ResolveDatebaseType(column), column.GetPropertyName()));
             }
 
             foreach (var foreignKey in table.ForeignKeys)
@@ -37,7 +38,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     var target = string.Format("{0}{1}", foreignTable.GetEntityName(), column.GetPropertyName());
 
                     if (classDefinition.Properties.Count(item => item.Name == column.GetPropertyName()) == 0)
-                        classDefinition.Properties.Add(new PropertyDefinition(project.Database.ResolveType(column), target));
+                        classDefinition.Properties.Add(new PropertyDefinition(project.Database.ResolveDatebaseType(column), target));
                 }
             }
 

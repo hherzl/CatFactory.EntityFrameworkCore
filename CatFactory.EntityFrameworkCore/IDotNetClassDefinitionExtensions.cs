@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using CatFactory.NetCore;
 using CatFactory.NetCore.ObjectOrientedProgramming;
 using CatFactory.ObjectOrientedProgramming;
 using CatFactory.ObjectRelationalMapping;

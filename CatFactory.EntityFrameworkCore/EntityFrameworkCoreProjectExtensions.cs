@@ -105,7 +105,7 @@ namespace CatFactory.EntityFrameworkCore
         public static ProjectSelection<EntityFrameworkCoreProjectSettings> GlobalSelection(this EntityFrameworkCoreProject project)
             => project.Selections.FirstOrDefault(item => item.IsGlobal);
 
-        public static EntityFrameworkCoreProject Select(this EntityFrameworkCoreProject project, string pattern, Action<EntityFrameworkCoreProjectSettings> action = null)
+        public static EntityFrameworkCoreProject Selection(this EntityFrameworkCoreProject project, string pattern, Action<EntityFrameworkCoreProjectSettings> action = null)
         {
             var selection = project.Selections.FirstOrDefault(item => item.Pattern == pattern);
 
@@ -150,5 +150,9 @@ namespace CatFactory.EntityFrameworkCore
 
             return project;
         }
+
+        [Obsolete("Use Selection method.")]
+        public static EntityFrameworkCoreProject Select(this EntityFrameworkCoreProject project, string pattern, Action<EntityFrameworkCoreProjectSettings> action = null)
+            => project.Selection(pattern, action);
     }
 }

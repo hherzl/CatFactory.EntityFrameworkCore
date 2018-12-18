@@ -4,6 +4,7 @@ using System.Linq;
 using CatFactory.CodeFactory;
 using CatFactory.CodeFactory.Scaffolding;
 using CatFactory.Collections;
+using CatFactory.NetCore;
 using CatFactory.NetCore.CodeFactory;
 using CatFactory.NetCore.ObjectOrientedProgramming;
 using CatFactory.ObjectOrientedProgramming;
@@ -325,7 +326,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                         var parameterName = column.GetParameterName();
 
-                        parameters.Add(new ParameterDefinition(projectFeature.Project.Database.ResolveType(column), parameterName, "null"));
+                        parameters.Add(new ParameterDefinition(projectFeature.Project.Database.ResolveDatebaseType(column), parameterName, "null"));
 
                         if (projectFeature.Project.Database.ColumnIsDateTime(column))
                         {

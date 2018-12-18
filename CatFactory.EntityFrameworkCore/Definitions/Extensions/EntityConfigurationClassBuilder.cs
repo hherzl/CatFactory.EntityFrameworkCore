@@ -2,6 +2,7 @@
 using System.Linq;
 using CatFactory.CodeFactory;
 using CatFactory.Collections;
+using CatFactory.NetCore;
 using CatFactory.NetCore.CodeFactory;
 using CatFactory.NetCore.ObjectOrientedProgramming;
 using CatFactory.ObjectOrientedProgramming;
@@ -22,7 +23,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 },
                 Name = table.GetEntityConfigurationName()
             };
-            
+
             definition.Namespaces.AddUnique(project.GetEntityLayerNamespace(project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema));
 
             if (project.Database.HasDefaultSchema(table))
