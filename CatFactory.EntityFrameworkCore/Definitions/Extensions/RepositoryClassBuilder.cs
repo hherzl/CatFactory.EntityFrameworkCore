@@ -221,8 +221,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         {
                             var column = table.Columns.FirstOrDefault(item => item.Name == foreignKey.Key.First());
 
-                            var x = NamingExtensions.namingConvention.GetPropertyName(foreignKey.Key.First());
-                            var y = NamingExtensions.namingConvention.GetPropertyName(foreignTable.PrimaryKey.Key.First());
+                            var x = NamingExtensions.NamingConvention.GetPropertyName(foreignKey.Key.First());
+                            var y = NamingExtensions.NamingConvention.GetPropertyName(foreignTable.PrimaryKey.Key.First());
 
                             if (column.Nullable)
                             {
@@ -326,7 +326,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                         var parameterName = column.GetParameterName();
 
-                        parameters.Add(new ParameterDefinition(projectFeature.Project.Database.ResolveDatebaseType(column), parameterName, "null"));
+                        parameters.Add(new ParameterDefinition(projectFeature.Project.Database.ResolveDatabaseType(column), parameterName, "null"));
 
                         if (projectFeature.Project.Database.ColumnIsDateTime(column))
                         {
@@ -400,7 +400,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             var selection = entityFrameworkCoreProject.GetSelection(table);
 
-            var expression = string.Format("item => {0}", string.Join(" && ", unique.Key.Select(item => string.Format("item.{0} == entity.{0}", NamingExtensions.namingConvention.GetPropertyName(item)))));
+            var expression = string.Format("item => {0}", string.Join(" && ", unique.Key.Select(item => string.Format("item.{0} == entity.{0}", NamingExtensions.NamingConvention.GetPropertyName(item)))));
 
             return new MethodDefinition(string.Format("Task<{0}>", table.GetEntityName()), table.GetGetByUniqueRepositoryMethodName(unique), new ParameterDefinition(table.GetEntityName(), "entity"))
             {
@@ -419,9 +419,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             var expression = string.Empty;
 
             if (table.Identity == null)
-                expression = string.Format("item => {0}", string.Join(" && ", table.PrimaryKey.Key.Select(item => string.Format("item.{0} == entity.{0}", NamingExtensions.namingConvention.GetPropertyName(item)))));
+                expression = string.Format("item => {0}", string.Join(" && ", table.PrimaryKey.Key.Select(item => string.Format("item.{0} == entity.{0}", NamingExtensions.NamingConvention.GetPropertyName(item)))));
             else
-                expression = string.Format("item => item.{0} == entity.{0}", NamingExtensions.namingConvention.GetPropertyName(table.Identity.Name));
+                expression = string.Format("item => item.{0} == entity.{0}", NamingExtensions.NamingConvention.GetPropertyName(table.Identity.Name));
 
             if (projectSelection.Settings.EntitiesWithDataContracts)
             {

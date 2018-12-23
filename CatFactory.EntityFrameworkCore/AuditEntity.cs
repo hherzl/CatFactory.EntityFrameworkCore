@@ -6,14 +6,6 @@
         {
         }
 
-        //public AuditEntity(string creationUserColumnName, string creationDateTimeColumnName, string lastUpdateUserColumnName, string lastUpdateDateTimeColumnName)
-        //{
-        //    CreationUserColumnName = creationUserColumnName;
-        //    CreationDateTimeColumnName = creationDateTimeColumnName;
-        //    LastUpdateUserColumnName = lastUpdateUserColumnName;
-        //    LastUpdateDateTimeColumnName = lastUpdateDateTimeColumnName;
-        //}
-
         public string CreationUserColumnName { get; set; }
 
         public string CreationDateTimeColumnName { get; set; }

@@ -33,55 +33,55 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             // todo: Check logic to build property's name
 
-            var propertyType = string.Join(".", (new string[] { project.Name, project.Namespaces.EntityLayer, project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema, table.GetEntityName() }).Where(item => !string.IsNullOrEmpty(item)));
+            var propertyType = string.Join(".", (new string[] { project.Name, project.ProjectNamespaces.EntityLayer, project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema, table.GetEntityName() }).Where(item => !string.IsNullOrEmpty(item)));
 
             definition.Implements.Add(string.Format("IEntityTypeConfiguration<{0}>", propertyType));
 
-            var configurationLines = new List<ILine>
+            var configLines = new List<ILine>
             {
                 new CommentLine(" Set configuration for entity")
             };
 
             if (string.IsNullOrEmpty(table.Schema))
-                configurationLines.Add(new CodeLine("builder.ToTable(\"{0}\");", table.Name));
+                configLines.Add(new CodeLine("builder.ToTable(\"{0}\");", table.Name));
             else
-                configurationLines.Add(new CodeLine("builder.ToTable(\"{0}\", \"{1}\");", table.Name, table.Schema));
+                configLines.Add(new CodeLine("builder.ToTable(\"{0}\", \"{1}\");", table.Name, table.Schema));
 
-            configurationLines.Add(new CodeLine());
+            configLines.Add(new CodeLine());
 
             var columns = default(List<Column>);
 
             if (table.PrimaryKey == null || table.PrimaryKey.Key.Count == 0)
             {
-                configurationLines.Add(LineHelper.Warning("Add configuration for entity's key"));
-                configurationLines.Add(new CodeLine());
+                configLines.Add(LineHelper.Warning("Add configuration for entity's key"));
+                configLines.Add(new CodeLine());
             }
             else
             {
-                configurationLines.Add(new CommentLine(" Set key for entity"));
+                configLines.Add(new CommentLine(" Set key for entity"));
 
                 if (table.PrimaryKey.Key.Count == 1)
                 {
-                    configurationLines.Add(new CodeLine("builder.HasKey(p => p.{0});", definition.NamingConvention.GetPropertyName(table.PrimaryKey.Key[0])));
-                    configurationLines.Add(new CodeLine());
+                    configLines.Add(new CodeLine("builder.HasKey(p => p.{0});", definition.NamingConvention.GetPropertyName(table.PrimaryKey.Key[0])));
+                    configLines.Add(new CodeLine());
                 }
                 else if (table.PrimaryKey.Key.Count > 1)
                 {
-                    configurationLines.Add(new CodeLine("builder.HasKey(p => new {{ {0} }});", string.Join(", ", table.PrimaryKey.Key.Select(item => string.Format("p.{0}", definition.NamingConvention.GetPropertyName(item))))));
-                    configurationLines.Add(new CodeLine());
+                    configLines.Add(new CodeLine("builder.HasKey(p => new {{ {0} }});", string.Join(", ", table.PrimaryKey.Key.Select(item => string.Format("p.{0}", definition.NamingConvention.GetPropertyName(item))))));
+                    configLines.Add(new CodeLine());
                 }
             }
 
             if (table.Identity != null)
             {
-                configurationLines.Add(new CommentLine(" Set identity for entity (auto increment)"));
-                configurationLines.Add(new CodeLine("builder.Property(p => p.{0}).UseSqlServerIdentityColumn();", definition.NamingConvention.GetPropertyName(table.Identity.Name)));
-                configurationLines.Add(new CodeLine());
+                configLines.Add(new CommentLine(" Set identity for entity (auto increment)"));
+                configLines.Add(new CodeLine("builder.Property(p => p.{0}).UseSqlServerIdentityColumn();", definition.NamingConvention.GetPropertyName(table.Identity.Name)));
+                configLines.Add(new CodeLine());
             }
 
             columns = table.Columns;
 
-            configurationLines.Add(new CommentLine(" Set configuration for columns"));
+            configLines.Add(new CommentLine(" Set configuration for columns"));
 
             for (var i = 0; i < columns.Count; i++)
             {
@@ -111,7 +111,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     if (!column.Nullable)
                         lines.Add("IsRequired()");
 
-                    configurationLines.Add(new CodeLine("{0};", string.Join(".", lines)));
+                    configLines.Add(new CodeLine("{0};", string.Join(".", lines)));
                 }
                 else
                 {
@@ -120,11 +120,11 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         string.Format("builder.Ignore(p => p.{0})", table.GetPropertyNameHack(column))
                     };
 
-                    configurationLines.Add(new CodeLine("{0};", string.Join(".", lines)));
+                    configLines.Add(new CodeLine("{0};", string.Join(".", lines)));
                 }
             }
 
-            configurationLines.Add(new CodeLine());
+            configLines.Add(new CodeLine());
 
             var projectSelection = project.GetSelection(table);
 
@@ -134,42 +134,42 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                 if (!string.IsNullOrEmpty(projectSelection.Settings.ConcurrencyToken) && string.Compare(column.Name, projectSelection.Settings.ConcurrencyToken) == 0)
                 {
-                    configurationLines.Add(new CommentLine(" Set concurrency token for entity"));
-                    configurationLines.Add(new CodeLine("builder"));
-                    configurationLines.Add(new CodeLine(1, ".Property(p => p.{0})", column.GetPropertyName()));
-                    configurationLines.Add(new CodeLine(1, ".ValueGeneratedOnAddOrUpdate()"));
-                    configurationLines.Add(new CodeLine(1, ".IsConcurrencyToken();"));
-                    configurationLines.Add(new CodeLine());
+                    configLines.Add(new CommentLine(" Set concurrency token for entity"));
+                    configLines.Add(new CodeLine("builder"));
+                    configLines.Add(new CodeLine(1, ".Property(p => p.{0})", column.GetPropertyName()));
+                    configLines.Add(new CodeLine(1, ".ValueGeneratedOnAddOrUpdate()"));
+                    configLines.Add(new CodeLine(1, ".IsConcurrencyToken();"));
+                    configLines.Add(new CodeLine());
                 }
             }
 
             if (table.Uniques.Count > 0)
             {
-                configurationLines.Add(new CommentLine(" Add configuration for uniques"));
+                configLines.Add(new CommentLine(" Add configuration for uniques"));
 
                 foreach (var unique in table.Uniques)
                 {
-                    configurationLines.Add(new CodeLine("builder"));
+                    configLines.Add(new CodeLine("builder"));
 
                     if (unique.Key.Count == 1)
                     {
-                        configurationLines.Add(new CodeLine(1, ".HasIndex(p => p.{0})", definition.NamingConvention.GetPropertyName(unique.Key.First())));
-                        configurationLines.Add(new CodeLine(1, ".IsUnique()"));
+                        configLines.Add(new CodeLine(1, ".HasIndex(p => p.{0})", definition.NamingConvention.GetPropertyName(unique.Key.First())));
+                        configLines.Add(new CodeLine(1, ".IsUnique()"));
                     }
                     else
                     {
-                        configurationLines.Add(new CodeLine(1, ".HasIndex(p => new {{ {0} }})", string.Join(", ", table.PrimaryKey.Key.Select(item => string.Format("p.{0}", definition.NamingConvention.GetPropertyName(item))))));
-                        configurationLines.Add(new CodeLine(1, ".IsUnique()"));
+                        configLines.Add(new CodeLine(1, ".HasIndex(p => new {{ {0} }})", string.Join(", ", table.PrimaryKey.Key.Select(item => string.Format("p.{0}", definition.NamingConvention.GetPropertyName(item))))));
+                        configLines.Add(new CodeLine(1, ".IsUnique()"));
                     }
 
-                    configurationLines.Add(new CodeLine(1, ".HasName(\"{0}\");", unique.ConstraintName));
-                    configurationLines.Add(new CodeLine());
+                    configLines.Add(new CodeLine(1, ".HasName(\"{0}\");", unique.ConstraintName));
+                    configLines.Add(new CodeLine());
                 }
             }
 
             if (projectSelection.Settings.DeclareNavigationProperties && table.ForeignKeys.Count > 0)
             {
-                configurationLines.Add(new CommentLine(" Add configuration for foreign keys"));
+                configLines.Add(new CommentLine(" Add configuration for foreign keys"));
 
                 foreach (var foreignKey in table.ForeignKeys)
                 {
@@ -186,23 +186,23 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     {
                         var foreignProperty = foreignKey.GetParentNavigationProperty(foreignTable, project);
 
-                        configurationLines.Add(new CodeLine("builder"));
-                        configurationLines.Add(new CodeLine(1, ".HasOne(p => p.{0})", foreignProperty.Name));
-                        configurationLines.Add(new CodeLine(1, ".WithMany(b => b.{0})", table.GetNavigationPropertyName()));
-                        configurationLines.Add(new CodeLine(1, ".HasForeignKey(p => {0})", string.Format("p.{0}", definition.NamingConvention.GetPropertyName(foreignKey.Key.First()))));
-                        configurationLines.Add(new CodeLine(1, ".HasConstraintName(\"{0}\");", foreignKey.ConstraintName));
-                        configurationLines.Add(new CodeLine());
+                        configLines.Add(new CodeLine("builder"));
+                        configLines.Add(new CodeLine(1, ".HasOne(p => p.{0})", foreignProperty.Name));
+                        configLines.Add(new CodeLine(1, ".WithMany(b => b.{0})", table.GetNavigationPropertyName()));
+                        configLines.Add(new CodeLine(1, ".HasForeignKey(p => {0})", string.Format("p.{0}", definition.NamingConvention.GetPropertyName(foreignKey.Key.First()))));
+                        configLines.Add(new CodeLine(1, ".HasConstraintName(\"{0}\");", foreignKey.ConstraintName));
+                        configLines.Add(new CodeLine());
                     }
                     else
                     {
-                        configurationLines.Add(LineHelper.Warning(" Add logic for foreign key with multiple key"));
+                        configLines.Add(LineHelper.Warning(" Add logic for foreign key with multiple key"));
                     }
                 }
             }
 
             var mapMethod = new MethodDefinition("void", "Configure", new ParameterDefinition(string.Format("EntityTypeBuilder<{0}>", propertyType), "builder"))
             {
-                Lines = configurationLines
+                Lines = configLines
             };
 
             definition.Methods.Add(mapMethod);
@@ -212,30 +212,34 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
         public static CSharpClassDefinition GetEntityTypeConfigurationClassDefinition(this EntityFrameworkCoreProject project, IView view)
         {
-            var definition = new CSharpClassDefinition();
-
-            definition.Namespaces.Add("Microsoft.EntityFrameworkCore");
-            definition.Namespaces.Add("Microsoft.EntityFrameworkCore.Metadata.Builders");
+            var definition = new CSharpClassDefinition
+            {
+                Namespaces =
+                {
+                    "Microsoft.EntityFrameworkCore",
+                    "Microsoft.EntityFrameworkCore.Metadata.Builders"
+                },
+                Namespace = project.GetDataLayerConfigurationsNamespace(),
+                Name = view.GetEntityConfigurationName(),
+                Implements =
+                {
+                    string.Format("IEntityTypeConfiguration<{0}>", view.GetEntityName())
+                }
+            };
 
             definition.Namespaces.AddUnique(project.GetEntityLayerNamespace(project.Database.HasDefaultSchema(view) ? string.Empty : view.Schema));
 
-            definition.Namespace = project.GetDataLayerConfigurationsNamespace();
-
-            definition.Name = view.GetEntityConfigurationName();
-
-            definition.Implements.Add(string.Format("IEntityTypeConfiguration<{0}>", view.GetEntityName()));
-
-            var configurationLines = new List<ILine>
+            var configLines = new List<ILine>
             {
                 new CommentLine(" Set configuration for entity")
             };
 
             if (string.IsNullOrEmpty(view.Schema))
-                configurationLines.Add(new CodeLine("builder.ToTable(\"{0}\");", view.Name));
+                configLines.Add(new CodeLine("builder.ToTable(\"{0}\");", view.Name));
             else
-                configurationLines.Add(new CodeLine("builder.ToTable(\"{0}\", \"{1}\");", view.Name, view.Schema));
+                configLines.Add(new CodeLine("builder.ToTable(\"{0}\", \"{1}\");", view.Name, view.Schema));
 
-            configurationLines.Add(new CodeLine());
+            configLines.Add(new CodeLine());
 
             var primaryKeys = project.Database.Tables.Where(item => item.PrimaryKey != null).Select(item => item.GetColumnsFromConstraint(item.PrimaryKey).Select(c => c.Name).First()).ToList();
 
@@ -244,11 +248,11 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             if (result.Count == 0)
                 result = view.Columns.Where(item => !item.Nullable).ToList();
 
-            configurationLines.Add(new CommentLine(" Add configuration for entity's key"));
-            configurationLines.Add(new CodeLine("builder.HasKey(p => new {{ {0} }});", string.Join(", ", result.Select(item => string.Format("p.{0}", definition.NamingConvention.GetPropertyName(item.Name))))));
-            configurationLines.Add(new CodeLine());
+            configLines.Add(new CommentLine(" Add configuration for entity's key"));
+            configLines.Add(new CodeLine("builder.HasKey(p => new {{ {0} }});", string.Join(", ", result.Select(item => string.Format("p.{0}", definition.NamingConvention.GetPropertyName(item.Name))))));
+            configLines.Add(new CodeLine());
 
-            configurationLines.Add(new CommentLine(" Set configuration for columns"));
+            configLines.Add(new CommentLine(" Set configuration for columns"));
 
             for (var i = 0; i < view.Columns.Count; i++)
             {
@@ -273,7 +277,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     else
                         lines.Add(string.Format("HasColumnType(\"{0}\")", column.Type));
 
-                    configurationLines.Add(new CodeLine("{0};", string.Join(".", lines)));
+                    configLines.Add(new CodeLine("{0};", string.Join(".", lines)));
                 }
                 else
                 {
@@ -282,13 +286,13 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         string.Format("builder.Ignore(p => p.{0})", view.GetPropertyNameHack(column))
                     };
 
-                    configurationLines.Add(new CodeLine("{0};", string.Join(".", lines)));
+                    configLines.Add(new CodeLine("{0};", string.Join(".", lines)));
                 }
             }
 
             var configureMethod = new MethodDefinition("void", "Configure", new ParameterDefinition(string.Format("EntityTypeBuilder<{0}>", view.GetEntityName()), "builder"))
             {
-                Lines = configurationLines
+                Lines = configLines
             };
 
             definition.Methods.Add(configureMethod);

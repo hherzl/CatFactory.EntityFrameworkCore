@@ -22,6 +22,24 @@ namespace CatFactory.EntityFrameworkCore
             CodeNamingConvention = new DotNetNamingConvention();
         }
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private EntityFrameworkCoreProjectNamespaces m_projectNamespaces;
+
+        public EntityFrameworkCoreProjectNamespaces ProjectNamespaces
+        {
+            get
+            {
+                return m_projectNamespaces ?? (m_projectNamespaces = new EntityFrameworkCoreProjectNamespaces());
+            }
+            set
+            {
+                m_projectNamespaces = value;
+            }
+        }
+
+        // todo: Add logic to show author's info
+        public AuthorInfo AuthorInfo { get; set; }
+
         public override void BuildFeatures()
         {
             if (Database == null)
@@ -63,23 +81,5 @@ namespace CatFactory.EntityFrameworkCore
 
             return result;
         }
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private ProjectNamespaces m_namespaces;
-
-        public ProjectNamespaces Namespaces
-        {
-            get
-            {
-                return m_namespaces ?? (m_namespaces = new ProjectNamespaces());
-            }
-            set
-            {
-                m_namespaces = value;
-            }
-        }
-
-        // todo: Add logic to show author's info
-        public AuthorInfo AuthorInfo { get; set; }
     }
 }

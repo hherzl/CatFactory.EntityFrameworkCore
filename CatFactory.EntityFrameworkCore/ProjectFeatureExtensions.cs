@@ -6,20 +6,20 @@ namespace CatFactory.EntityFrameworkCore
 {
     public static class ProjectFeatureExtensions
     {
-        public static ICodeNamingConvention namingConvention;
+        public static ICodeNamingConvention NamingConvention;
 
         static ProjectFeatureExtensions()
         {
-            namingConvention = new DotNetNamingConvention();
+            NamingConvention = new DotNetNamingConvention();
         }
 
         public static EntityFrameworkCoreProject GetEntityFrameworkCoreProject(this ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature)
             => projectFeature.Project as EntityFrameworkCoreProject;
 
         public static string GetInterfaceRepositoryName(this ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature)
-            => namingConvention.GetInterfaceName(string.Format("{0}Repository", projectFeature.Name));
+            => NamingConvention.GetInterfaceName(string.Format("{0}Repository", projectFeature.Name));
 
         public static string GetClassRepositoryName(this ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature)
-            => namingConvention.GetClassName(string.Format("{0}Repository", projectFeature.Name));
+            => NamingConvention.GetClassName(string.Format("{0}Repository", projectFeature.Name));
     }
 }

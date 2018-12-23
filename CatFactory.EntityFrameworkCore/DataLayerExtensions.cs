@@ -101,13 +101,12 @@ namespace CatFactory.EntityFrameworkCore
             {
                 var repositoryClassDefinition = projectFeature.GetRepositoryClassDefinition();
 
-                var interfaceDef = repositoryClassDefinition.RefactInterface();
+                var repositoryInterfaceDefinition = repositoryClassDefinition.RefactInterface();
 
-                interfaceDef.Implements.Add("IRepository");
+                repositoryInterfaceDefinition.Namespace = project.GetDataLayerContractsNamespace();
+                repositoryInterfaceDefinition.Implements.Add("IRepository");
 
-                interfaceDef.Namespace = project.GetDataLayerContractsNamespace();
-
-                ScaffoldDataLayerContract(project, interfaceDef);
+                ScaffoldDataLayerContract(project, repositoryInterfaceDefinition);
 
                 CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerRepositoriesDirectory(), projectSelection.Settings.ForceOverwrite, repositoryClassDefinition);
             }

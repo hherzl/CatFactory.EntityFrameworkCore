@@ -9,7 +9,7 @@ namespace CatFactory.EntityFrameworkCore
     {
         public static PropertyDefinition GetParentNavigationProperty(this ForeignKey foreignKey, ITable table, EntityFrameworkCoreProject project)
         {
-            var propertyType = string.Join(".", (new string[] { project.Name, project.Namespaces.EntityLayer, project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema, table.GetEntityName() }).Where(item => !string.IsNullOrEmpty(item)));
+            var propertyType = string.Join(".", (new string[] { project.Name, project.ProjectNamespaces.EntityLayer, project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema, table.GetEntityName() }).Where(item => !string.IsNullOrEmpty(item)));
 
             var selection = project.GetSelection(table);
 

@@ -11,60 +11,60 @@ namespace CatFactory.EntityFrameworkCore
 {
     public static class EntityFrameworkCoreProjectExtensions
     {
-        private static ICodeNamingConvention namingConvention;
+        private static ICodeNamingConvention NamingConvention;
 
         static EntityFrameworkCoreProjectExtensions()
         {
-            namingConvention = new DotNetNamingConvention();
+            NamingConvention = new DotNetNamingConvention();
         }
 
         public static string GetEntityLayerNamespace(this EntityFrameworkCoreProject project)
-            => string.Join(".", namingConvention.GetNamespace(project.Name), namingConvention.GetNamespace(project.Namespaces.EntityLayer));
+            => string.Join(".", NamingConvention.GetNamespace(project.Name), NamingConvention.GetNamespace(project.ProjectNamespaces.EntityLayer));
 
         public static string GetEntityLayerNamespace(this EntityFrameworkCoreProject project, string ns)
-            => string.IsNullOrEmpty(ns) ? GetEntityLayerNamespace(project) : string.Join(".", project.Name, project.Namespaces.EntityLayer, ns);
+            => string.IsNullOrEmpty(ns) ? GetEntityLayerNamespace(project) : string.Join(".", project.Name, project.ProjectNamespaces.EntityLayer, ns);
 
         public static string GetDataLayerNamespace(this EntityFrameworkCoreProject project)
-            => string.Join(".", new string[] { namingConvention.GetNamespace(project.Name), project.Namespaces.DataLayer });
+            => string.Join(".", new string[] { NamingConvention.GetNamespace(project.Name), project.ProjectNamespaces.DataLayer });
 
         public static string GetDataLayerConfigurationsNamespace(this EntityFrameworkCoreProject project)
-            => string.Join(".", namingConvention.GetNamespace(project.Name), project.Namespaces.DataLayer, project.Namespaces.Configurations);
+            => string.Join(".", NamingConvention.GetNamespace(project.Name), project.ProjectNamespaces.DataLayer, project.ProjectNamespaces.Configurations);
 
         public static string GetDataLayerConfigurationsNamespace(this EntityFrameworkCoreProject project, string schema)
-            => string.Join(".", namingConvention.GetNamespace(project.Name), project.Namespaces.DataLayer, project.Namespaces.Configurations, schema);
+            => string.Join(".", NamingConvention.GetNamespace(project.Name), project.ProjectNamespaces.DataLayer, project.ProjectNamespaces.Configurations, schema);
 
         public static string GetDataLayerContractsNamespace(this EntityFrameworkCoreProject project)
-            => string.Join(".", namingConvention.GetNamespace(project.Name), project.Namespaces.DataLayer, project.Namespaces.Contracts);
+            => string.Join(".", NamingConvention.GetNamespace(project.Name), project.ProjectNamespaces.DataLayer, project.ProjectNamespaces.Contracts);
 
         public static string GetDataLayerDataContractsNamespace(this EntityFrameworkCoreProject project)
-            => string.Join(".", namingConvention.GetNamespace(project.Name), project.Namespaces.DataLayer, project.Namespaces.DataContracts);
+            => string.Join(".", NamingConvention.GetNamespace(project.Name), project.ProjectNamespaces.DataLayer, project.ProjectNamespaces.DataContracts);
 
         public static string GetDataLayerRepositoriesNamespace(this EntityFrameworkCoreProject project)
-            => string.Join(".", namingConvention.GetNamespace(project.Name), project.Namespaces.DataLayer, project.Namespaces.Repositories);
+            => string.Join(".", NamingConvention.GetNamespace(project.Name), project.ProjectNamespaces.DataLayer, project.ProjectNamespaces.Repositories);
 
         public static string GetEntityLayerDirectory(this EntityFrameworkCoreProject project)
-            => Path.Combine(project.OutputDirectory, project.Namespaces.EntityLayer);
+            => Path.Combine(project.OutputDirectory, project.ProjectNamespaces.EntityLayer);
 
         public static string GetEntityLayerDirectory(this EntityFrameworkCoreProject project, string schema)
-            => Path.Combine(project.OutputDirectory, project.Namespaces.EntityLayer, schema);
+            => Path.Combine(project.OutputDirectory, project.ProjectNamespaces.EntityLayer, schema);
 
         public static string GetDataLayerDirectory(this EntityFrameworkCoreProject project)
-            => Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer);
+            => Path.Combine(project.OutputDirectory, project.ProjectNamespaces.DataLayer);
 
         public static string GetDataLayerConfigurationsDirectory(this EntityFrameworkCoreProject project)
-            => Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer, project.Namespaces.Configurations);
+            => Path.Combine(project.OutputDirectory, project.ProjectNamespaces.DataLayer, project.ProjectNamespaces.Configurations);
 
         public static string GetDataLayerConfigurationsDirectory(this EntityFrameworkCoreProject project, string schema)
-            => Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer, project.Namespaces.Configurations, schema);
+            => Path.Combine(project.OutputDirectory, project.ProjectNamespaces.DataLayer, project.ProjectNamespaces.Configurations, schema);
 
         public static string GetDataLayerContractsDirectory(this EntityFrameworkCoreProject project)
-            => Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer, project.Namespaces.Contracts);
+            => Path.Combine(project.OutputDirectory, project.ProjectNamespaces.DataLayer, project.ProjectNamespaces.Contracts);
 
         public static string GetDataLayerDataContractsDirectory(this EntityFrameworkCoreProject project)
-            => Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer, project.Namespaces.DataContracts);
+            => Path.Combine(project.OutputDirectory, project.ProjectNamespaces.DataLayer, project.ProjectNamespaces.DataContracts);
 
         public static string GetDataLayerRepositoriesDirectory(this EntityFrameworkCoreProject project)
-            => Path.Combine(project.OutputDirectory, project.Namespaces.DataLayer, project.Namespaces.Repositories);
+            => Path.Combine(project.OutputDirectory, project.ProjectNamespaces.DataLayer, project.ProjectNamespaces.Repositories);
 
         public static PropertyDefinition GetChildNavigationProperty(this EntityFrameworkCoreProject project, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection, ITable table, ForeignKey foreignKey)
         {

@@ -1,8 +1,8 @@
 ﻿namespace CatFactory.EntityFrameworkCore
 {
-    public class ProjectNamespaces
+    public class EntityFrameworkCoreProjectNamespaces
     {
-        public ProjectNamespaces()
+        public EntityFrameworkCoreProjectNamespaces()
         {
             EntityLayer = "EntityLayer";
             DataLayer = "DataLayer";
