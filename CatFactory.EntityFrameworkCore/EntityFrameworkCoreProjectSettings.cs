@@ -7,6 +7,10 @@ namespace CatFactory.EntityFrameworkCore
 {
     public class EntityFrameworkCoreProjectSettings : ProjectSettings
     {
+        public EntityFrameworkCoreProjectSettings()
+        {
+        }
+
         public bool ForceOverwrite { get; set; }
 
         public bool SimplifyDataTypes { get; set; } = true;

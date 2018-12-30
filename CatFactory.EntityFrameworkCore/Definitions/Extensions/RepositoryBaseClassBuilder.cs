@@ -20,11 +20,11 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 Fields =
                 {
                     new FieldDefinition(AccessModifier.Protected, "bool", "Disposed"),
-                    new FieldDefinition(AccessModifier.Protected, project.Database.GetDbContextName(), "DbContext")
+                    new FieldDefinition(AccessModifier.Protected, project.GetDbContextName(project.Database), "DbContext")
                 },
                 Constructors =
                 {
-                    new ClassConstructorDefinition(new ParameterDefinition(project.Database.GetDbContextName(), "dbContext"))
+                    new ClassConstructorDefinition(new ParameterDefinition(project.GetDbContextName(project.Database), "dbContext"))
                     {
                         Lines =
                         {

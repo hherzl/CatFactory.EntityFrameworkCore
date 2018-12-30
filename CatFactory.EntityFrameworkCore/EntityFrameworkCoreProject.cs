@@ -14,6 +14,7 @@ namespace CatFactory.EntityFrameworkCore
             : base()
         {
             CodeNamingConvention = new DotNetNamingConvention();
+            NamingService = new NamingService();
         }
 
         public EntityFrameworkCoreProject(ILogger<EntityFrameworkCoreProject> logger)
@@ -21,6 +22,9 @@ namespace CatFactory.EntityFrameworkCore
         {
             CodeNamingConvention = new DotNetNamingConvention();
         }
+
+        // todo: Add this prperty in project base class
+        public INamingService NamingService { get; set; }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private EntityFrameworkCoreProjectNamespaces m_projectNamespaces;
@@ -75,9 +79,15 @@ namespace CatFactory.EntityFrameworkCore
                 .Where(x => x.Schema == schema)
                 .Select(y => new DbObject { Schema = y.Schema, Name = y.Name, Type = "ScalarFunction" }));
 
-            // todo: Add table functions
+            result.AddRange(Database
+                .TableFunctions
+                .Where(x => x.Schema == schema)
+                .Select(y => new DbObject { Schema = y.Schema, Name = y.Name, Type = "TableFunction" }));
 
-            // todo: Add stored procedures
+            result.AddRange(Database
+                .StoredProcedures
+                .Where(x => x.Schema == schema)
+                .Select(y => new DbObject { Schema = y.Schema, Name = y.Name, Type = "StoredProcedure" }));
 
             return result;
         }

@@ -24,30 +24,30 @@ namespace CatFactory.EntityFrameworkCore
             {
                 var selection = project.GetSelection(table);
 
-                var classDefinition = project.GetEntityClassDefinition(table);
+                var definition = project.GetEntityClassDefinition(table);
 
                 if (selection.Settings.UseDataAnnotations)
-                    classDefinition.AddDataAnnotations(table, project);
+                    definition.AddDataAnnotations(table, project);
 
                 if (project.Database.HasDefaultSchema(table))
-                    CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, classDefinition);
+                    CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, definition);
                 else
-                    CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(table.Schema), selection.Settings.ForceOverwrite, classDefinition);
+                    CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(table.Schema), selection.Settings.ForceOverwrite, definition);
             }
 
             foreach (var view in project.Database.Views)
             {
                 var selection = project.GetSelection(view);
 
-                var classDefinition = project.GetEntityClassDefinition(view);
+                var definition = project.GetEntityClassDefinition(view);
 
                 if (selection.Settings.UseDataAnnotations)
-                    classDefinition.AddDataAnnotations(view, project);
+                    definition.AddDataAnnotations(view, project);
 
                 if (project.Database.HasDefaultSchema(view))
-                    CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, classDefinition);
+                    CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, definition);
                 else
-                    CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(view.Schema), selection.Settings.ForceOverwrite, classDefinition);
+                    CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(view.Schema), selection.Settings.ForceOverwrite, definition);
             }
 
             return project;

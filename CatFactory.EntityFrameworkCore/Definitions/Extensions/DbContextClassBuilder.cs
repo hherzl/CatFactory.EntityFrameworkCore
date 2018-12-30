@@ -14,53 +14,55 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
     {
         public static DbContextClassDefinition GetDbContextClassDefinition(this ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection)
         {
+            var efCoreProject = projectFeature.GetEntityFrameworkCoreProject();
+
             var definition = new DbContextClassDefinition
             {
-                Namespace = projectFeature.GetEntityFrameworkCoreProject().GetDataLayerNamespace(),
-                Name = projectFeature.Project.Database.GetDbContextName(),
+                Namespace = efCoreProject.GetDataLayerNamespace(),
+                Name = efCoreProject.GetDbContextName(efCoreProject.Database),
                 BaseClass = "DbContext"
             };
 
             definition.Namespaces.AddUnique("System");
             definition.Namespaces.Add("Microsoft.EntityFrameworkCore");
-            definition.Namespaces.Add(projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace());
+            definition.Namespaces.Add(efCoreProject.GetEntityLayerNamespace());
 
             if (!projectSelection.Settings.UseDataAnnotations)
-                definition.Namespaces.Add(projectFeature.GetEntityFrameworkCoreProject().GetDataLayerConfigurationsNamespace());
+                definition.Namespaces.Add(efCoreProject.GetDataLayerConfigurationsNamespace());
 
             definition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(string.Format("DbContextOptions<{0}>", definition.Name), "options"))
             {
                 Invocation = "base(options)"
             });
 
-            definition.Methods.Add(GetOnModelCreatingMethod(projectFeature.GetEntityFrameworkCoreProject()));
+            definition.Methods.Add(GetOnModelCreatingMethod(efCoreProject));
 
             foreach (var table in projectFeature.Project.Database.Tables)
             {
                 if (!projectFeature.Project.Database.HasDefaultSchema(table))
-                    definition.Namespaces.AddUnique(projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace(table.Schema));
+                    definition.Namespaces.AddUnique(efCoreProject.GetEntityLayerNamespace(table.Schema));
 
-                definition.Properties.Add(new PropertyDefinition(string.Format("DbSet<{0}>", table.GetEntityName()), table.GetDbSetPropertyName()));
+                definition.Properties.Add(new PropertyDefinition(string.Format("DbSet<{0}>", efCoreProject.GetEntityName(table)), efCoreProject.GetDbSetPropertyName(table)));
             }
 
             foreach (var view in projectFeature.Project.Database.Views)
             {
                 if (!projectFeature.Project.Database.HasDefaultSchema(view))
-                    definition.Namespaces.AddUnique(projectFeature.GetEntityFrameworkCoreProject().GetEntityLayerNamespace(view.Schema));
+                    definition.Namespaces.AddUnique(efCoreProject.GetEntityLayerNamespace(view.Schema));
 
-                definition.Properties.Add(new PropertyDefinition(string.Format("DbSet<{0}>", view.GetEntityName()), view.GetDbSetPropertyName()));
+                definition.Properties.Add(new PropertyDefinition(string.Format("DbSet<{0}>", efCoreProject.GetEntityName(view)), efCoreProject.GetDbSetPropertyName(view)));
             }
 
             foreach (var table in projectFeature.Project.Database.Tables)
             {
                 if (!projectSelection.Settings.UseDataAnnotations && !projectFeature.Project.Database.HasDefaultSchema(table))
-                    definition.Namespaces.AddUnique(projectFeature.GetEntityFrameworkCoreProject().GetDataLayerConfigurationsNamespace(table.Schema));
+                    definition.Namespaces.AddUnique(efCoreProject.GetDataLayerConfigurationsNamespace(table.Schema));
             }
 
             foreach (var view in projectFeature.Project.Database.Views)
             {
                 if (!projectSelection.Settings.UseDataAnnotations && !projectFeature.Project.Database.HasDefaultSchema(view))
-                    definition.Namespaces.AddUnique(projectFeature.GetEntityFrameworkCoreProject().GetDataLayerConfigurationsNamespace(view.Schema));
+                    definition.Namespaces.AddUnique(efCoreProject.GetDataLayerConfigurationsNamespace(view.Schema));
             }
 
             foreach (var scalarFunction in projectFeature.Project.Database.ScalarFunctions)
@@ -93,7 +95,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     },
                     IsStatic = true,
                     Type = parameterType,
-                    Name = scalarFunction.GetScalarFunctionMethodName(),
+                    Name = efCoreProject.GetScalarFunctionMethodName(scalarFunction),
                     Lines =
                     {
                         new CodeLine("throw new Exception();")
@@ -152,12 +154,12 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                     if (result.Count == 0)
                     {
-                        lines.Add(new CodeLine("modelBuilder.Entity<{0}>().HasKey(e => new {{ {1} }});", view.GetEntityName(), string.Join(", ", view.Columns.Select(item => string.Format("e.{0}", item.GetPropertyName())))));
+                        lines.Add(new CodeLine("modelBuilder.Entity<{0}>().HasKey(e => new {{ {1} }});", project.GetEntityName(view), string.Join(", ", view.Columns.Select(item => string.Format("e.{0}", item.GetPropertyName())))));
                         lines.Add(new CodeLine());
                     }
                     else
                     {
-                        lines.Add(new CodeLine("modelBuilder.Entity<{0}>().HasKey(e => new {{ {1} }});", view.GetEntityName(), string.Join(", ", result.Select(item => string.Format("e.{0}", item.GetPropertyName())))));
+                        lines.Add(new CodeLine("modelBuilder.Entity<{0}>().HasKey(e => new {{ {1} }});", project.GetEntityName(view), string.Join(", ", result.Select(item => string.Format("e.{0}", item.GetPropertyName())))));
                         lines.Add(new CodeLine());
                     }
                 }
@@ -173,7 +175,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                     foreach (var table in project.Database.Tables)
                     {
-                        lines.Add(new CodeLine(1, ".ApplyConfiguration(new {0}())", table.GetEntityConfigurationName()));
+                        lines.Add(new CodeLine(1, ".ApplyConfiguration(new {0}())", project .GetEntityConfigurationName(table)));
                     }
 
                     lines.Add(new CodeLine(";"));
@@ -190,7 +192,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                     foreach (var view in project.Database.Views)
                     {
-                        lines.Add(new CodeLine(1, ".ApplyConfiguration(new {0}())", view.GetEntityConfigurationName()));
+                        lines.Add(new CodeLine(1, ".ApplyConfiguration(new {0}())", project.GetEntityConfigurationName(view)));
                     }
 
                     lines.Add(new CodeLine(";"));

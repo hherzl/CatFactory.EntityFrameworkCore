@@ -16,7 +16,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
     {
         public static RepositoryClassDefinition GetRepositoryClassDefinition(this ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature)
         {
-            var entityFrameworkCoreProject = projectFeature.GetEntityFrameworkCoreProject();
+            var efCoreProject = projectFeature.GetEntityFrameworkCoreProject();
 
             var definition = new RepositoryClassDefinition
             {
@@ -27,7 +27,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     "System.Threading.Tasks",
                     "Microsoft.EntityFrameworkCore"
                 },
-                Namespace = entityFrameworkCoreProject.GetDataLayerRepositoriesNamespace(),
+                Namespace = efCoreProject.GetDataLayerRepositoriesNamespace(),
                 Name = projectFeature.GetClassRepositoryName(),
                 BaseClass = "Repository",
                 Implements =
@@ -36,19 +36,19 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 },
                 Constructors =
                 {
-                    new ClassConstructorDefinition(new ParameterDefinition(projectFeature.Project.Database.GetDbContextName(), "dbContext"))
+                    new ClassConstructorDefinition(new ParameterDefinition(efCoreProject.GetDbContextName(efCoreProject.Database), "dbContext"))
                     {
                         Invocation = "base(dbContext)"
                     }
                 }
             };
 
-            foreach (var table in entityFrameworkCoreProject.Database.Tables)
+            foreach (var table in efCoreProject.Database.Tables)
             {
                 definition.Namespaces
-                    .AddUnique(projectFeature.Project.Database.HasDefaultSchema(table) ? entityFrameworkCoreProject.GetEntityLayerNamespace() : entityFrameworkCoreProject.GetEntityLayerNamespace(table.Schema));
+                    .AddUnique(projectFeature.Project.Database.HasDefaultSchema(table) ? efCoreProject.GetEntityLayerNamespace() : efCoreProject.GetEntityLayerNamespace(table.Schema));
 
-                definition.Namespaces.AddUnique(entityFrameworkCoreProject.GetDataLayerContractsNamespace());
+                definition.Namespaces.AddUnique(efCoreProject.GetDataLayerContractsNamespace());
             }
 
             var tables = projectFeature
@@ -63,7 +63,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 var projectSelection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(table);
 
                 if (projectSelection.Settings.EntitiesWithDataContracts)
-                    definition.Namespaces.AddUnique(entityFrameworkCoreProject.GetDataLayerDataContractsNamespace());
+                    definition.Namespaces.AddUnique(efCoreProject.GetDataLayerDataContractsNamespace());
 
                 foreach (var foreignKey in table.ForeignKeys)
                 {
@@ -72,18 +72,14 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         var child = projectFeature.Project.Database.FindTable(foreignKey.Child);
 
                         if (child != null)
-                            definition.Namespaces.AddUnique(entityFrameworkCoreProject.GetDataLayerDataContractsNamespace());
+                            definition.Namespaces.AddUnique(efCoreProject.GetDataLayerDataContractsNamespace());
                     }
                 }
 
                 if (table.ForeignKeys.Count == 0)
-                {
                     definition.GetGetAllMethodWithoutForeigns(projectFeature, projectSelection, table);
-                }
                 else
-                {
                     definition.GetGetAllMethod(projectFeature, projectSelection, table);
-                }
 
                 if (table.PrimaryKey != null)
                     definition.Methods.Add(GetGetMethod(projectFeature, projectSelection, table));
@@ -107,7 +103,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 var projectSelection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(view);
 
                 if (projectSelection.Settings.EntitiesWithDataContracts)
-                    definition.Namespaces.AddUnique(entityFrameworkCoreProject.GetDataLayerDataContractsNamespace());
+                    definition.Namespaces.AddUnique(efCoreProject.GetDataLayerDataContractsNamespace());
 
                 definition.GetGetAllMethod(projectFeature, view);
 
@@ -120,7 +116,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
         private static void GetGetAllMethod(this CSharpClassDefinition definition, ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection, ITable table)
         {
-            var entityFrameworkCoreProject = projectFeature.GetEntityFrameworkCoreProject();
+            var efCoreProject = projectFeature.GetEntityFrameworkCoreProject();
 
             var returnType = string.Empty;
 
@@ -128,7 +124,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             if (projectSelection.Settings.EntitiesWithDataContracts)
             {
-                returnType = table.GetDataContractName();
+                returnType = efCoreProject.GetDataContractName(table);
 
                 var dataContractPropertiesSets = new[]
                 {
@@ -143,7 +139,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     }
                 }.ToList();
 
-                var entityAlias = NamingConvention.GetCamelCase(table.GetEntityName());
+                var entityAlias = NamingConvention.GetCamelCase(efCoreProject.GetEntityName(table));
 
                 foreach (var column in table.Columns)
                 {
@@ -167,13 +163,13 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     if (foreignTable == null)
                         continue;
 
-                    var foreignKeyAlias = NamingConvention.GetCamelCase(foreignTable.GetEntityName());
+                    var foreignKeyAlias = NamingConvention.GetCamelCase(efCoreProject.GetEntityName(foreignTable));
 
                     foreach (var column in foreignTable?.GetColumnsWithNoPrimaryKey())
                     {
                         if (dataContractPropertiesSets.Where(item => string.Format("{0}.{1}", item.ObjectSource, item.PropertySource) == string.Format("{0}.{1}", entityAlias, column.GetPropertyName())).Count() == 0)
                         {
-                            var target = string.Format("{0}{1}", foreignTable.GetEntityName(), column.GetPropertyName());
+                            var target = string.Format("{0}{1}", efCoreProject.GetEntityName(foreignTable), column.GetPropertyName());
 
                             dataContractPropertiesSets.Add(new
                             {
@@ -189,7 +185,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
 
                 lines.Add(new CommentLine(" Get query from DbSet"));
-                lines.Add(new CodeLine("var query = from {0} in DbContext.Set<{1}>()", entityAlias, table.GetEntityName()));
+                lines.Add(new CodeLine("var query = from {0} in DbContext.Set<{1}>()", entityAlias, efCoreProject.GetEntityName(table)));
 
                 foreach (var foreignKey in table.ForeignKeys)
                 {
@@ -198,14 +194,14 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     if (foreignTable == null)
                         continue;
 
-                    var foreignKeyEntityName = foreignTable.GetDbSetPropertyName();
+                    var foreignKeyEntityName = efCoreProject.GetDbSetPropertyName(foreignTable);
 
-                    var foreignKeyAlias = NamingConvention.GetCamelCase(foreignTable.GetEntityName());
+                    var foreignKeyAlias = NamingConvention.GetCamelCase(efCoreProject.GetEntityName(foreignTable));
 
                     if (projectFeature.Project.Database.HasDefaultSchema(foreignTable))
-                        definition.Namespaces.AddUnique(entityFrameworkCoreProject.GetEntityLayerNamespace());
+                        definition.Namespaces.AddUnique(efCoreProject.GetEntityLayerNamespace());
                     else
-                        definition.Namespaces.AddUnique(entityFrameworkCoreProject.GetEntityLayerNamespace(foreignTable.Schema));
+                        definition.Namespaces.AddUnique(efCoreProject.GetEntityLayerNamespace(foreignTable.Schema));
 
                     if (foreignKey.Key.Count == 0)
                     {
@@ -221,8 +217,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         {
                             var column = table.Columns.FirstOrDefault(item => item.Name == foreignKey.Key.First());
 
-                            var x = NamingExtensions.NamingConvention.GetPropertyName(foreignKey.Key.First());
-                            var y = NamingExtensions.NamingConvention.GetPropertyName(foreignTable.PrimaryKey.Key.First());
+                            var x = efCoreProject.CodeNamingConvention.GetPropertyName(foreignKey.Key.First());
+                            var y = efCoreProject.CodeNamingConvention.GetPropertyName(foreignTable.PrimaryKey.Key.First());
 
                             if (column.Nullable)
                             {
@@ -300,10 +296,10 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             }
             else
             {
-                returnType = table.GetEntityName();
+                returnType = efCoreProject.GetEntityName(table);
 
                 lines.Add(new CommentLine(" Get query from DbSet"));
-                lines.Add(new CodeLine("var query = DbContext.{0}.AsQueryable();", table.GetDbSetPropertyName()));
+                lines.Add(new CodeLine("var query = DbContext.{0}.AsQueryable();", efCoreProject.GetDbSetPropertyName(table)));
 
                 lines.Add(new CodeLine());
             }
@@ -324,7 +320,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     {
                         var column = table.Columns.First(item => item.Name == foreignKey.Key.First());
 
-                        var parameterName = column.GetParameterName();
+                        var parameterName = efCoreProject.GetParameterName(column);
 
                         parameters.Add(new ParameterDefinition(projectFeature.Project.Database.ResolveDatabaseType(column), parameterName, "null"));
 
@@ -366,7 +362,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 lines.Add(new CodeLine("return query;"));
             }
 
-            definition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", returnType), table.GetGetAllRepositoryMethodName(), parameters.ToArray())
+            definition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", returnType), efCoreProject.GetGetAllRepositoryMethodName(table), parameters.ToArray())
             {
                 Lines = lines
             });
@@ -374,75 +370,79 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
         private static void GetGetAllMethodWithoutForeigns(this CSharpClassDefinition definition, ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection, ITable table)
         {
-            definition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", table.GetEntityName()), table.GetGetAllRepositoryMethodName())
+            var efCoreProject = projectFeature.GetEntityFrameworkCoreProject();
+
+            definition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", efCoreProject.GetEntityName(table)), efCoreProject.GetGetAllRepositoryMethodName(table))
             {
                 Lines =
                 {
-                    new CodeLine("return DbContext.{0};", table.GetDbSetPropertyName())
+                    new CodeLine("return DbContext.{0};", efCoreProject.GetDbSetPropertyName(table))
                 }
             });
         }
 
         private static void GetGetAllMethod(this CSharpClassDefinition definition, ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, IView view)
         {
-            definition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", view.GetEntityName()), view.GetGetAllRepositoryMethodName())
+            var efCoreProject = projectFeature.GetEntityFrameworkCoreProject();
+
+            definition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", efCoreProject.GetEntityName(view)), efCoreProject.GetGetAllRepositoryMethodName(view))
             {
                 Lines =
                 {
-                    new CodeLine("return DbContext.{0};", view.GetDbSetPropertyName())
+                    new CodeLine("return DbContext.{0};", efCoreProject.GetDbSetPropertyName(view))
                 }
             });
         }
 
         private static MethodDefinition GetGetByUniqueMethods(ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, ITable table, Unique unique)
         {
-            var entityFrameworkCoreProject = projectFeature.GetEntityFrameworkCoreProject();
+            var efCoreProject = projectFeature.GetEntityFrameworkCoreProject();
 
-            var selection = entityFrameworkCoreProject.GetSelection(table);
+            var selection = efCoreProject.GetSelection(table);
 
-            var expression = string.Format("item => {0}", string.Join(" && ", unique.Key.Select(item => string.Format("item.{0} == entity.{0}", NamingExtensions.NamingConvention.GetPropertyName(item)))));
+            var expression = string.Format("item => {0}", string.Join(" && ", unique.Key.Select(item => string.Format("item.{0} == entity.{0}", efCoreProject.CodeNamingConvention.GetPropertyName(item)))));
 
-            return new MethodDefinition(string.Format("Task<{0}>", table.GetEntityName()), table.GetGetByUniqueRepositoryMethodName(unique), new ParameterDefinition(table.GetEntityName(), "entity"))
+            return new MethodDefinition(string.Format("Task<{0}>", efCoreProject.GetEntityName(table)), efCoreProject.GetGetByUniqueRepositoryMethodName(table, unique), new ParameterDefinition(efCoreProject.GetEntityName(table), "entity"))
             {
                 IsAsync = true,
                 Lines =
                 {
-                    new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", table.GetDbSetPropertyName(), expression)
+                    new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", efCoreProject.GetDbSetPropertyName(table), expression)
                 }
             };
         }
 
         private static MethodDefinition GetGetMethod(ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection, ITable table)
         {
-            var entityFrameworkCoreProject = projectFeature.GetEntityFrameworkCoreProject();
+            var efCoreProject = projectFeature.GetEntityFrameworkCoreProject();
 
             var expression = string.Empty;
 
             if (table.Identity == null)
-                expression = string.Format("item => {0}", string.Join(" && ", table.PrimaryKey.Key.Select(item => string.Format("item.{0} == entity.{0}", NamingExtensions.NamingConvention.GetPropertyName(item)))));
+                expression = string.Format("item => {0}", string.Join(" && ", table.PrimaryKey.Key.Select(item => string.Format("item.{0} == entity.{0}", efCoreProject.CodeNamingConvention.GetPropertyName(item)))));
             else
-                expression = string.Format("item => item.{0} == entity.{0}", NamingExtensions.NamingConvention.GetPropertyName(table.Identity.Name));
+                expression = string.Format("item => item.{0} == entity.{0}", efCoreProject.CodeNamingConvention.GetPropertyName(table.Identity.Name));
 
             if (projectSelection.Settings.EntitiesWithDataContracts)
             {
                 var lines = new List<ILine>
                 {
-                    new CodeLine("return await DbContext.{0}", table.GetDbSetPropertyName())
+                    new CodeLine("return await DbContext.{0}", efCoreProject.GetDbSetPropertyName(table))
                 };
 
                 foreach (var foreignKey in table.ForeignKeys)
                 {
-                    var foreignTable = projectFeature.Project.Database.FindTable(foreignKey.References);
+                    var foreignTable = efCoreProject.Database.FindTable(foreignKey.References);
 
                     if (foreignKey == null)
                         continue;
 
-                    lines.Add(new CodeLine(1, ".Include(p => p.{0})", foreignKey.GetParentNavigationProperty(foreignTable, entityFrameworkCoreProject).Name));
+                    lines.Add(new CodeLine(1, ".Include(p => p.{0})", foreignKey.GetParentNavigationProperty(foreignTable, efCoreProject).Name));
                 }
 
                 lines.Add(new CodeLine(1, ".FirstOrDefaultAsync({0});", expression));
 
-                return new MethodDefinition(string.Format("Task<{0}>", table.GetEntityName()), table.GetGetRepositoryMethodName(), new ParameterDefinition(table.GetEntityName(), "entity"))
+                return new MethodDefinition(string.Format("Task<{0}>", efCoreProject.GetEntityName(table)), efCoreProject.GetGetRepositoryMethodName(table), new ParameterDefinition(efCoreProject.GetEntityName(table), "entity"))
                 {
                     IsAsync = true,
                     Lines = lines
@@ -450,12 +450,12 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             }
             else
             {
-                return new MethodDefinition(string.Format("Task<{0}>", table.GetEntityName()), table.GetGetRepositoryMethodName(), new ParameterDefinition(table.GetEntityName(), "entity"))
+                return new MethodDefinition(string.Format("Task<{0}>", efCoreProject.GetEntityName(table)), efCoreProject.GetGetRepositoryMethodName(table), new ParameterDefinition(efCoreProject.GetEntityName(table), "entity"))
                 {
                     IsAsync = true,
                     Lines =
                     {
-                        new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", table.GetDbSetPropertyName(), expression)
+                        new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", efCoreProject.GetDbSetPropertyName(table), expression)
                     }
                 };
             }

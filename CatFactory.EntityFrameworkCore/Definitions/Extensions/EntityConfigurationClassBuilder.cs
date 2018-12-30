@@ -21,7 +21,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     "Microsoft.EntityFrameworkCore",
                     "Microsoft.EntityFrameworkCore.Metadata.Builders"
                 },
-                Name = table.GetEntityConfigurationName()
+                Name = project.GetEntityConfigurationName(table)
             };
 
             definition.Namespaces.AddUnique(project.GetEntityLayerNamespace(project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema));
@@ -33,7 +33,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             // todo: Check logic to build property's name
 
-            var propertyType = string.Join(".", (new string[] { project.Name, project.ProjectNamespaces.EntityLayer, project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema, table.GetEntityName() }).Where(item => !string.IsNullOrEmpty(item)));
+            var propertyType = string.Join(".", (new string[] { project.Name, project.ProjectNamespaces.EntityLayer, project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema, project.GetEntityName(table) }).Where(item => !string.IsNullOrEmpty(item)));
 
             definition.Implements.Add(string.Format("IEntityTypeConfiguration<{0}>", propertyType));
 
@@ -188,7 +188,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                         configLines.Add(new CodeLine("builder"));
                         configLines.Add(new CodeLine(1, ".HasOne(p => p.{0})", foreignProperty.Name));
-                        configLines.Add(new CodeLine(1, ".WithMany(b => b.{0})", table.GetNavigationPropertyName()));
+                        configLines.Add(new CodeLine(1, ".WithMany(b => b.{0})", project.GetNavigationPropertyName(table)));
                         configLines.Add(new CodeLine(1, ".HasForeignKey(p => {0})", string.Format("p.{0}", definition.NamingConvention.GetPropertyName(foreignKey.Key.First()))));
                         configLines.Add(new CodeLine(1, ".HasConstraintName(\"{0}\");", foreignKey.ConstraintName));
                         configLines.Add(new CodeLine());
@@ -200,12 +200,10 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
             }
 
-            var mapMethod = new MethodDefinition("void", "Configure", new ParameterDefinition(string.Format("EntityTypeBuilder<{0}>", propertyType), "builder"))
+            definition.Methods.Add(new MethodDefinition("void", "Configure", new ParameterDefinition(string.Format("EntityTypeBuilder<{0}>", propertyType), "builder"))
             {
                 Lines = configLines
-            };
-
-            definition.Methods.Add(mapMethod);
+            });
 
             return definition;
         }
@@ -220,10 +218,10 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     "Microsoft.EntityFrameworkCore.Metadata.Builders"
                 },
                 Namespace = project.GetDataLayerConfigurationsNamespace(),
-                Name = view.GetEntityConfigurationName(),
+                Name = project.GetEntityConfigurationName(view),
                 Implements =
                 {
-                    string.Format("IEntityTypeConfiguration<{0}>", view.GetEntityName())
+                    string.Format("IEntityTypeConfiguration<{0}>", project.GetEntityName(view))
                 }
             };
 
@@ -290,12 +288,10 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
             }
 
-            var configureMethod = new MethodDefinition("void", "Configure", new ParameterDefinition(string.Format("EntityTypeBuilder<{0}>", view.GetEntityName()), "builder"))
+            definition.Methods.Add(new MethodDefinition("void", "Configure", new ParameterDefinition(string.Format("EntityTypeBuilder<{0}>", project.GetEntityName(view)), "builder"))
             {
                 Lines = configLines
-            };
-
-            definition.Methods.Add(configureMethod);
+            });
 
             return definition;
         }

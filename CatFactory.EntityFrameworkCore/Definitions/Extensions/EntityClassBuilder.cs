@@ -19,7 +19,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     "System"
                 },
                 Namespace = project.Database.HasDefaultSchema(table) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(table.Schema),
-                Name = table.GetEntityName(),
+                Name = project.GetEntityName(table),
                 IsPartial = true,
                 Constructors =
                 {
@@ -66,9 +66,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         propertyType = "object";
                     }
 
-                    constructor.Parameters.Add(new ParameterDefinition(propertyType, key.GetParameterName()));
+                    constructor.Parameters.Add(new ParameterDefinition(propertyType, project.GetParameterName(key)));
 
-                    constructor.Lines.Add(new CodeLine("{0} = {1};", key.GetPropertyName(), key.GetParameterName()));
+                    constructor.Lines.Add(new CodeLine("{0} = {1};", key.GetPropertyName(), project.GetParameterName(key)));
                 }
 
                 definition.Constructors.Add(constructor);
@@ -182,7 +182,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     "System"
                 },
                 Namespace = project.Database.HasDefaultSchema(view) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(view.Schema),
-                Name = view.GetEntityName(),
+                Name = project.GetEntityName(view),
                 IsPartial = true,
                 Constructors =
                 {

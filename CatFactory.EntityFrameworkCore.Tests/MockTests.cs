@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using CatFactory.EntityFrameworkCore.Tests.Models;
+using Xunit;
 
 namespace CatFactory.EntityFrameworkCore.Tests
 {
@@ -10,9 +11,9 @@ namespace CatFactory.EntityFrameworkCore.Tests
             // Create instance of EF Core Project
             var project = new EntityFrameworkCoreProject
             {
-                Name = "School.Mock",
-                Database = Databases.School,
-                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\School.Mock"
+                Name = "College.Mock",
+                Database = Databases.College,
+                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\College.Mock"
             };
 
             // Apply settings for EF Core project

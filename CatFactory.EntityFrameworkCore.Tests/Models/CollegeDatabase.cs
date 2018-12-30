@@ -1,14 +1,14 @@
 ﻿using CatFactory.ObjectRelationalMapping;
 using CatFactory.SqlServer;
 
-namespace CatFactory.EntityFrameworkCore.Tests
+namespace CatFactory.EntityFrameworkCore.Tests.Models
 {
     public static partial class Databases
     {
-        public static Database School
+        public static Database College
             => new Database
             {
-                Name = "school",
+                Name = "college",
                 DefaultSchema = "dbo",
                 DatabaseTypeMaps = DatabaseTypeMapList.Definition,
                 Tables =
@@ -58,14 +58,14 @@ namespace CatFactory.EntityFrameworkCore.Tests
                     new Table
                     {
                         Schema = "dbo",
-                        Name = "course_teacher",
+                        Name = "course_student",
                         Columns =
                         {
-                            new Column { Name = "course_teacher_id", Type = "int" },
+                            new Column { Name = "course_student_id", Type = "int" },
                             new Column { Name = "course_id", Type = "int" },
-                            new Column { Name = "teacher_id", Type = "int" },
+                            new Column { Name = "student_id", Type = "int" },
                         },
-                        Identity = new Identity("course_teacher_id", 1, 1)
+                        Identity = new Identity("course_student_id", 1, 1)
                     }
                 }
             }

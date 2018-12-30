@@ -126,7 +126,7 @@ namespace CatFactory.EntityFrameworkCore
                 string.Empty,
 
                 "2. Register your DbContext and repositories in ConfigureServices method (Startup class):",
-                string.Format("   services.AddDbContext<{0}>(options => options.UseSqlServer(\"ConnectionString\"));", project.Database.GetDbContextName()),
+                string.Format("   services.AddDbContext<{0}>(options => options.UseSqlServer(\"ConnectionString\"));", project.GetDbContextName(project.Database)),
 
                 "   services.AddScoped<IDboRepository, DboRepository>();",
                 string.Empty,

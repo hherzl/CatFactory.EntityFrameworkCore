@@ -9,19 +9,19 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
     {
         public static DataContractClassDefinition GetDataContractClassDefinition(this EntityFrameworkCoreProject project, ITable table)
         {
-            var classDefinition = new DataContractClassDefinition
+            var definition = new DataContractClassDefinition
             {
                 Namespaces =
                 {
                     "System"
                 },
                 Namespace = project.GetDataLayerDataContractsNamespace(),
-                Name = table.GetDataContractName()
+                Name = project.GetDataContractName(table)
             };
 
             foreach (var column in table.Columns)
             {
-                classDefinition.Properties.Add(new PropertyDefinition(project.Database.ResolveDatabaseType(column), column.GetPropertyName()));
+                definition.Properties.Add(new PropertyDefinition(project.Database.ResolveDatabaseType(column), column.GetPropertyName()));
             }
 
             foreach (var foreignKey in table.ForeignKeys)
@@ -31,18 +31,18 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 if (foreignTable == null)
                     continue;
 
-                var foreignKeyAlias = NamingConvention.GetCamelCase(foreignTable.GetEntityName());
+                var foreignKeyAlias = NamingConvention.GetCamelCase(project.GetEntityName(foreignTable));
 
                 foreach (var column in foreignTable?.GetColumnsWithNoPrimaryKey())
                 {
-                    var target = string.Format("{0}{1}", foreignTable.GetEntityName(), column.GetPropertyName());
+                    var target = string.Format("{0}{1}", project.GetEntityName(foreignTable), column.GetPropertyName());
 
-                    if (classDefinition.Properties.Count(item => item.Name == column.GetPropertyName()) == 0)
-                        classDefinition.Properties.Add(new PropertyDefinition(project.Database.ResolveDatabaseType(column), target));
+                    if (definition.Properties.Count(item => item.Name == column.GetPropertyName()) == 0)
+                        definition.Properties.Add(new PropertyDefinition(project.Database.ResolveDatabaseType(column), target));
                 }
             }
 
-            return classDefinition;
+            return definition;
         }
     }
 }

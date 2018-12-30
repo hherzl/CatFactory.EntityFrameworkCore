@@ -21,7 +21,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 Name = "RepositoryExtensions"
             };
 
-            definition.Methods.Add(new MethodDefinition("IQueryable<TEntity>", "Paging", new ParameterDefinition(project.Database.GetDbContextName(), "dbContext"), new ParameterDefinition("int", "pageSize", "0"), new ParameterDefinition("int", "pageNumber", "0"))
+            definition.Methods.Add(new MethodDefinition("IQueryable<TEntity>", "Paging", new ParameterDefinition(project.GetDbContextName(project.Database), "dbContext"), new ParameterDefinition("int", "pageSize", "0"), new ParameterDefinition("int", "pageNumber", "0"))
             {
                 IsExtension = true,
                 IsStatic = true,
