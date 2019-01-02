@@ -158,7 +158,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     }
                     else
                     {
-                        configLines.Add(new CodeLine(1, ".HasIndex(p => new {{ {0} }})", string.Join(", ", table.PrimaryKey.Key.Select(item => string.Format("p.{0}", definition.NamingConvention.GetPropertyName(item))))));
+                        configLines.Add(new CodeLine(1, ".HasIndex(p => new {{ {0} }})", string.Join(", ", unique.Key.Select(item => string.Format("p.{0}", definition.NamingConvention.GetPropertyName(item))))));
                         configLines.Add(new CodeLine(1, ".IsUnique()"));
                     }
 
