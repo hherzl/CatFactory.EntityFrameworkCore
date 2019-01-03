@@ -21,10 +21,8 @@ namespace CatFactory.EntityFrameworkCore
             : base(logger)
         {
             CodeNamingConvention = new DotNetNamingConvention();
+            NamingService = new NamingService();
         }
-
-        // todo: Add this prperty in project base class
-        public INamingService NamingService { get; set; }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private EntityFrameworkCoreProjectNamespaces m_projectNamespaces;
