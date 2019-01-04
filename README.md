@@ -28,7 +28,7 @@ The flow to import an existing database is:
 
 Sample code:
 
-```
+```csharp
 // Create database factory
 var databaseFactory = new SqlServerDatabaseFactory(SqlServerDatabaseFactory.GetLogger())
 {
