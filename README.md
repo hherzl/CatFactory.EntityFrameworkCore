@@ -2,21 +2,13 @@
 
 ## What Is CatFactory?
 
-CatFactory it's a scaffolding engine for .NET Core built in C#.
+CatFactory is a scaffolding engine for .NET Core built with C#.
 
-## How it Works?
+## How does it Works?
 
-The concept behind CatFactory is import an existing database from SQL Server instance, then scaffolding a target technology.
+The concept behind CatFactory is to import an existing database from SQL Server instance and then to scaffold a target technology.
 
-Also, We can replace the database from SQL Server instance with an in memory database.
-
-Currently, the following technologies are supported:
-
-+ [`Entity Framework Core`](https://github.com/hherzl/CatFactory.EntityFrameworkCore)
-+ [`ASP.NET Core`](https://github.com/hherzl/CatFactory.AspNetCore)
-+ [`Dapper`](https://github.com/hherzl/CatFactory.Dapper)
-
-To understand the scope for CatFactory, in few words CatFactory is the core, to have more packages we can create them with this naming convention: CatFactory.PackageName.
+We can also replace the database from SQL Server instance with an in-memory database.
 
 The flow to import an existing database is:
 
@@ -26,11 +18,25 @@ The flow to import an existing database is:
 4. Build Features (One feature per schema)
 5. Scaffold objects, these methods read all objects from database and create instances for code builders
 
+Currently, the following technologies are supported:
+
++ [`Entity Framework Core`](https://github.com/hherzl/CatFactory.EntityFrameworkCore)
++ [`ASP.NET Core`](https://github.com/hherzl/CatFactory.AspNetCore)
++ [`Dapper`](https://github.com/hherzl/CatFactory.Dapper)
+
+This package is the core for child packages, additional packages have created with this naming convention: CatFactory.**PackageName**.
+
+* CatFactory.SqlServer
+* CatFactory.NetCore
+* CatFactory.EntityFrameworkCore
+* CatFactory.AspNetCore
+* CatFactory.Dapper
+
 Sample code:
 
 ```csharp
 // Create database factory
-var databaseFactory = new SqlServerDatabaseFactory(SqlServerDatabaseFactory.GetLogger())
+var databaseFactory = new SqlServerDatabaseFactory
 {
 	DatabaseImportSettings = new DatabaseImportSettings
 	{
