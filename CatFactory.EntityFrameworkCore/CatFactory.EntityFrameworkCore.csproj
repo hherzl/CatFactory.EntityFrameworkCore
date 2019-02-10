@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <Version>1.0.0-beta-sun-build25</Version>
+    <Version>1.0.0-beta-sun-build26</Version>
     <Authors>H. Herzl</Authors>
     <Company>Herzl Corp.</Company>
     <Description>CatFactory Package for Entity Framework Core</Description>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</RepositoryUrl>
     <PackageTags>Entity Framework Core; ORM; Scaffolding</PackageTags>
-    <PackageReleaseNotes>1.0.0-beta-sun-build25 Version:
+    <PackageReleaseNotes>1.0.0-beta-sun-build26 Version:
 
 * Core package update
 
@@ -19,7 +19,7 @@ Quick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Fra
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CatFactory.NetCore" Version="1.0.0-beta-sun-build18" />
+    <PackageReference Include="CatFactory.NetCore" Version="1.0.0-beta-sun-build19" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.2.0" />
   </ItemGroup>
 

@@ -1,4 +1,5 @@
-﻿using CatFactory.ObjectRelationalMapping;
+﻿using System.Linq;
+using CatFactory.ObjectRelationalMapping;
 using CatFactory.SqlServer;
 
 namespace CatFactory.EntityFrameworkCore.Tests.Models
@@ -10,7 +11,7 @@ namespace CatFactory.EntityFrameworkCore.Tests.Models
             {
                 Name = "college",
                 DefaultSchema = "dbo",
-                DatabaseTypeMaps = DatabaseTypeMapList.Definition,
+                DatabaseTypeMaps = new SqlServerDatabaseFactory().DatabaseTypeMaps.ToList(),
                 Tables =
                 {
                     new Table

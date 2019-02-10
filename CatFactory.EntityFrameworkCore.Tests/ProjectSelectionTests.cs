@@ -12,14 +12,14 @@ namespace CatFactory.EntityFrameworkCore.Tests
 
             // Import database
             var database = SqlServerDatabaseFactory
-                .Import(SqlServerDatabaseFactory.GetLogger(), "server=(local);database=OnLineStore;integrated security=yes;", "dbo.sysdiagrams");
+                .Import(SqlServerDatabaseFactory.GetLogger(), "server=(local);database=OnlineStore;integrated security=yes;", "dbo.sysdiagrams");
 
             // Create instance of Entity Framework Core project
             var project = new EntityFrameworkCoreProject
             {
                 Name = "OnLineStore",
                 Database = database,
-                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\OnLineStore"
+                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\OnlineStore"
             };
 
             // Act

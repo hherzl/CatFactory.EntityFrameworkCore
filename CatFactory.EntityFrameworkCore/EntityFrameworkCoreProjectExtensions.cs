@@ -112,6 +112,7 @@ namespace CatFactory.EntityFrameworkCore
 
             return new PropertyDefinition(propertyType, project.GetNavigationPropertyName(table))
             {
+                AccessModifier = AccessModifier.Public,
                 IsVirtual = projectSelection.Settings.DeclareNavigationPropertiesAsVirtual
             };
         }

@@ -12,6 +12,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     "System"
                 },
                 Namespace = project.GetEntityLayerNamespace(),
+                AccessModifier = AccessModifier.Public,
                 Name = "IAuditEntity",
                 Implements =
                 {

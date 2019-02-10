@@ -103,6 +103,9 @@ namespace CatFactory.EntityFrameworkCore
 
                 var repositoryInterfaceDefinition = repositoryClassDefinition.RefactInterface();
 
+                // todo: Remove this line
+                repositoryInterfaceDefinition.AccessModifier = ObjectOrientedProgramming.AccessModifier.Public;
+
                 repositoryInterfaceDefinition.Namespace = project.GetDataLayerContractsNamespace();
                 repositoryInterfaceDefinition.Implements.Add("IRepository");
 

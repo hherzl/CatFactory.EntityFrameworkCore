@@ -13,6 +13,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     "System.Threading.Tasks"
                 },
                 Namespace = project.GetDataLayerContractsNamespace(),
+                AccessModifier = AccessModifier.Public,
                 Name = "IRepository",
                 Implements =
                 {

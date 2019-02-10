@@ -16,6 +16,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     "System.Threading.Tasks",
                 },
                 Namespace = project.GetDataLayerContractsNamespace(),
+                AccessModifier = AccessModifier.Public,
                 Name = "Repository",
                 Fields =
                 {
@@ -24,7 +25,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 },
                 Constructors =
                 {
-                    new ClassConstructorDefinition(new ParameterDefinition(project.GetDbContextName(project.Database), "dbContext"))
+                    new ClassConstructorDefinition(AccessModifier.Public, new ParameterDefinition(project.GetDbContextName(project.Database), "dbContext"))
                     {
                         Lines =
                         {
@@ -34,7 +35,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 },
                 Methods =
                 {
-                    new MethodDefinition("void", "Dispose")
+                    new MethodDefinition(AccessModifier.Public, "void", "Dispose")
                     {
                         Lines =
                         {
@@ -49,14 +50,14 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     GetAddMethod(project),
                     GetUpdateMethod(project),
                     GetRemoveMethod(project),
-                    new MethodDefinition("int", "CommitChanges")
+                    new MethodDefinition(AccessModifier.Public, "int", "CommitChanges")
                     {
                         Lines =
                         {
                             new CodeLine("return DbContext.SaveChanges();")
                         }
                     },
-                    new MethodDefinition("Task<int>", "CommitChangesAsync")
+                    new MethodDefinition(AccessModifier.Public, "Task<int>", "CommitChangesAsync")
                     {
                         Lines =
                         {
@@ -104,6 +105,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             return new MethodDefinition("void", "Add", new ParameterDefinition("TEntity", "entity"))
             {
+                AccessModifier = AccessModifier.Public,
                 IsVirtual = true,
                 GenericTypes =
                 {
@@ -147,6 +149,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             return new MethodDefinition("void", "Update", new ParameterDefinition("TEntity", "entity"))
             {
+                AccessModifier = AccessModifier.Public,
                 IsVirtual = true,
                 GenericTypes =
                 {
@@ -163,6 +166,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
         private static MethodDefinition GetRemoveMethod(EntityFrameworkCoreProject project)
             => new MethodDefinition("void", "Remove", new ParameterDefinition("TEntity", "entity"))
             {
+                AccessModifier = AccessModifier.Public,
                 IsVirtual = true,
                 GenericTypes =
                 {

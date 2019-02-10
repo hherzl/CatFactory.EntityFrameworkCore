@@ -28,6 +28,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     "Microsoft.EntityFrameworkCore"
                 },
                 Namespace = efCoreProject.GetDataLayerRepositoriesNamespace(),
+                AccessModifier = AccessModifier.Public,
                 Name = projectFeature.GetClassRepositoryName(),
                 BaseClass = "Repository",
                 Implements =
@@ -36,7 +37,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 },
                 Constructors =
                 {
-                    new ClassConstructorDefinition(new ParameterDefinition(efCoreProject.GetDbContextName(efCoreProject.Database), "dbContext"))
+                    new ClassConstructorDefinition(AccessModifier.Public, new ParameterDefinition(efCoreProject.GetDbContextName(efCoreProject.Database), "dbContext"))
                     {
                         Invocation = "base(dbContext)"
                     }
@@ -362,7 +363,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 lines.Add(new CodeLine("return query;"));
             }
 
-            definition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", returnType), efCoreProject.GetGetAllRepositoryMethodName(table), parameters.ToArray())
+            definition.Methods.Add(new MethodDefinition(AccessModifier.Public, string.Format("IQueryable<{0}>", returnType), efCoreProject.GetGetAllRepositoryMethodName(table), parameters.ToArray())
             {
                 Lines = lines
             });
@@ -372,7 +373,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
         {
             var efCoreProject = projectFeature.GetEntityFrameworkCoreProject();
 
-            definition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", efCoreProject.GetEntityName(table)), efCoreProject.GetGetAllRepositoryMethodName(table))
+            definition.Methods.Add(new MethodDefinition(AccessModifier.Public, string.Format("IQueryable<{0}>", efCoreProject.GetEntityName(table)), efCoreProject.GetGetAllRepositoryMethodName(table))
             {
                 Lines =
                 {
@@ -385,7 +386,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
         {
             var efCoreProject = projectFeature.GetEntityFrameworkCoreProject();
 
-            definition.Methods.Add(new MethodDefinition(string.Format("IQueryable<{0}>", efCoreProject.GetEntityName(view)), efCoreProject.GetGetAllRepositoryMethodName(view))
+            definition.Methods.Add(new MethodDefinition(AccessModifier.Public, string.Format("IQueryable<{0}>", efCoreProject.GetEntityName(view)), efCoreProject.GetGetAllRepositoryMethodName(view))
             {
                 Lines =
                 {
@@ -402,7 +403,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             var expression = string.Format("item => {0}", string.Join(" && ", unique.Key.Select(item => string.Format("item.{0} == entity.{0}", efCoreProject.CodeNamingConvention.GetPropertyName(item)))));
 
-            return new MethodDefinition(string.Format("Task<{0}>", efCoreProject.GetEntityName(table)), efCoreProject.GetGetByUniqueRepositoryMethodName(table, unique), new ParameterDefinition(efCoreProject.GetEntityName(table), "entity"))
+            return new MethodDefinition(AccessModifier.Public, string.Format("Task<{0}>", efCoreProject.GetEntityName(table)), efCoreProject.GetGetByUniqueRepositoryMethodName(table, unique), new ParameterDefinition(efCoreProject.GetEntityName(table), "entity"))
             {
                 IsAsync = true,
                 Lines =
@@ -442,7 +443,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                 lines.Add(new CodeLine(1, ".FirstOrDefaultAsync({0});", expression));
 
-                return new MethodDefinition(string.Format("Task<{0}>", efCoreProject.GetEntityName(table)), efCoreProject.GetGetRepositoryMethodName(table), new ParameterDefinition(efCoreProject.GetEntityName(table), "entity"))
+                return new MethodDefinition(AccessModifier.Public, string.Format("Task<{0}>", efCoreProject.GetEntityName(table)), efCoreProject.GetGetRepositoryMethodName(table), new ParameterDefinition(efCoreProject.GetEntityName(table), "entity"))
                 {
                     IsAsync = true,
                     Lines = lines
@@ -450,7 +451,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             }
             else
             {
-                return new MethodDefinition(string.Format("Task<{0}>", efCoreProject.GetEntityName(table)), efCoreProject.GetGetRepositoryMethodName(table), new ParameterDefinition(efCoreProject.GetEntityName(table), "entity"))
+                return new MethodDefinition(AccessModifier.Public, string.Format("Task<{0}>", efCoreProject.GetEntityName(table)), efCoreProject.GetGetRepositoryMethodName(table), new ParameterDefinition(efCoreProject.GetEntityName(table), "entity"))
                 {
                     IsAsync = true,
                     Lines =

@@ -6,14 +6,14 @@ namespace CatFactory.EntityFrameworkCore.Tests
     public class ScaffoldingTests
     {
         [Fact]
-        public void ProjectScaffoldingForStoreDatabaseTest()
+        public void ProjectScaffoldingForOnlineStoreDatabaseTest()
         {
             // Create database factory
             var databaseFactory = new SqlServerDatabaseFactory(SqlServerDatabaseFactory.GetLogger())
             {
                 DatabaseImportSettings = new DatabaseImportSettings
                 {
-                    ConnectionString = "server=(local);database=OnLineStore;integrated security=yes;",
+                    ConnectionString = "server=(local);database=OnlineStore;integrated security=yes;",
                     ImportTableFunctions = true,
                     Exclusions =
                     {
@@ -29,9 +29,9 @@ namespace CatFactory.EntityFrameworkCore.Tests
             // Create instance of Entity Framework Core project
             var project = new EntityFrameworkCoreProject
             {
-                Name = "OnLineStore.Core",
+                Name = "OnlineStore.Core",
                 Database = database,
-                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\OnLineStore.Core"
+                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\OnlineStore.Core"
             };
 
             // Apply settings for Entity Framework Core project
@@ -72,18 +72,18 @@ namespace CatFactory.EntityFrameworkCore.Tests
         }
 
         [Fact]
-        public void ProjectScaffoldingWithDataAnnotationsForStoreDatabaseTest()
+        public void ProjectScaffoldingWithDataAnnotationsForOnlineStoreDatabaseTest()
         {
             // Import database
             var database = SqlServerDatabaseFactory
-                .Import(SqlServerDatabaseFactory.GetLogger(), "server=(local);database=OnLineStore;integrated security=yes;", "dbo.sysdiagrams");
+                .Import(SqlServerDatabaseFactory.GetLogger(), "server=(local);database=OnlineStore;integrated security=yes;", "dbo.sysdiagrams");
 
             // Create instance of Entity Framework Core Project
             var project = new EntityFrameworkCoreProject
             {
-                Name = "OnLineStoreWithDataAnnotations.Core",
+                Name = "OnlineStoreWithDataAnnotations.Core",
                 Database = database,
-                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\OnLineStoreWithDataAnnotations.Core"
+                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\OnlineStoreWithDataAnnotations.Core"
             };
 
             // Apply settings for Entity Framework Core project

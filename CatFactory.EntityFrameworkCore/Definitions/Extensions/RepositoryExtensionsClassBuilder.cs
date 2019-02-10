@@ -17,12 +17,14 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     project.GetEntityLayerNamespace()
                 },
                 Namespace = project.GetDataLayerRepositoriesNamespace(),
+                AccessModifier = AccessModifier.Public,
                 IsStatic = true,
                 Name = "RepositoryExtensions"
             };
 
             definition.Methods.Add(new MethodDefinition("IQueryable<TEntity>", "Paging", new ParameterDefinition(project.GetDbContextName(project.Database), "dbContext"), new ParameterDefinition("int", "pageSize", "0"), new ParameterDefinition("int", "pageNumber", "0"))
             {
+                AccessModifier = AccessModifier.Public,
                 IsExtension = true,
                 IsStatic = true,
                 GenericTypes =
@@ -43,6 +45,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             definition.Methods.Add(new MethodDefinition("IQueryable<TModel>", "Paging", new ParameterDefinition("IQueryable<TModel>", "query"), new ParameterDefinition("int", "pageSize", "0"), new ParameterDefinition("int", "pageNumber", "0"))
             {
+                AccessModifier = AccessModifier.Public,
                 IsExtension = true,
                 IsStatic = true,
                 GenericTypes =

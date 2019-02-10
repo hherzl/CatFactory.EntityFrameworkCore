@@ -19,6 +19,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     "System"
                 },
                 Namespace = project.Database.HasDefaultSchema(table) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(table.Schema),
+                AccessModifier = AccessModifier.Public,
                 Name = project.GetEntityName(table),
                 IsPartial = true,
                 Constructors =
@@ -49,7 +50,10 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             if (table.PrimaryKey != null)
             {
-                var constructor = new ClassConstructorDefinition();
+                var constructor = new ClassConstructorDefinition
+                {
+                    AccessModifier = AccessModifier.Public
+                };
 
                 foreach (var key in table.GetColumnsFromConstraint(table.PrimaryKey))
                 {
@@ -100,7 +104,11 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     if (projectSelection.Settings.BackingFields.Contains(table.GetFullColumnName(column)))
                         definition.AddPropertyWithField(propertyType, column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : table.GetPropertyNameHack(column));
                     else if (projectSelection.Settings.UseAutomaticPropertiesForEntities)
-                        definition.Properties.Add(new PropertyDefinition(propertyType, column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : table.GetPropertyNameHack(column)));
+                        definition.Properties.Add(new PropertyDefinition(propertyType, column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : table.GetPropertyNameHack(column))
+                        {
+                            AccessModifier = AccessModifier.Public,
+                            IsAutomatic = true
+                        });
                     else
                         definition.AddPropertyWithField(propertyType, column.HasSameNameEnclosingType(table) ? column.GetNameForEnclosing() : table.GetPropertyNameHack(column));
                 }
@@ -182,11 +190,15 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     "System"
                 },
                 Namespace = project.Database.HasDefaultSchema(view) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(view.Schema),
+                AccessModifier = AccessModifier.Public,
                 Name = project.GetEntityName(view),
                 IsPartial = true,
                 Constructors =
                 {
-                    new ClassConstructorDefinition()
+                    new ClassConstructorDefinition
+                    {
+                        AccessModifier = AccessModifier.Public
+                    }
                 }
             };
 
@@ -216,7 +228,10 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     propertyType = "object";
                 }
 
-                definition.Properties.Add(new PropertyDefinition(propertyType, column.HasSameNameEnclosingType(view) ? column.GetNameForEnclosing() : view.GetPropertyNameHack(column)));
+                definition.Properties.Add(new PropertyDefinition(propertyType, column.HasSameNameEnclosingType(view) ? column.GetNameForEnclosing() : view.GetPropertyNameHack(column))
+                {
+                    AccessModifier = AccessModifier.Public
+                });
             }
 
             if (projectSelection.Settings.SimplifyDataTypes)

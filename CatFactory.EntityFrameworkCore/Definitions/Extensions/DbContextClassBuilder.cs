@@ -19,6 +19,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             var definition = new DbContextClassDefinition
             {
                 Namespace = efCoreProject.GetDataLayerNamespace(),
+                AccessModifier = AccessModifier.Public,
                 Name = efCoreProject.GetDbContextName(efCoreProject.Database),
                 BaseClass = "DbContext"
             };
@@ -30,7 +31,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             if (!projectSelection.Settings.UseDataAnnotations)
                 definition.Namespaces.Add(efCoreProject.GetDataLayerConfigurationsNamespace());
 
-            definition.Constructors.Add(new ClassConstructorDefinition(new ParameterDefinition(string.Format("DbContextOptions<{0}>", definition.Name), "options"))
+            definition.Constructors.Add(new ClassConstructorDefinition(AccessModifier.Public, new ParameterDefinition(string.Format("DbContextOptions<{0}>", definition.Name), "options"))
             {
                 Invocation = "base(options)"
             });
@@ -42,7 +43,12 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 if (!projectFeature.Project.Database.HasDefaultSchema(table))
                     definition.Namespaces.AddUnique(efCoreProject.GetEntityLayerNamespace(table.Schema));
 
-                definition.Properties.Add(new PropertyDefinition(string.Format("DbSet<{0}>", efCoreProject.GetEntityName(table)), efCoreProject.GetDbSetPropertyName(table)));
+                definition.Properties.Add(
+                    new PropertyDefinition(AccessModifier.Public, string.Format("DbSet<{0}>", efCoreProject.GetEntityName(table)), efCoreProject.GetDbSetPropertyName(table))
+                    {
+                        IsAutomatic = true
+                    }
+                );
             }
 
             foreach (var view in projectFeature.Project.Database.Views)
@@ -50,7 +56,12 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 if (!projectFeature.Project.Database.HasDefaultSchema(view))
                     definition.Namespaces.AddUnique(efCoreProject.GetEntityLayerNamespace(view.Schema));
 
-                definition.Properties.Add(new PropertyDefinition(string.Format("DbSet<{0}>", efCoreProject.GetEntityName(view)), efCoreProject.GetDbSetPropertyName(view)));
+                definition.Properties.Add(
+                    new PropertyDefinition(AccessModifier.Public, string.Format("DbSet<{0}>", efCoreProject.GetEntityName(view)), efCoreProject.GetDbSetPropertyName(view))
+                    {
+                        IsAutomatic = true
+                    }
+                );
             }
 
             foreach (var table in projectFeature.Project.Database.Tables)
@@ -95,6 +106,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     },
                     IsStatic = true,
                     Type = parameterType,
+                    AccessModifier = AccessModifier.Public,
                     Name = efCoreProject.GetScalarFunctionMethodName(scalarFunction),
                     Lines =
                     {

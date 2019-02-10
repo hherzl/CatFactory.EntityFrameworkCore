@@ -21,6 +21,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     "Microsoft.EntityFrameworkCore",
                     "Microsoft.EntityFrameworkCore.Metadata.Builders"
                 },
+                AccessModifier = AccessModifier.Public,
                 Name = project.GetEntityConfigurationName(table)
             };
 
@@ -200,7 +201,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
             }
 
-            definition.Methods.Add(new MethodDefinition("void", "Configure", new ParameterDefinition(string.Format("EntityTypeBuilder<{0}>", propertyType), "builder"))
+            definition.Methods.Add(new MethodDefinition(AccessModifier.Public, "void", "Configure", new ParameterDefinition(string.Format("EntityTypeBuilder<{0}>", propertyType), "builder"))
             {
                 Lines = configLines
             });
@@ -218,6 +219,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     "Microsoft.EntityFrameworkCore.Metadata.Builders"
                 },
                 Namespace = project.GetDataLayerConfigurationsNamespace(),
+                AccessModifier = AccessModifier.Public,
                 Name = project.GetEntityConfigurationName(view),
                 Implements =
                 {
@@ -288,7 +290,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
             }
 
-            definition.Methods.Add(new MethodDefinition("void", "Configure", new ParameterDefinition(string.Format("EntityTypeBuilder<{0}>", project.GetEntityName(view)), "builder"))
+            definition.Methods.Add(new MethodDefinition(AccessModifier.Public, "void", "Configure", new ParameterDefinition(string.Format("EntityTypeBuilder<{0}>", project.GetEntityName(view)), "builder"))
             {
                 Lines = configLines
             });

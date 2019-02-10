@@ -15,6 +15,7 @@ namespace CatFactory.EntityFrameworkCore
 
             return new PropertyDefinition(propertyType, string.Format("{0}Fk", project.GetEntityName(table)))
             {
+                AccessModifier = AccessModifier.Public,
                 IsVirtual = selection.Settings.DeclareNavigationPropertiesAsVirtual,
                 Attributes = selection.Settings.UseDataAnnotations ? new List<MetadataAttribute> { new MetadataAttribute("ForeignKey", string.Format("\"{0}\"", string.Join(",", foreignKey.Key))) } : null
             };

@@ -1,4 +1,6 @@
-﻿namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
+﻿using CatFactory.ObjectOrientedProgramming;
+
+namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 {
     public static class EntityInterfaceBuilder
     {
@@ -10,6 +12,7 @@
                 {
                     "System"
                 },
+                AccessModifier = AccessModifier.Public,
                 Name = "IEntity"
             };
     }
