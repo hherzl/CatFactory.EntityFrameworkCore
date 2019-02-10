@@ -24,7 +24,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 IsPartial = true,
                 Constructors =
                 {
-                    new ClassConstructorDefinition()
+                    new ClassConstructorDefinition(AccessModifier.Public)
                 }
             };
 
