@@ -250,7 +250,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                     if (property.IsForeign)
                     {
-                        var dbType = projectFeature.Project.Database.ResolveType(property.Type);
+                        var dbType = projectFeature.Project.Database.ResolveDatabaseType(property.Type);
 
                         if (dbType == null)
                             throw new ObjectRelationMappingException(string.Format("There isn't mapping for '{0}' type", property.Type));
