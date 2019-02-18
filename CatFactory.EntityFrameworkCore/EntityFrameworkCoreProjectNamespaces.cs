@@ -10,6 +10,7 @@
             Contracts = "Contracts";
             DataContracts = "DataContracts";
             Repositories = "Repositories";
+            ValueConversion = "ValueConversion";
         }
 
         public string EntityLayer { get; set; }
@@ -23,5 +24,10 @@
         public string DataContracts { get; set; }
 
         public string Repositories { get; set; }
+
+        /// <summary>
+        /// Project Microsoft.EntityFrameworkCore.Storage.ValueConversion classes and types can be found here;
+        /// </summary>
+        public string ValueConversion { get; set; }
     }
 }
