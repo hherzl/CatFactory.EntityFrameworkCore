@@ -86,5 +86,16 @@ namespace CatFactory.EntityFrameworkCore
                 m_updateExclusions = value;
             }
         }
+
+        /// <summary>
+        /// When true the Database DefaultSchema is also used as a namespace and folder
+        /// </summary>
+        public Boolean DefaultSchemaAsSubdirectory { get; set; }
+
+        /// <summary>
+        /// Navigation Property Enumerable Interface Type
+        /// Typically ICollection
+        /// </summary>
+        public String NavigationPropertyEnumerableInterfaceType { get; set; }
     }
 }
