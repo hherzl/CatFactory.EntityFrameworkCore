@@ -25,7 +25,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 Constructors =
                 {
                     new ClassConstructorDefinition(AccessModifier.Public)
-                }
+                },
+                DbObject = table
             };
 
             if (!string.IsNullOrEmpty(table.Description))
@@ -181,9 +182,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             return definition;
         }
 
-        public static CSharpClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, IView view)
+        public static EntityClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, IView view)
         {
-            var definition = new CSharpClassDefinition
+            var definition = new EntityClassDefinition
             {
                 Namespaces =
                 {
@@ -199,7 +200,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     {
                         AccessModifier = AccessModifier.Public
                     }
-                }
+                },
+                DbObject = view
             };
 
             if (!string.IsNullOrEmpty(view.Description))

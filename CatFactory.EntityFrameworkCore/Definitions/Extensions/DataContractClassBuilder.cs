@@ -17,7 +17,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 },
                 Namespace = project.GetDataLayerDataContractsNamespace(),
                 AccessModifier = AccessModifier.Public,
-                Name = project.GetDataContractName(table)
+                Name = project.GetDataContractName(table),
+                DbObject = table
             };
 
             foreach (var column in table.Columns)
@@ -41,6 +42,28 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     if (definition.Properties.Count(item => item.Name == column.GetPropertyName()) == 0)
                         definition.Properties.Add(new PropertyDefinition(project.Database.ResolveDatabaseType(column), target) { AccessModifier = AccessModifier.Public });
                 }
+            }
+
+            return definition;
+        }
+
+        public static DataContractClassDefinition GetDataContractClassDefinition(this EntityFrameworkCoreProject project, IView view)
+        {
+            var definition = new DataContractClassDefinition
+            {
+                Namespaces =
+                {
+                    "System"
+                },
+                Namespace = project.GetDataLayerDataContractsNamespace(),
+                AccessModifier = AccessModifier.Public,
+                Name = project.GetDataContractName(view),
+                DbObject = view
+            };
+
+            foreach (var column in view.Columns)
+            {
+                definition.Properties.Add(new PropertyDefinition(project.Database.ResolveDatabaseType(column), column.GetPropertyName()) { AccessModifier = AccessModifier.Public });
             }
 
             return definition;

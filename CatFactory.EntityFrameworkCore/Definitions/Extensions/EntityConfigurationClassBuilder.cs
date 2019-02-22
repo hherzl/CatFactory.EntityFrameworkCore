@@ -4,7 +4,6 @@ using CatFactory.CodeFactory;
 using CatFactory.Collections;
 using CatFactory.NetCore;
 using CatFactory.NetCore.CodeFactory;
-using CatFactory.NetCore.ObjectOrientedProgramming;
 using CatFactory.ObjectOrientedProgramming;
 using CatFactory.ObjectRelationalMapping;
 
@@ -22,7 +21,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     "Microsoft.EntityFrameworkCore.Metadata.Builders"
                 },
                 AccessModifier = AccessModifier.Public,
-                Name = project.GetEntityConfigurationName(table)
+                Name = project.GetEntityConfigurationName(table),
+                DbObject = table
             };
 
             definition.Namespaces.AddUnique(project.GetEntityLayerNamespace(project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema));
@@ -63,12 +63,12 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                 if (table.PrimaryKey.Key.Count == 1)
                 {
-                    configLines.Add(new CodeLine("builder.HasKey(p => p.{0});", definition.NamingConvention.GetPropertyName(table.PrimaryKey.Key[0])));
+                    configLines.Add(new CodeLine("builder.HasKey(p => p.{0});", project.CodeNamingConvention.GetPropertyName(table.PrimaryKey.Key[0])));
                     configLines.Add(new CodeLine());
                 }
                 else if (table.PrimaryKey.Key.Count > 1)
                 {
-                    configLines.Add(new CodeLine("builder.HasKey(p => new {{ {0} }});", string.Join(", ", table.PrimaryKey.Key.Select(item => string.Format("p.{0}", definition.NamingConvention.GetPropertyName(item))))));
+                    configLines.Add(new CodeLine("builder.HasKey(p => new {{ {0} }});", string.Join(", ", table.PrimaryKey.Key.Select(item => string.Format("p.{0}", project.CodeNamingConvention.GetPropertyName(item))))));
                     configLines.Add(new CodeLine());
                 }
             }
@@ -76,7 +76,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             if (table.Identity != null)
             {
                 configLines.Add(new CommentLine(" Set identity for entity (auto increment)"));
-                configLines.Add(new CodeLine("builder.Property(p => p.{0}).UseSqlServerIdentityColumn();", definition.NamingConvention.GetPropertyName(table.Identity.Name)));
+                configLines.Add(new CodeLine("builder.Property(p => p.{0}).UseSqlServerIdentityColumn();", project.CodeNamingConvention.GetPropertyName(table.Identity.Name)));
                 configLines.Add(new CodeLine());
             }
 
@@ -154,12 +154,12 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                     if (unique.Key.Count == 1)
                     {
-                        configLines.Add(new CodeLine(1, ".HasIndex(p => p.{0})", definition.NamingConvention.GetPropertyName(unique.Key.First())));
+                        configLines.Add(new CodeLine(1, ".HasIndex(p => p.{0})", project.CodeNamingConvention.GetPropertyName(unique.Key.First())));
                         configLines.Add(new CodeLine(1, ".IsUnique()"));
                     }
                     else
                     {
-                        configLines.Add(new CodeLine(1, ".HasIndex(p => new {{ {0} }})", string.Join(", ", unique.Key.Select(item => string.Format("p.{0}", definition.NamingConvention.GetPropertyName(item))))));
+                        configLines.Add(new CodeLine(1, ".HasIndex(p => new {{ {0} }})", string.Join(", ", unique.Key.Select(item => string.Format("p.{0}", project.CodeNamingConvention.GetPropertyName(item))))));
                         configLines.Add(new CodeLine(1, ".IsUnique()"));
                     }
 
@@ -190,7 +190,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         configLines.Add(new CodeLine("builder"));
                         configLines.Add(new CodeLine(1, ".HasOne(p => p.{0})", foreignProperty.Name));
                         configLines.Add(new CodeLine(1, ".WithMany(b => b.{0})", project.GetNavigationPropertyName(table)));
-                        configLines.Add(new CodeLine(1, ".HasForeignKey(p => {0})", string.Format("p.{0}", definition.NamingConvention.GetPropertyName(foreignKey.Key.First()))));
+                        configLines.Add(new CodeLine(1, ".HasForeignKey(p => {0})", string.Format("p.{0}", project.CodeNamingConvention.GetPropertyName(foreignKey.Key.First()))));
                         configLines.Add(new CodeLine(1, ".HasConstraintName(\"{0}\");", foreignKey.ConstraintName));
                         configLines.Add(new CodeLine());
                     }
@@ -209,9 +209,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             return definition;
         }
 
-        public static CSharpClassDefinition GetEntityTypeConfigurationClassDefinition(this EntityFrameworkCoreProject project, IView view)
+        public static EntityConfigurationClassDefinition GetEntityConfigurationClassDefinition(this EntityFrameworkCoreProject project, IView view)
         {
-            var definition = new CSharpClassDefinition
+            var definition = new EntityConfigurationClassDefinition
             {
                 Namespaces =
                 {
@@ -224,7 +224,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 Implements =
                 {
                     string.Format("IEntityTypeConfiguration<{0}>", project.GetEntityName(view))
-                }
+                },
+                DbObject = view
             };
 
             definition.Namespaces.AddUnique(project.GetEntityLayerNamespace(project.Database.HasDefaultSchema(view) ? string.Empty : view.Schema));
@@ -249,7 +250,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 result = view.Columns.Where(item => !item.Nullable).ToList();
 
             configLines.Add(new CommentLine(" Add configuration for entity's key"));
-            configLines.Add(new CodeLine("builder.HasKey(p => new {{ {0} }});", string.Join(", ", result.Select(item => string.Format("p.{0}", definition.NamingConvention.GetPropertyName(item.Name))))));
+            configLines.Add(new CodeLine("builder.HasKey(p => new {{ {0} }});", string.Join(", ", result.Select(item => string.Format("p.{0}", project.CodeNamingConvention.GetPropertyName(item.Name))))));
             configLines.Add(new CodeLine());
 
             configLines.Add(new CommentLine(" Set configuration for columns"));

@@ -1,4 +1,7 @@
-﻿using CatFactory.SqlServer;
+﻿using System.Linq;
+using CatFactory.CodeFactory;
+using CatFactory.EntityFrameworkCore.Definitions;
+using CatFactory.SqlServer;
 using Xunit;
 
 namespace CatFactory.EntityFrameworkCore.Tests
@@ -9,7 +12,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
         public void ProjectScaffoldingForOnlineStoreDatabaseTest()
         {
             // Create database factory
-            var databaseFactory = new SqlServerDatabaseFactory(SqlServerDatabaseFactory.GetLogger())
+            var databaseFactory = new SqlServerDatabaseFactory
             {
                 DatabaseImportSettings = new DatabaseImportSettings
                 {
@@ -58,6 +61,15 @@ namespace CatFactory.EntityFrameworkCore.Tests
             project.ScaffoldingDefinition += (source, args) =>
             {
                 // Add code to perform operations with code builder instance before to create code file
+
+                if (args.CodeBuilder.ObjectDefinition is EntityConfigurationClassDefinition cast)
+                {
+                    cast.Namespaces.Add("ValueConversion");
+
+                    cast.Methods.First(item => item.Name == "Configure").Lines.Add(
+                        new TodoLine("// builder.Property(p => p.DeleteFlag).HasConversion(\"OnlineStore.Core.DataLayer.ValueConversion.BoolToStringConverters\");")
+                    );
+                }
             };
 
             project.ScaffoldedDefinition += (source, args) =>
@@ -68,7 +80,9 @@ namespace CatFactory.EntityFrameworkCore.Tests
             // Scaffolding =^^=
             project
                 .ScaffoldEntityLayer()
-                .ScaffoldDataLayer();
+                .ScaffoldValueConversion()
+                .ScaffoldDataLayer()
+                ;
         }
 
         [Fact]
