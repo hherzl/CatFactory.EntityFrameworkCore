@@ -13,6 +13,7 @@
 
 * Core package update
 * Fix in project scaffolding events
+* Addition of parameters in GetAll methods for views
 
 Quick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory
 </PackageReleaseNotes>

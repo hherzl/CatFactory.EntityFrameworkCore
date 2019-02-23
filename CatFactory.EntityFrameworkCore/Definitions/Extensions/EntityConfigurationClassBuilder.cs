@@ -116,12 +116,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
                 else
                 {
-                    var lines = new List<string>
-                    {
-                        string.Format("builder.Ignore(p => p.{0})", table.GetPropertyNameHack(column))
-                    };
-
-                    configLines.Add(new CodeLine("{0};", string.Join(".", lines)));
+                    configLines.Add(new CodeLine("builder.Ignore(p => p.{0});", table.GetPropertyNameHack(column)));
                 }
             }
 
@@ -176,14 +171,10 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 {
                     var foreignTable = project.Database.FindTable(foreignKey.References);
 
-                    if (foreignTable == null)
+                    if (foreignTable == null || foreignKey.Key.Count == 0)
                         continue;
 
-                    if (foreignKey.Key.Count == 0)
-                    {
-                        continue;
-                    }
-                    else if (foreignKey.Key.Count == 1)
+                    if (foreignKey.Key.Count == 1)
                     {
                         var foreignProperty = foreignKey.GetParentNavigationProperty(foreignTable, project);
 
@@ -242,7 +233,12 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             configLines.Add(new CodeLine());
 
-            var primaryKeys = project.Database.Tables.Where(item => item.PrimaryKey != null).Select(item => item.GetColumnsFromConstraint(item.PrimaryKey).Select(c => c.Name).First()).ToList();
+            var primaryKeys = project
+                .Database
+                .Tables
+                .Where(item => item.PrimaryKey != null)
+                .Select(item => item.GetColumnsFromConstraint(item.PrimaryKey).Select(c => c.Name).First())
+                .ToList();
 
             var result = view.Columns.Where(item => primaryKeys.Contains(item.Name)).ToList();
 
