@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Linq;
 using CatFactory.CodeFactory;
 using CatFactory.CodeFactory.Scaffolding;
-using CatFactory.EntityFrameworkCore.Definitions;
 using CatFactory.NetCore.CodeFactory;
 using CatFactory.NetCore.ObjectOrientedProgramming;
 using CatFactory.ObjectOrientedProgramming;
@@ -62,11 +61,11 @@ namespace CatFactory.EntityFrameworkCore
                 .ToList();
         }
 
-        public void Scaffold(IObjectDefinition objectDefinition, string outputDirectory, string subdirectory)
+        public void Scaffold(IObjectDefinition objectDefinition, string outputDirectory, string subdirectory = "")
         {
-            ICodeBuilder codeBuilder = null;
+            var codeBuilder = default(ICodeBuilder);
 
-            var selection = this.GetSelection(objectDefinition.DbObject);
+            var selection = objectDefinition.DbObject == null ? this.GlobalSelection() : this.GetSelection(objectDefinition.DbObject);
 
             if (objectDefinition is CSharpClassDefinition)
             {
@@ -89,169 +88,9 @@ namespace CatFactory.EntityFrameworkCore
 
             OnScaffoldingDefinition(new ScaffoldingDefinitionEventArgs(Logger, codeBuilder));
 
-            codeBuilder.CreateFile();
+            codeBuilder.CreateFile(subdirectory: subdirectory);
 
             OnScaffoldedDefinition(new ScaffoldedDefinitionEventArgs(Logger, codeBuilder));
-        }
-
-        public override void Scaffold()
-        {
-            foreach (var definition in ObjectDefinitions)
-            {
-                ICodeBuilder codeBuilder = null;
-
-                if (definition is AuditEntityInterfaceDefinition)
-                {
-                    codeBuilder = new CSharpInterfaceBuilder
-                    {
-                        OutputDirectory = this.GetEntityLayerDirectory(),
-                        ForceOverwrite = this.GlobalSelection().Settings.ForceOverwrite,
-                        ObjectDefinition = definition
-                    };
-
-                    OnScaffoldingDefinition(new ScaffoldingDefinitionEventArgs(Logger, codeBuilder));
-
-                    codeBuilder.CreateFile();
-
-                    OnScaffoldedDefinition(new ScaffoldedDefinitionEventArgs(Logger, codeBuilder));
-                }
-
-                else if (definition is EntityInterfaceDefinition)
-                {
-                    codeBuilder = new CSharpInterfaceBuilder
-                    {
-                        OutputDirectory = this.GetEntityLayerDirectory(),
-                        ForceOverwrite = this.GlobalSelection().Settings.ForceOverwrite,
-                        ObjectDefinition = definition
-                    };
-
-                    OnScaffoldingDefinition(new ScaffoldingDefinitionEventArgs(Logger, codeBuilder));
-
-                    codeBuilder.CreateFile();
-
-                    OnScaffoldedDefinition(new ScaffoldedDefinitionEventArgs(Logger, codeBuilder));
-                }
-                else if (definition is EntityClassDefinition)
-                {
-                    codeBuilder = new CSharpClassBuilder
-                    {
-                        OutputDirectory = this.GetEntityLayerDirectory(),
-                        ForceOverwrite = this.GlobalSelection().Settings.ForceOverwrite,
-                        ObjectDefinition = definition
-                    };
-
-                    OnScaffoldingDefinition(new ScaffoldingDefinitionEventArgs(Logger, codeBuilder));
-
-                    codeBuilder.CreateFile(Database.HasDefaultSchema(definition.DbObject) ? "" : definition.DbObject.Schema);
-
-                    OnScaffoldedDefinition(new ScaffoldedDefinitionEventArgs(Logger, codeBuilder));
-                }
-                else if (definition is EntityConfigurationClassDefinition)
-                {
-                    codeBuilder = new CSharpClassBuilder
-                    {
-                        OutputDirectory = this.GetDataLayerConfigurationsDirectory(),
-                        ForceOverwrite = this.GlobalSelection().Settings.ForceOverwrite,
-                        ObjectDefinition = definition
-                    };
-
-                    OnScaffoldingDefinition(new ScaffoldingDefinitionEventArgs(Logger, codeBuilder));
-
-                    codeBuilder.CreateFile(Database.HasDefaultSchema(definition.DbObject) ? "" : definition.DbObject.Schema);
-
-                    OnScaffoldedDefinition(new ScaffoldedDefinitionEventArgs(Logger, codeBuilder));
-                }
-                else if (definition is DbContextClassDefinition)
-                {
-                    codeBuilder = new CSharpClassBuilder
-                    {
-                        OutputDirectory = this.GetDataLayerDirectory(),
-                        ForceOverwrite = this.GlobalSelection().Settings.ForceOverwrite,
-                        ObjectDefinition = definition
-                    };
-
-                    OnScaffoldingDefinition(new ScaffoldingDefinitionEventArgs(Logger, codeBuilder));
-
-                    codeBuilder.CreateFile();
-
-                    OnScaffoldedDefinition(new ScaffoldedDefinitionEventArgs(Logger, codeBuilder));
-                }
-                else if (definition is CSharpInterfaceDefinition)
-                {
-                    codeBuilder = new CSharpInterfaceBuilder
-                    {
-                        OutputDirectory = this.GetDataLayerContractsDirectory(),
-                        ForceOverwrite = this.GlobalSelection().Settings.ForceOverwrite,
-                        ObjectDefinition = definition
-                    };
-
-                    OnScaffoldingDefinition(new ScaffoldingDefinitionEventArgs(Logger, codeBuilder));
-
-                    codeBuilder.CreateFile();
-
-                    OnScaffoldedDefinition(new ScaffoldedDefinitionEventArgs(Logger, codeBuilder));
-                }
-                else if (definition is DataContractClassDefinition)
-                {
-                    codeBuilder = new CSharpClassBuilder
-                    {
-                        OutputDirectory = this.GetDataLayerDataContractsDirectory(),
-                        ForceOverwrite = this.GlobalSelection().Settings.ForceOverwrite,
-                        ObjectDefinition = definition
-                    };
-
-                    OnScaffoldingDefinition(new ScaffoldingDefinitionEventArgs(Logger, codeBuilder));
-
-                    codeBuilder.CreateFile();
-
-                    OnScaffoldedDefinition(new ScaffoldedDefinitionEventArgs(Logger, codeBuilder));
-                }
-                else if (definition is RepositoryExtensionsClassDefinition)
-                {
-                    codeBuilder = new CSharpClassBuilder
-                    {
-                        OutputDirectory = this.GetDataLayerRepositoriesDirectory(),
-                        ForceOverwrite = this.GlobalSelection().Settings.ForceOverwrite,
-                        ObjectDefinition = definition
-                    };
-
-                    OnScaffoldingDefinition(new ScaffoldingDefinitionEventArgs(Logger, codeBuilder));
-
-                    codeBuilder.CreateFile();
-
-                    OnScaffoldedDefinition(new ScaffoldedDefinitionEventArgs(Logger, codeBuilder));
-                }
-                else if (definition is RepositoryBaseClassDefinition)
-                {
-                    codeBuilder = new CSharpClassBuilder
-                    {
-                        OutputDirectory = this.GetDataLayerRepositoriesDirectory(),
-                        ForceOverwrite = this.GlobalSelection().Settings.ForceOverwrite,
-                        ObjectDefinition = definition
-                    };
-
-                    OnScaffoldingDefinition(new ScaffoldingDefinitionEventArgs(Logger, codeBuilder));
-
-                    codeBuilder.CreateFile();
-
-                    OnScaffoldedDefinition(new ScaffoldedDefinitionEventArgs(Logger, codeBuilder));
-                }
-                else if (definition is RepositoryClassDefinition)
-                {
-                    codeBuilder = new CSharpClassBuilder
-                    {
-                        OutputDirectory = this.GetDataLayerRepositoriesDirectory(),
-                        ForceOverwrite = this.GlobalSelection().Settings.ForceOverwrite,
-                        ObjectDefinition = definition
-                    };
-
-                    OnScaffoldingDefinition(new ScaffoldingDefinitionEventArgs(Logger, codeBuilder));
-
-                    codeBuilder.CreateFile();
-
-                    OnScaffoldedDefinition(new ScaffoldedDefinitionEventArgs(Logger, codeBuilder));
-                }
-            }
         }
 
         private IEnumerable<DbObject> GetDbObjects(Database database, string schema)

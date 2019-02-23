@@ -67,7 +67,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
                     cast.Namespaces.Add("ValueConversion");
 
                     cast.Methods.First(item => item.Name == "Configure").Lines.Add(
-                        new TodoLine("// builder.Property(p => p.DeleteFlag).HasConversion(\"OnlineStore.Core.DataLayer.ValueConversion.BoolToStringConverters\");")
+                        new TodoLine("builder.Property(p => p.DeleteFlag).HasConversion(\"OnlineStore.DataLayer.ValueConversion.BoolToStringConverters.bYN\");")
                     );
                 }
             };

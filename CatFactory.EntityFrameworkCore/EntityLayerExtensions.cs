@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using CatFactory.EntityFrameworkCore.Definitions.Extensions;
-using CatFactory.NetCore.CodeFactory;
-using CatFactory.ObjectOrientedProgramming;
+﻿using CatFactory.EntityFrameworkCore.Definitions.Extensions;
+using CatFactory.ObjectRelationalMapping;
 
 namespace CatFactory.EntityFrameworkCore
 {
@@ -17,24 +15,14 @@ namespace CatFactory.EntityFrameworkCore
 
         private static void ScaffoldEntityInterface(EntityFrameworkCoreProject project)
         {
-            var selection = project.GlobalSelection();
+            project.Scaffold(project.GetEntityInterfaceDefinition(), project.GetEntityLayerDirectory());
 
-            project.ObjectDefinitions = new List<IObjectDefinition>
-            {
-                project.GetEntityInterfaceDefinition(),
-                project.GetAuditEntityInterfaceDefinition()
-            };
-
-            //CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, project.GetEntityInterfaceDefinition());
-
-            //if (selection.Settings.AuditEntity != null)
-            //    CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, project.GetAuditEntityInterfaceDefinition());
+            if (project.GlobalSelection().Settings.AuditEntity != null)
+                project.Scaffold(project.GetAuditEntityInterfaceDefinition(), project.GetEntityLayerDirectory());
         }
 
         private static EntityFrameworkCoreProject ScaffoldEntities(this EntityFrameworkCoreProject project)
         {
-            project.ObjectDefinitions = new List<IObjectDefinition>();
-
             foreach (var table in project.Database.Tables)
             {
                 var selection = project.GetSelection(table);
@@ -44,19 +32,7 @@ namespace CatFactory.EntityFrameworkCore
                 if (selection.Settings.UseDataAnnotations)
                     definition.AddDataAnnotations(table, project);
 
-                project.ObjectDefinitions.Add(definition);
-
-                //var selection = project.GetSelection(table);
-
-                //var definition = project.GetEntityClassDefinition(table);
-
-                //if (selection.Settings.UseDataAnnotations)
-                //    definition.AddDataAnnotations(table, project);
-
-                //if (project.Database.HasDefaultSchema(table))
-                //    CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, definition);
-                //else
-                //    CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(table.Schema), selection.Settings.ForceOverwrite, definition);
+                project.Scaffold(definition, project.GetEntityLayerDirectory(), project.Database.HasDefaultSchema(table) ? "" : table.Schema);
             }
 
             foreach (var view in project.Database.Views)
@@ -68,52 +44,8 @@ namespace CatFactory.EntityFrameworkCore
                 if (selection.Settings.UseDataAnnotations)
                     definition.AddDataAnnotations(view, project);
 
-                project.ObjectDefinitions.Add(definition);
-
-                //var selection = project.GetSelection(table);
-
-                //var definition = project.GetEntityClassDefinition(table);
-
-                //if (selection.Settings.UseDataAnnotations)
-                //    definition.AddDataAnnotations(table, project);
-
-                //if (project.Database.HasDefaultSchema(table))
-                //    CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, definition);
-                //else
-                //    CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(table.Schema), selection.Settings.ForceOverwrite, definition);
+                project.Scaffold(definition, project.GetEntityLayerDirectory(), project.Database.HasDefaultSchema(view) ? "" : view.Schema);
             }
-
-            project.Scaffold();
-
-            //foreach (var table in project.Database.Tables)
-            //{
-            //    var selection = project.GetSelection(table);
-
-            //    var definition = project.GetEntityClassDefinition(table);
-
-            //    if (selection.Settings.UseDataAnnotations)
-            //        definition.AddDataAnnotations(table, project);
-
-            //    if (project.Database.HasDefaultSchema(table))
-            //        CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, definition);
-            //    else
-            //        CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(table.Schema), selection.Settings.ForceOverwrite, definition);
-            //}
-
-            //foreach (var view in project.Database.Views)
-            //{
-            //    var selection = project.GetSelection(view);
-
-            //    var definition = project.GetEntityClassDefinition(view);
-
-            //    if (selection.Settings.UseDataAnnotations)
-            //        definition.AddDataAnnotations(view, project);
-
-            //    if (project.Database.HasDefaultSchema(view))
-            //        CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(), selection.Settings.ForceOverwrite, definition);
-            //    else
-            //        CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetEntityLayerDirectory(view.Schema), selection.Settings.ForceOverwrite, definition);
-            //}
 
             return project;
         }
