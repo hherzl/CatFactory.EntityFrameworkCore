@@ -19,6 +19,9 @@ namespace CatFactory.EntityFrameworkCore
         public static string GetEntityName(this EntityFrameworkCoreProject project, IDbObject dbObject)
             => project.CodeNamingConvention.GetClassName(dbObject.Name);
 
+        public static string GetEntityResultName(this EntityFrameworkCoreProject project, IDbObject dbObject)
+            => string.Format("{0}Result", project.CodeNamingConvention.GetClassName(dbObject.Name));
+
         public static string GetPluralName(this EntityFrameworkCoreProject project, IDbObject dbObject)
             => project.NamingService.Pluralize(project.GetEntityName(dbObject));
 

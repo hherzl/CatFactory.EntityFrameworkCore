@@ -14,6 +14,8 @@
 * Core package update
 * Fix in project scaffolding events
 * Addition of parameters in GetAll methods for views
+* Addition of support for table functions
+* Addition of support for stored procedures
 
 Quick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory
 </PackageReleaseNotes>

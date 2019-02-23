@@ -130,9 +130,31 @@ namespace CatFactory.EntityFrameworkCore.Tests
         public void ProjectScaffoldingForNorthwindDatabaseTest()
         {
             // Import database
-            var database = SqlServerDatabaseFactory
-                .Import(SqlServerDatabaseFactory.GetLogger(), "server=(local);database=Northwind;integrated security=yes;", "dbo.sysdiagrams");
+            var factory = new SqlServerDatabaseFactory
+            {
+                DatabaseImportSettings = new DatabaseImportSettings
+                {
+                    ConnectionString = "server=(local);database=Northwind;integrated security=yes;",
+                    ImportScalarFunctions = true,
+                    ImportTableFunctions = true,
+                    ImportStoredProcedures = true,
+                    Exclusions =
+                    {
+                        "dbo.sysdiagrams",
+                        "dbo.sp_alterdiagram",
+                        "dbo.sp_creatediagram",
+                        "dbo.sp_dropdiagram",
+                        "dbo.sp_helpdiagramdefinition",
+                        "dbo.sp_helpdiagrams",
+                        "dbo.sp_renamediagram",
+                        "dbo.sp_upgraddiagrams",
+                        "dbo.fn_diagramobjects"
+                    }
+                }
+            };
 
+            var database = factory.Import();
+            
             // Create instance of Entity Framework Core Project
             var project = new EntityFrameworkCoreProject
             {

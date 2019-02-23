@@ -208,6 +208,32 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     lines.Add(new CodeLine(";"));
                     lines.Add(new CodeLine());
                 }
+
+                if (project.Database.TableFunctions.Count > 0)
+                {
+                    lines.Add(new CommentLine(" Register query types for table functions"));
+                    lines.Add(new CodeLine());
+
+                    foreach (var view in project.Database.TableFunctions)
+                    {
+                        lines.Add(new CodeLine("modelBuilder.Query<{0}>();", project.GetEntityResultName(view)));
+                    }
+
+                    lines.Add(new CodeLine());
+                }
+
+                if (project.Database.StoredProcedures.Count > 0)
+                {
+                    lines.Add(new CommentLine(" Register query types for stored procedures"));
+                    lines.Add(new CodeLine());
+
+                    foreach (var view in project.Database.StoredProcedures)
+                    {
+                        lines.Add(new CodeLine("modelBuilder.Query<{0}>();", project.GetEntityResultName(view)));
+                    }
+
+                    lines.Add(new CodeLine());
+                }
             }
 
             lines.Add(new CodeLine("base.OnModelCreating(modelBuilder);"));

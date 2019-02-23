@@ -5,6 +5,7 @@ using CatFactory.NetCore;
 using CatFactory.NetCore.ObjectOrientedProgramming;
 using CatFactory.ObjectOrientedProgramming;
 using CatFactory.ObjectRelationalMapping;
+using CatFactory.ObjectRelationalMapping.Programmability;
 
 namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 {
@@ -235,6 +236,114 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     AccessModifier = AccessModifier.Public
                 });
             }
+
+            if (projectSelection.Settings.SimplifyDataTypes)
+                definition.SimplifyDataTypes();
+
+            return definition;
+        }
+
+        public static EntityClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, TableFunction tableFunction)
+        {
+            var definition = new EntityClassDefinition
+            {
+                Namespaces =
+                {
+                    "System"
+                },
+                Namespace = project.Database.HasDefaultSchema(tableFunction) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(tableFunction.Schema),
+                AccessModifier = AccessModifier.Public,
+                Name = project.GetEntityResultName(tableFunction),
+                IsPartial = true,
+                Constructors =
+                {
+                    new ClassConstructorDefinition
+                    {
+                        AccessModifier = AccessModifier.Public
+                    }
+                },
+                DbObject = tableFunction
+            };
+
+            if (!string.IsNullOrEmpty(tableFunction.Description))
+                definition.Documentation.Summary = tableFunction.Description;
+
+            var projectSelection = project.GetSelection(tableFunction);
+
+            foreach (var column in tableFunction.Columns)
+            {
+                var propertyType = string.Empty;
+
+                if (project.Database.HasTypeMappedToClr(column))
+                {
+                    var clrType = project.Database.GetClrMapForType(column);
+
+                    propertyType = clrType.AllowClrNullable ? string.Format("{0}?", clrType.GetClrType().Name) : clrType.GetClrType().Name;
+                }
+                else
+                {
+                    propertyType = "object";
+                }
+
+                definition.Properties.Add(new PropertyDefinition(propertyType, column.GetPropertyName())
+                {
+                    AccessModifier = AccessModifier.Public
+                });
+            }
+
+            if (projectSelection.Settings.SimplifyDataTypes)
+                definition.SimplifyDataTypes();
+
+            return definition;
+        }
+
+        public static EntityClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, StoredProcedure tableFunction)
+        {
+            var definition = new EntityClassDefinition
+            {
+                Namespaces =
+                {
+                    "System"
+                },
+                Namespace = project.Database.HasDefaultSchema(tableFunction) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(tableFunction.Schema),
+                AccessModifier = AccessModifier.Public,
+                Name = project.GetEntityResultName(tableFunction),
+                IsPartial = true,
+                Constructors =
+                {
+                    new ClassConstructorDefinition
+                    {
+                        AccessModifier = AccessModifier.Public
+                    }
+                },
+                DbObject = tableFunction
+            };
+
+            if (!string.IsNullOrEmpty(tableFunction.Description))
+                definition.Documentation.Summary = tableFunction.Description;
+
+            var projectSelection = project.GetSelection(tableFunction);
+
+            //foreach (var column in tableFunction.Columns)
+            //{
+            //    var propertyType = string.Empty;
+
+            //    if (project.Database.HasTypeMappedToClr(column))
+            //    {
+            //        var clrType = project.Database.GetClrMapForType(column);
+
+            //        propertyType = clrType.AllowClrNullable ? string.Format("{0}?", clrType.GetClrType().Name) : clrType.GetClrType().Name;
+            //    }
+            //    else
+            //    {
+            //        propertyType = "object";
+            //    }
+
+            //    definition.Properties.Add(new PropertyDefinition(propertyType, column.GetPropertyName())
+            //    {
+            //        AccessModifier = AccessModifier.Public
+            //    });
+            //}
 
             if (projectSelection.Settings.SimplifyDataTypes)
                 definition.SimplifyDataTypes();

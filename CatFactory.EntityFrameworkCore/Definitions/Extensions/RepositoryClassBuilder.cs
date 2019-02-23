@@ -9,6 +9,7 @@ using CatFactory.NetCore.CodeFactory;
 using CatFactory.NetCore.ObjectOrientedProgramming;
 using CatFactory.ObjectOrientedProgramming;
 using CatFactory.ObjectRelationalMapping;
+using CatFactory.ObjectRelationalMapping.Programmability;
 
 namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 {
@@ -23,6 +24,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 Namespaces =
                 {
                     "System",
+                    "System.Collections.Generic",
+                    "System.Data.SqlClient",
                     "System.Linq",
                     "System.Threading.Tasks",
                     "Microsoft.EntityFrameworkCore"
@@ -105,6 +108,40 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                 if (projectSelection.Settings.EntitiesWithDataContracts)
                     definition.Namespaces.AddUnique(project.GetDataLayerDataContractsNamespace());
+
+                definition.Methods.Add(GetGetAllMethod(projectFeature, view));
+
+                if (projectSelection.Settings.SimplifyDataTypes)
+                    definition.SimplifyDataTypes();
+            }
+
+            var tableFunctions = projectFeature
+                .Project
+                .Database
+                .TableFunctions
+                .Where(item => projectFeature.DbObjects.Select(dbo => dbo.FullName).Contains(item.FullName))
+                .ToList();
+
+            foreach (var view in tableFunctions)
+            {
+                var projectSelection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(view);
+
+                definition.Methods.Add(GetGetAllMethod(projectFeature, view));
+
+                if (projectSelection.Settings.SimplifyDataTypes)
+                    definition.SimplifyDataTypes();
+            }
+
+            var storedProcedures = projectFeature
+                .Project
+                .Database
+                .StoredProcedures
+                .Where(item => projectFeature.DbObjects.Select(dbo => dbo.FullName).Contains(item.FullName))
+                .ToList();
+
+            foreach (var view in storedProcedures)
+            {
+                var projectSelection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(view);
 
                 definition.Methods.Add(GetGetAllMethod(projectFeature, view));
 
@@ -433,6 +470,110 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             return new MethodDefinition(AccessModifier.Public, string.Format("IQueryable<{0}>", project.GetEntityName(view)), project.GetGetAllRepositoryMethodName(view))
             {
+                Parameters = parameters,
+                Lines = lines
+            };
+        }
+
+        private static MethodDefinition GetGetAllMethod(ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, TableFunction tableFunction)
+        {
+            var project = projectFeature.GetEntityFrameworkCoreProject();
+
+            var parameters = new List<ParameterDefinition>();
+
+            var lines = new List<ILine>()
+            {
+                new CommentLine(" Create query for table function")
+            };
+
+            lines.Add(new CodeLine("var query = new"));
+            lines.Add(new CodeLine("{"));
+            lines.Add(new CodeLine(1, "Text = \" select {0} from {1}({2}) \",", string.Join(", ", tableFunction.Columns.Select(item => item.Name)), project.Database.GetFullName(tableFunction), string.Join(", ", tableFunction.Parameters.Select(item => item.Name))));
+
+            if (tableFunction.Parameters.Count ==0)
+            {
+                lines.Add(new CodeLine(1, "Parameters = new object[] {}"));
+            }
+            else
+            {
+                lines.Add(new CodeLine(1, "Parameters = new[]"));
+                lines.Add(new CodeLine(1, "{"));
+
+                foreach (var parameter in tableFunction.Parameters)
+                {
+                    lines.Add(new CodeLine(2, "new SqlParameter(\"{0}\", {1}),", parameter.Name, project.CodeNamingConvention.GetParameterName(parameter.Name)));
+
+                    parameters.Add(new ParameterDefinition(project.Database.ResolveDatabaseType(parameter), project.CodeNamingConvention.GetParameterName(parameter.Name)));
+                }
+
+                lines.Add(new CodeLine(1, "}"));
+            }
+
+            lines.Add(new CodeLine("};"));
+
+            lines.Add(new CodeLine());
+
+            lines.Add(new ReturnLine("await DbContext"));
+            lines.Add(new CodeLine(1, ".Query<{0}>()", project.GetEntityResultName(tableFunction)));
+            lines.Add(new CodeLine(1, ".FromSql(query.Text, query.Parameters)"));
+            lines.Add(new CodeLine(1, ".ToListAsync();"));
+
+            return new MethodDefinition(AccessModifier.Public, string.Format("Task<IEnumerable<{0}>>", project.GetEntityResultName(tableFunction)), project.GetGetAllRepositoryMethodName(tableFunction))
+            {
+                IsAsync = true,
+                Parameters = parameters,
+                Lines = lines
+            };
+        }
+
+        private static MethodDefinition GetGetAllMethod(ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, StoredProcedure storedProcedure)
+        {
+            var project = projectFeature.GetEntityFrameworkCoreProject();
+
+            var parameters = new List<ParameterDefinition>();
+
+            var lines = new List<ILine>()
+            {
+                new CommentLine(" Create query for table function")
+            };
+
+            lines.Add(new CodeLine("var query = new"));
+            lines.Add(new CodeLine("{"));
+            lines.Add(new CodeLine(1, "Text = \" exec {0} {1} \",", project.Database.GetFullName(storedProcedure), string.Join(", ", storedProcedure.Parameters.Select(item => item.Name))));
+
+
+
+            if (storedProcedure.Parameters.Count == 0)
+            {
+                lines.Add(new CodeLine(1, "Parameters = new object[] {}"));
+            }
+            else
+            {
+                lines.Add(new CodeLine(1, "Parameters = new[]"));
+                lines.Add(new CodeLine(1, "{"));
+
+                foreach (var parameter in storedProcedure.Parameters)
+                {
+                    lines.Add(new CodeLine(2, "new SqlParameter(\"{0}\", {1}),", parameter.Name, project.CodeNamingConvention.GetParameterName(parameter.Name)));
+
+                    parameters.Add(new ParameterDefinition(project.Database.ResolveDatabaseType(parameter), project.CodeNamingConvention.GetParameterName(parameter.Name)));
+                }
+
+                lines.Add(new CodeLine(1, "}"));
+            }
+
+            lines.Add(new CodeLine("};"));
+
+            lines.Add(new CodeLine());
+
+            lines.Add(new ReturnLine("await DbContext"));
+            lines.Add(new CodeLine(1, ".Query<{0}>()", project.GetEntityResultName(storedProcedure)));
+            lines.Add(new CodeLine(1, ".FromSql(query.Text, query.Parameters)"));
+            lines.Add(new CodeLine(1, ".ToListAsync();"));
+
+            return new MethodDefinition(AccessModifier.Public, string.Format("Task<IEnumerable<{0}>>", project.GetEntityResultName(storedProcedure)), project.GetGetAllRepositoryMethodName(storedProcedure))
+            {
+                IsAsync = true,
                 Parameters = parameters,
                 Lines = lines
             };
