@@ -102,7 +102,7 @@ namespace CatFactory.EntityFrameworkCore
                 repositoryInterfaceDefinition.Namespace = project.GetDataLayerContractsNamespace();
                 repositoryInterfaceDefinition.Implements.Add("IRepository");
 
-                project.Scaffold(repositoryInterfaceDefinition, project.GetDataLayerRepositoriesDirectory());
+                project.Scaffold(repositoryInterfaceDefinition, project.GetDataLayerContractsDirectory());
             }
         }
 

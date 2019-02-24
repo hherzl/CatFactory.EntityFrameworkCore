@@ -272,20 +272,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             foreach (var column in tableFunction.Columns)
             {
-                var propertyType = string.Empty;
+                var type = project.Database.ResolveDatabaseTypeHack(column.Type);
 
-                if (project.Database.HasTypeMappedToClr(column))
-                {
-                    var clrType = project.Database.GetClrMapForType(column);
-
-                    propertyType = clrType.AllowClrNullable ? string.Format("{0}?", clrType.GetClrType().Name) : clrType.GetClrType().Name;
-                }
-                else
-                {
-                    propertyType = "object";
-                }
-
-                definition.Properties.Add(new PropertyDefinition(propertyType, column.GetPropertyName())
+                definition.Properties.Add(new PropertyDefinition(type, column.GetPropertyName())
                 {
                     AccessModifier = AccessModifier.Public
                 });
@@ -297,7 +286,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             return definition;
         }
 
-        public static EntityClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, StoredProcedure tableFunction)
+        public static EntityClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, StoredProcedure storedProcedure)
         {
             var definition = new EntityClassDefinition
             {
@@ -305,9 +294,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 {
                     "System"
                 },
-                Namespace = project.Database.HasDefaultSchema(tableFunction) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(tableFunction.Schema),
+                Namespace = project.Database.HasDefaultSchema(storedProcedure) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(storedProcedure.Schema),
                 AccessModifier = AccessModifier.Public,
-                Name = project.GetEntityResultName(tableFunction),
+                Name = project.GetEntityResultName(storedProcedure),
                 IsPartial = true,
                 Constructors =
                 {
@@ -316,34 +305,29 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         AccessModifier = AccessModifier.Public
                     }
                 },
-                DbObject = tableFunction
+                DbObject = storedProcedure
             };
 
-            if (!string.IsNullOrEmpty(tableFunction.Description))
-                definition.Documentation.Summary = tableFunction.Description;
+            if (!string.IsNullOrEmpty(storedProcedure.Description))
+                definition.Documentation.Summary = storedProcedure.Description;
 
-            var projectSelection = project.GetSelection(tableFunction);
+            var projectSelection = project.GetSelection(storedProcedure);
 
-            //foreach (var column in tableFunction.Columns)
-            //{
-            //    var propertyType = string.Empty;
+            if (storedProcedure.FirstResultSetsForObject.Count == 0)
+            {
+            }
+            else
+            {
+                foreach (var property in storedProcedure.FirstResultSetsForObject)
+                {
+                    var type = project.Database.ResolveDatabaseTypeHack(property.SystemTypeName);
 
-            //    if (project.Database.HasTypeMappedToClr(column))
-            //    {
-            //        var clrType = project.Database.GetClrMapForType(column);
-
-            //        propertyType = clrType.AllowClrNullable ? string.Format("{0}?", clrType.GetClrType().Name) : clrType.GetClrType().Name;
-            //    }
-            //    else
-            //    {
-            //        propertyType = "object";
-            //    }
-
-            //    definition.Properties.Add(new PropertyDefinition(propertyType, column.GetPropertyName())
-            //    {
-            //        AccessModifier = AccessModifier.Public
-            //    });
-            //}
+                    definition.Properties.Add(new PropertyDefinition(type, project.CodeNamingConvention.GetPropertyName(property.Name))
+                    {
+                        AccessModifier = AccessModifier.Public
+                    });
+                }
+            }
 
             if (projectSelection.Settings.SimplifyDataTypes)
                 definition.SimplifyDataTypes();

@@ -541,8 +541,6 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             lines.Add(new CodeLine("{"));
             lines.Add(new CodeLine(1, "Text = \" exec {0} {1} \",", project.Database.GetFullName(storedProcedure), string.Join(", ", storedProcedure.Parameters.Select(item => item.Name))));
 
-
-
             if (storedProcedure.Parameters.Count == 0)
             {
                 lines.Add(new CodeLine(1, "Parameters = new object[] {}"));
