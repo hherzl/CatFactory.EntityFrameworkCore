@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq;
 using CatFactory.CodeFactory;
 using CatFactory.CodeFactory.Scaffolding;
+using CatFactory.NetCore;
 using CatFactory.NetCore.CodeFactory;
 using CatFactory.NetCore.ObjectOrientedProgramming;
 using CatFactory.ObjectOrientedProgramming;
@@ -11,20 +11,16 @@ using Microsoft.Extensions.Logging;
 
 namespace CatFactory.EntityFrameworkCore
 {
-    public class EntityFrameworkCoreProject : Project<EntityFrameworkCoreProjectSettings>
+    public class EntityFrameworkCoreProject : CSharpProject<EntityFrameworkCoreProjectSettings>
     {
         public EntityFrameworkCoreProject()
             : base()
         {
-            CodeNamingConvention = new DotNetNamingConvention();
-            NamingService = new NamingService();
         }
 
         public EntityFrameworkCoreProject(ILogger<EntityFrameworkCoreProject> logger)
             : base(logger)
         {
-            CodeNamingConvention = new DotNetNamingConvention();
-            NamingService = new NamingService();
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -57,7 +53,7 @@ namespace CatFactory.EntityFrameworkCore
                 .DbObjects
                 .Select(item => item.Schema)
                 .Distinct()
-                .Select(item => new ProjectFeature<EntityFrameworkCoreProjectSettings>(item, GetDbObjects(Database, item), this))
+                .Select(item => new ProjectFeature<EntityFrameworkCoreProjectSettings>(item, GetDbObjectsBySchema(item), this))
                 .ToList();
         }
 
@@ -91,49 +87,6 @@ namespace CatFactory.EntityFrameworkCore
             codeBuilder.CreateFile(subdirectory: subdirectory);
 
             OnScaffoldedDefinition(new ScaffoldedDefinitionEventArgs(Logger, codeBuilder));
-        }
-
-        private IEnumerable<DbObject> GetDbObjects(Database database, string schema)
-        {
-            foreach (var table in Database.Tables.Where(item => item.Schema == schema))
-            {
-                yield return new DbObject(table.Schema, table.Name)
-                {
-                    Type = "Table"
-                };
-            }
-
-            foreach (var view in Database.Views.Where(item => item.Schema == schema))
-            {
-                yield return new DbObject(view.Schema, view.Name)
-                {
-                    Type = "View"
-                };
-            }
-
-            foreach (var scalarFunction in Database.ScalarFunctions.Where(item => item.Schema == schema))
-            {
-                yield return new DbObject(scalarFunction.Schema, scalarFunction.Name)
-                {
-                    Type = "ScalarFunction"
-                };
-            }
-
-            foreach (var tableFunction in Database.TableFunctions.Where(x => x.Schema == schema))
-            {
-                yield return new DbObject(tableFunction.Schema, tableFunction.Name)
-                {
-                    Type = "TableFunction"
-                };
-            }
-
-            foreach (var storedProcedure in Database.StoredProcedures.Where(item => item.Schema == schema))
-            {
-                yield return new DbObject(storedProcedure.Schema, storedProcedure.Name)
-                {
-                    Type = "StoredProcedure"
-                };
-            }
         }
     }
 }

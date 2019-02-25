@@ -55,14 +55,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 definition.Namespaces.AddUnique(project.GetDataLayerContractsNamespace());
             }
 
-            var tables = projectFeature
-                .Project
-                .Database
-                .Tables
-                .Where(item => projectFeature.DbObjects.Select(dbo => dbo.FullName).Contains(item.FullName))
-                .ToList();
-
-            foreach (var table in tables)
+            foreach (var table in projectFeature.GetTables())
             {
                 var projectSelection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(table);
 
@@ -95,14 +88,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     definition.SimplifyDataTypes();
             }
 
-            var views = projectFeature
-                .Project
-                .Database
-                .Views
-                .Where(item => projectFeature.DbObjects.Select(dbo => dbo.FullName).Contains(item.FullName))
-                .ToList();
-
-            foreach (var view in views)
+            foreach (var view in projectFeature.GetViews())
             {
                 var projectSelection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(view);
 
@@ -115,35 +101,21 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     definition.SimplifyDataTypes();
             }
 
-            var tableFunctions = projectFeature
-                .Project
-                .Database
-                .TableFunctions
-                .Where(item => projectFeature.DbObjects.Select(dbo => dbo.FullName).Contains(item.FullName))
-                .ToList();
-
-            foreach (var view in tableFunctions)
+            foreach (var tableFunction in projectFeature.GetTableFunctions())
             {
-                var projectSelection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(view);
+                var projectSelection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(tableFunction);
 
-                definition.Methods.Add(GetGetAllMethod(projectFeature, view));
+                definition.Methods.Add(GetGetAllMethod(projectFeature, tableFunction));
 
                 if (projectSelection.Settings.SimplifyDataTypes)
                     definition.SimplifyDataTypes();
             }
 
-            var storedProcedures = projectFeature
-                .Project
-                .Database
-                .StoredProcedures
-                .Where(item => projectFeature.DbObjects.Select(dbo => dbo.FullName).Contains(item.FullName))
-                .ToList();
-
-            foreach (var view in storedProcedures)
+            foreach (var storedProcedure in projectFeature.GetStoredProcedures())
             {
-                var projectSelection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(view);
+                var projectSelection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(storedProcedure);
 
-                definition.Methods.Add(GetGetAllMethod(projectFeature, view));
+                definition.Methods.Add(GetGetAllMethod(projectFeature, storedProcedure));
 
                 if (projectSelection.Settings.SimplifyDataTypes)
                     definition.SimplifyDataTypes();
@@ -181,7 +153,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                 foreach (var column in table.Columns)
                 {
-                    var propertyName = column.GetPropertyName();
+                    var propertyName = project.GetPropertyName(table, column);
 
                     dataContractPropertiesSets.Add(new
                     {
@@ -205,9 +177,11 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                     foreach (var column in foreignTable?.GetColumnsWithNoPrimaryKey())
                     {
-                        if (dataContractPropertiesSets.Where(item => string.Format("{0}.{1}", item.ObjectSource, item.PropertySource) == string.Format("{0}.{1}", entityAlias, column.GetPropertyName())).Count() == 0)
+                        var propertyName = project.GetPropertyName(foreignTable, column);
+
+                        if (dataContractPropertiesSets.Where(item => string.Format("{0}.{1}", item.ObjectSource, item.PropertySource) == string.Format("{0}.{1}", entityAlias, propertyName)).Count() == 0)
                         {
-                            var target = string.Format("{0}{1}", project.GetEntityName(foreignTable), column.GetPropertyName());
+                            var target = string.Format("{0}{1}", project.GetEntityName(foreignTable), propertyName);
 
                             dataContractPropertiesSets.Add(new
                             {
@@ -215,7 +189,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                                 column.Type,
                                 column.Nullable,
                                 ObjectSource = foreignKeyAlias,
-                                PropertySource = column.GetPropertyName(),
+                                PropertySource = propertyName,
                                 Target = target
                             });
                         }
@@ -287,12 +261,14 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                     if (property.IsForeign)
                     {
-                        var dbType = projectFeature.Project.Database.ResolveDatabaseType(property.Type);
+                        // todo: Add extension method to retrieve database type map by name
 
-                        if (dbType == null)
+                        var dbTypeMap = projectFeature.Project.Database.DatabaseTypeMaps.FirstOrDefault(item => item.DatabaseType == property.Type);
+
+                        if (dbTypeMap == null)
                             throw new ObjectRelationMappingException(string.Format("There isn't mapping for '{0}' type", property.Type));
 
-                        var clrType = dbType.GetClrType();
+                        var clrType = dbTypeMap.GetClrType();
 
                         if (clrType.FullName == typeof(byte[]).FullName)
                             lines.Add(new CodeLine(2, "{0} = {1} == null ? default(byte[]) : {1}.{2},", property.Target, property.ObjectSource, property.PropertySource));
@@ -366,28 +342,28 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         {
                             lines.Add(new CommentLine(" Filter by: '{0}'", column.Name));
                             lines.Add(new CodeLine("if ({0}.HasValue)", parameterName));
-                            lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
+                            lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", project.GetPropertyName(table, column), parameterName));
                             lines.Add(new CodeLine());
                         }
                         else if (projectFeature.Project.Database.ColumnIsNumber(column))
                         {
                             lines.Add(new CommentLine(" Filter by: '{0}'", column.Name));
                             lines.Add(new CodeLine("if ({0}.HasValue)", parameterName));
-                            lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
+                            lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", project.GetPropertyName(table, column), parameterName));
                             lines.Add(new CodeLine());
                         }
                         else if (projectFeature.Project.Database.ColumnIsString(column))
                         {
                             lines.Add(new CommentLine(" Filter by: '{0}'", column.Name));
                             lines.Add(new CodeLine("if (!string.IsNullOrEmpty({0}))", parameterName));
-                            lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
+                            lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", project.GetPropertyName(table, column), parameterName));
                             lines.Add(new CodeLine());
                         }
                         else
                         {
                             lines.Add(new CommentLine(" Filter by: '{0}'", column.Name));
                             lines.Add(new CodeLine("if ({0} != null)", parameterName));
-                            lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", column.GetPropertyName(), parameterName));
+                            lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", project.GetPropertyName(table, column), parameterName));
                             lines.Add(new CodeLine());
                         }
                     }
@@ -490,7 +466,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             lines.Add(new CodeLine("{"));
             lines.Add(new CodeLine(1, "Text = \" select {0} from {1}({2}) \",", string.Join(", ", tableFunction.Columns.Select(item => item.Name)), project.Database.GetFullName(tableFunction), string.Join(", ", tableFunction.Parameters.Select(item => item.Name))));
 
-            if (tableFunction.Parameters.Count ==0)
+            if (tableFunction.Parameters.Count == 0)
             {
                 lines.Add(new CodeLine(1, "Parameters = new object[] {}"));
             }

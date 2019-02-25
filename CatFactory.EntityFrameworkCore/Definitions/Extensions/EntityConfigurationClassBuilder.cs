@@ -92,10 +92,10 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 {
                     var lines = new List<string>
                     {
-                        string.Format("builder.Property(p => p.{0})", table.GetPropertyNameHack(column))
+                        string.Format("builder.Property(p => p.{0})", project.GetPropertyName( table, column))
                     };
 
-                    if (string.Compare(column.Name, column.GetPropertyName()) != 0)
+                    if (string.Compare(column.Name, project.GetPropertyName(table, column)) != 0)
                         lines.Add(string.Format("HasColumnName(\"{0}\")", column.Name));
 
                     if (project.Database.ColumnIsString(column))
@@ -116,7 +116,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
                 else
                 {
-                    configLines.Add(new CodeLine("builder.Ignore(p => p.{0});", table.GetPropertyNameHack(column)));
+                    configLines.Add(new CodeLine("builder.Ignore(p => p.{0});", project.GetPropertyName(table, column)));
                 }
             }
 
@@ -132,7 +132,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 {
                     configLines.Add(new CommentLine(" Set concurrency token for entity"));
                     configLines.Add(new CodeLine("builder"));
-                    configLines.Add(new CodeLine(1, ".Property(p => p.{0})", column.GetPropertyName()));
+                    configLines.Add(new CodeLine(1, ".Property(p => p.{0})", project.GetPropertyName(table, column)));
                     configLines.Add(new CodeLine(1, ".ValueGeneratedOnAddOrUpdate()"));
                     configLines.Add(new CodeLine(1, ".IsConcurrencyToken();"));
                     configLines.Add(new CodeLine());
@@ -259,10 +259,10 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 {
                     var lines = new List<string>
                     {
-                        string.Format("builder.Property(p => p.{0})" , view.GetPropertyNameHack(column))
+                        string.Format("builder.Property(p => p.{0})" , project.GetPropertyName( view, column))
                     };
 
-                    if (string.Compare(column.Name, column.GetPropertyName()) != 0)
+                    if (string.Compare(column.Name, project.GetPropertyName(view, column)) != 0)
                         lines.Add(string.Format("HasColumnName(\"{0}\")", column.Name));
 
                     if (project.Database.ColumnIsString(column))
@@ -280,7 +280,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 {
                     var lines = new List<string>
                     {
-                        string.Format("builder.Ignore(p => p.{0})", view.GetPropertyNameHack(column))
+                        string.Format("builder.Ignore(p => p.{0})", project.GetPropertyName( view, column))
                     };
 
                     configLines.Add(new CodeLine("{0};", string.Join(".", lines)));

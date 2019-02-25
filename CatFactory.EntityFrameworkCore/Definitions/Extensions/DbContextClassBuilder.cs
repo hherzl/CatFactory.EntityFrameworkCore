@@ -116,20 +116,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                 foreach (var parameter in parameters)
                 {
-                    parameterType = string.Empty;
+                    var propertyType = project.Database.ResolveDatabaseType(parameter);
 
-                    if (project.Database.HasTypeMappedToClr(parameter))
-                    {
-                        var clrType = project.Database.GetClrMapForType(parameter);
-
-                        parameterType = clrType.AllowClrNullable ? string.Format("{0}?", clrType.GetClrType().Name) : clrType.GetClrType().Name;
-                    }
-                    else
-                    {
-                        parameterType = "object";
-                    }
-
-                    method.Parameters.Add(new ParameterDefinition(parameterType, parameter.GetPropertyName()));
+                    method.Parameters.Add(new ParameterDefinition(parameterType, project.GetPropertyName(parameter)));
                 }
 
                 definition.Methods.Add(method);
@@ -164,12 +153,15 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                     if (result.Count == 0)
                     {
-                        lines.Add(new CodeLine("modelBuilder.Entity<{0}>().HasKey(e => new {{ {1} }});", project.GetEntityName(view), string.Join(", ", view.Columns.Select(item => string.Format("e.{0}", item.GetPropertyName())))));
+                        lines.Add(
+                            new CodeLine("modelBuilder.Entity<{0}>().HasKey(e => new {{ {1} }});", project.GetEntityName(view), string.Join(", ", view.Columns.Select(item => string.Format("e.{0}", project.GetPropertyName(view, item))))));
+
                         lines.Add(new CodeLine());
                     }
                     else
                     {
-                        lines.Add(new CodeLine("modelBuilder.Entity<{0}>().HasKey(e => new {{ {1} }});", project.GetEntityName(view), string.Join(", ", result.Select(item => string.Format("e.{0}", item.GetPropertyName())))));
+                        lines.Add(
+                            new CodeLine("modelBuilder.Entity<{0}>().HasKey(e => new {{ {1} }});", project.GetEntityName(view), string.Join(", ", result.Select(item => string.Format("e.{0}", project.GetPropertyName(view, item))))));
                         lines.Add(new CodeLine());
                     }
                 }

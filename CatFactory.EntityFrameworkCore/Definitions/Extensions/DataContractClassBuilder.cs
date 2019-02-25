@@ -23,7 +23,10 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             foreach (var column in table.Columns)
             {
-                definition.Properties.Add(new PropertyDefinition(project.Database.ResolveDatabaseType(column), column.GetPropertyName()) { AccessModifier = AccessModifier.Public });
+                definition.Properties.Add(new PropertyDefinition(AccessModifier.Public, project.Database.ResolveDatabaseType(column), project.GetPropertyName(table, column))
+                {
+                    IsAutomatic = true
+                });
             }
 
             foreach (var foreignKey in table.ForeignKeys)
@@ -37,10 +40,15 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                 foreach (var column in foreignTable?.GetColumnsWithNoPrimaryKey())
                 {
-                    var target = string.Format("{0}{1}", project.GetEntityName(foreignTable), column.GetPropertyName());
+                    var propertyName = project.GetPropertyName(foreignTable, column);
 
-                    if (definition.Properties.Count(item => item.Name == column.GetPropertyName()) == 0)
-                        definition.Properties.Add(new PropertyDefinition(project.Database.ResolveDatabaseType(column), target) { AccessModifier = AccessModifier.Public });
+                    var target = string.Format("{0}{1}", project.GetEntityName(foreignTable), propertyName);
+
+                    if (definition.Properties.Count(item => item.Name == propertyName) == 0)
+                        definition.Properties.Add(new PropertyDefinition(AccessModifier.Public, project.Database.ResolveDatabaseType(column), target)
+                        {
+                            IsAutomatic = true
+                        });
                 }
             }
 
@@ -63,7 +71,10 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             foreach (var column in view.Columns)
             {
-                definition.Properties.Add(new PropertyDefinition(project.Database.ResolveDatabaseType(column), column.GetPropertyName()) { AccessModifier = AccessModifier.Public });
+                definition.Properties.Add(new PropertyDefinition(AccessModifier.Public, project.Database.ResolveDatabaseType(column), project.GetPropertyName(view, column))
+                {
+                    IsAutomatic = true
+                });
             }
 
             return definition;
