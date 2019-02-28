@@ -1,27 +1,26 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq;
+using CatFactory.CodeFactory;
 using CatFactory.CodeFactory.Scaffolding;
+using CatFactory.NetCore;
 using CatFactory.NetCore.CodeFactory;
+using CatFactory.NetCore.ObjectOrientedProgramming;
+using CatFactory.ObjectOrientedProgramming;
 using CatFactory.ObjectRelationalMapping;
 using Microsoft.Extensions.Logging;
 
 namespace CatFactory.EntityFrameworkCore
 {
-    public class EntityFrameworkCoreProject : Project<EntityFrameworkCoreProjectSettings>
+    public class EntityFrameworkCoreProject : CSharpProject<EntityFrameworkCoreProjectSettings>
     {
         public EntityFrameworkCoreProject()
             : base()
         {
-            CodeNamingConvention = new DotNetNamingConvention();
-            NamingService = new NamingService();
         }
 
         public EntityFrameworkCoreProject(ILogger<EntityFrameworkCoreProject> logger)
             : base(logger)
         {
-            CodeNamingConvention = new DotNetNamingConvention();
-            NamingService = new NamingService();
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -54,40 +53,40 @@ namespace CatFactory.EntityFrameworkCore
                 .DbObjects
                 .Select(item => item.Schema)
                 .Distinct()
-                .Select(item => new ProjectFeature<EntityFrameworkCoreProjectSettings>(item, GetDbObjects(Database, item)) { Project = this })
+                .Select(item => new ProjectFeature<EntityFrameworkCoreProjectSettings>(item, GetDbObjectsBySchema(item), this))
                 .ToList();
         }
 
-        private IEnumerable<DbObject> GetDbObjects(Database database, string schema)
+        public void Scaffold(IObjectDefinition objectDefinition, string outputDirectory, string subdirectory = "")
         {
-            var result = new List<DbObject>();
+            var codeBuilder = default(ICodeBuilder);
 
-            result.AddRange(Database
-                .Tables
-                .Where(x => x.Schema == schema)
-                .Select(y => new DbObject { Schema = y.Schema, Name = y.Name, Type = "Table" }));
+            var selection = objectDefinition.DbObject == null ? this.GlobalSelection() : this.GetSelection(objectDefinition.DbObject);
 
-            result.AddRange(Database
-                .Views
-                .Where(x => x.Schema == schema)
-                .Select(y => new DbObject { Schema = y.Schema, Name = y.Name, Type = "View" }));
+            if (objectDefinition is CSharpClassDefinition)
+            {
+                codeBuilder = new CSharpClassBuilder
+                {
+                    OutputDirectory = outputDirectory,
+                    ForceOverwrite = selection.Settings.ForceOverwrite,
+                    ObjectDefinition = objectDefinition
+                };
+            }
+            else if (objectDefinition is CSharpInterfaceDefinition)
+            {
+                codeBuilder = new CSharpInterfaceBuilder
+                {
+                    OutputDirectory = outputDirectory,
+                    ForceOverwrite = selection.Settings.ForceOverwrite,
+                    ObjectDefinition = objectDefinition
+                };
+            }
 
-            result.AddRange(Database
-                .ScalarFunctions
-                .Where(x => x.Schema == schema)
-                .Select(y => new DbObject { Schema = y.Schema, Name = y.Name, Type = "ScalarFunction" }));
+            OnScaffoldingDefinition(new ScaffoldingDefinitionEventArgs(Logger, codeBuilder));
 
-            result.AddRange(Database
-                .TableFunctions
-                .Where(x => x.Schema == schema)
-                .Select(y => new DbObject { Schema = y.Schema, Name = y.Name, Type = "TableFunction" }));
+            codeBuilder.CreateFile(subdirectory: subdirectory);
 
-            result.AddRange(Database
-                .StoredProcedures
-                .Where(x => x.Schema == schema)
-                .Select(y => new DbObject { Schema = y.Schema, Name = y.Name, Type = "StoredProcedure" }));
-
-            return result;
+            OnScaffoldedDefinition(new ScaffoldedDefinitionEventArgs(Logger, codeBuilder));
         }
 
         /// <summary>

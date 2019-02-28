@@ -2,7 +2,6 @@
 using System.IO;
 using CatFactory.Collections;
 using CatFactory.EntityFrameworkCore.Definitions.Extensions;
-using CatFactory.NetCore.CodeFactory;
 using CatFactory.NetCore.ObjectOrientedProgramming;
 using CatFactory.ObjectRelationalMapping;
 
@@ -12,7 +11,7 @@ namespace CatFactory.EntityFrameworkCore
     {
         public static EntityFrameworkCoreProject ScaffoldDataLayer(this EntityFrameworkCoreProject project)
         {
-            ScaffoldMappings(project);
+            ScaffoldConfigurations(project);
             ScaffoldDbContext(project);
             ScaffoldDataContracts(project);
             ScaffoldDataRepositories(project);
@@ -21,7 +20,7 @@ namespace CatFactory.EntityFrameworkCore
             return project;
         }
 
-        private static void ScaffoldMappings(EntityFrameworkCoreProject project)
+        private static void ScaffoldConfigurations(EntityFrameworkCoreProject project)
         {
             var projectSelection = project.GlobalSelection();
 
@@ -29,18 +28,16 @@ namespace CatFactory.EntityFrameworkCore
             {
                 foreach (var table in project.Database.Tables)
                 {
-                    if (project.Database.HasDefaultSchema(table))
-                        CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerConfigurationsDirectory(), projectSelection.Settings.ForceOverwrite, project.GetEntityConfigurationClassDefinition(table));
-                    else
-                        CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerConfigurationsDirectory(table.Schema), projectSelection.Settings.ForceOverwrite, project.GetEntityConfigurationClassDefinition(table));
+                    var definition = project.GetEntityConfigurationClassDefinition(table);
+
+                    project.Scaffold(definition, project.GetDataLayerConfigurationsDirectory(), project.Database.HasDefaultSchema(table) ? "" : table.Schema);
                 }
 
                 foreach (var view in project.Database.Views)
                 {
-                    if (project.Database.HasDefaultSchema(view))
-                        CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerConfigurationsDirectory(), projectSelection.Settings.ForceOverwrite, project.GetEntityTypeConfigurationClassDefinition(view));
-                    else
-                        CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerConfigurationsDirectory(view.Schema), projectSelection.Settings.ForceOverwrite, project.GetEntityTypeConfigurationClassDefinition(view));
+                    var definition = project.GetEntityConfigurationClassDefinition(view);
+
+                    project.Scaffold(definition, project.GetDataLayerConfigurationsDirectory(), project.Database.HasDefaultSchema(view) ? "" : view.Schema);
                 }
             }
         }
@@ -48,25 +45,24 @@ namespace CatFactory.EntityFrameworkCore
         private static void ScaffoldDbContext(EntityFrameworkCoreProject project)
         {
             var projectSelection = project.GlobalSelection();
-
-            foreach (var projectFeature in project.Features)
-            {
-                CSharpCodeBuilder
-                    .CreateFiles(project.OutputDirectory, project.GetDataLayerDirectory(), projectSelection.Settings.ForceOverwrite, projectFeature.GetDbContextClassDefinition(projectSelection));
-            }
+            
+            project.Scaffold(project.GetDbContextClassDefinition(projectSelection), project.GetDataLayerDirectory());
         }
 
-        private static void ScaffoldDataLayerContract(EntityFrameworkCoreProject project, CSharpInterfaceDefinition interfaceDefinition)
-            => CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerContractsDirectory(), project.GlobalSelection().Settings.ForceOverwrite, interfaceDefinition);
-
         private static void ScaffoldRepositoryInterface(EntityFrameworkCoreProject project)
-            => CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerContractsDirectory(), project.GlobalSelection().Settings.ForceOverwrite, project.GetRepositoryInterfaceDefinition());
+        {
+            project.Scaffold(project.GetRepositoryInterfaceDefinition(), project.GetDataLayerContractsDirectory());
+        }
 
         private static void ScaffoldBaseRepositoryClassDefinition(EntityFrameworkCoreProject project)
-            => CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerRepositoriesDirectory(), project.GlobalSelection().Settings.ForceOverwrite, project.GetRepositoryBaseClassDefinition());
+        {
+            project.Scaffold(project.GetRepositoryBaseClassDefinition(), project.GetDataLayerRepositoriesDirectory());
+        }
 
         private static void ScaffoldRepositoryExtensionsClassDefinition(EntityFrameworkCoreProject project)
-            => CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerRepositoriesDirectory(), project.GlobalSelection().Settings.ForceOverwrite, project.GetRepositoryExtensionsClassDefinition());
+        {
+            project.Scaffold(project.GetRepositoryExtensionsClassDefinition(), project.GetDataLayerRepositoriesDirectory());
+        }
 
         private static void ScaffoldDataContracts(EntityFrameworkCoreProject project)
         {
@@ -77,9 +73,7 @@ namespace CatFactory.EntityFrameworkCore
                 if (!selection.Settings.EntitiesWithDataContracts)
                     continue;
 
-                var classDefinition = project.GetDataContractClassDefinition(table);
-
-                CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerDataContractsDirectory(), selection.Settings.ForceOverwrite, classDefinition);
+                project.Scaffold(project.GetDataContractClassDefinition(table), project.GetDataLayerDataContractsDirectory());
             }
         }
 
@@ -101,17 +95,14 @@ namespace CatFactory.EntityFrameworkCore
             {
                 var repositoryClassDefinition = projectFeature.GetRepositoryClassDefinition();
 
-                var repositoryInterfaceDefinition = repositoryClassDefinition.RefactInterface();
+                project.Scaffold(repositoryClassDefinition, project.GetDataLayerRepositoriesDirectory());
 
-                // todo: Remove this line
-                repositoryInterfaceDefinition.AccessModifier = ObjectOrientedProgramming.AccessModifier.Public;
+                var repositoryInterfaceDefinition = repositoryClassDefinition.RefactInterface();
 
                 repositoryInterfaceDefinition.Namespace = project.GetDataLayerContractsNamespace();
                 repositoryInterfaceDefinition.Implements.Add("IRepository");
 
-                ScaffoldDataLayerContract(project, repositoryInterfaceDefinition);
-
-                CSharpCodeBuilder.CreateFiles(project.OutputDirectory, project.GetDataLayerRepositoriesDirectory(), projectSelection.Settings.ForceOverwrite, repositoryClassDefinition);
+                project.Scaffold(repositoryInterfaceDefinition, project.GetDataLayerContractsDirectory());
             }
         }
 

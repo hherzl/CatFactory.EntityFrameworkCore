@@ -26,7 +26,7 @@ namespace CatFactory.EntityFrameworkCore
 
                 foreach (var property in classDefinition.Properties)
                 {
-                    if (column.GetPropertyName() != property.Name)
+                    if (project.GetPropertyName(table, column) != property.Name)
                         continue;
 
                     if (table.Identity?.Name == column.Name)
@@ -74,7 +74,7 @@ namespace CatFactory.EntityFrameworkCore
 
                 foreach (var property in classDefinition.Properties)
                 {
-                    if (column.GetPropertyName() != property.Name)
+                    if (project.GetPropertyName(view, column) != property.Name)
                         continue;
 
                     property.Attributes.Add(new MetadataAttribute("Column", string.Format("\"{0}\"", column.Name))
