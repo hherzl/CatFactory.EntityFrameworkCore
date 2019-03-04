@@ -2,11 +2,18 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using CatFactory.CodeFactory.Scaffolding;
+using CatFactory.Diagnostics;
 
 namespace CatFactory.EntityFrameworkCore
 {
-    public class EntityFrameworkCoreProjectSettings : ProjectSettings
+    public class EntityFrameworkCoreProjectSettings : IProjectSettings
     {
+        public ValidationResult Validate()
+        {
+            // todo: Add implementation
+            throw new NotImplementedException();
+        }
+
         public EntityFrameworkCoreProjectSettings()
         {
         }
