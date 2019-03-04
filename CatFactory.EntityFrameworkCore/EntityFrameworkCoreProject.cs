@@ -57,7 +57,7 @@ namespace CatFactory.EntityFrameworkCore
                 .ToList();
         }
 
-        public void Scaffold(IObjectDefinition objectDefinition, string outputDirectory, string subdirectory = "")
+        public override void Scaffold(IObjectDefinition objectDefinition, string outputDirectory, string subdirectory = "")
         {
             var codeBuilder = default(ICodeBuilder);
 
