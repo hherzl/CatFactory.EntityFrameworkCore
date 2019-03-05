@@ -95,6 +95,6 @@ namespace CatFactory.EntityFrameworkCore
         /// submitted to the Entity Framework Core project via ValueConversionMaps for use in {Enity}Configuration.cs
         /// files
         /// </summary>
-        public Dictionary<string, System.Type> ValueConversionMaps { get; set; }
+        public System.Collections.Generic.Dictionary<string, System.Type> ValueConversionMaps { get; set; }
     }
 }
