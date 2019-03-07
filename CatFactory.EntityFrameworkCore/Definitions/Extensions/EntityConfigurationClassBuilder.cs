@@ -88,6 +88,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             {
                 var column = columns[i];
 
+                System.Type ValueConversion = null;
                 if (project.Database.HasTypeMappedToClr(column))
                 {
                     var lines = new List<string>
@@ -108,6 +109,12 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         lines.Add(string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
                     else
                         lines.Add(string.Format("HasColumnType(\"{0}\")", column.Type));
+
+                    // Use ValueConversionMaps to detect and apply ValueConversion Type based on Type
+                    if (project.ValueConversionMaps?.TryGetValue(column.Type, out ValueConversion) == true)
+                    {
+                        lines.Add($"HasConversion(typeof({ValueConversion?.FullName}))");
+                    }
 
                     if (!column.Nullable)
                         lines.Add("IsRequired()");
@@ -255,6 +262,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             {
                 var column = view.Columns[i];
 
+                System.Type ValueConversion = null;
                 if (project.Database.HasTypeMappedToClr(column))
                 {
                     var lines = new List<string>
@@ -273,6 +281,12 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         lines.Add(string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Prec));
                     else
                         lines.Add(string.Format("HasColumnType(\"{0}\")", column.Type));
+
+                    // Use ValueConversionMaps to detect and apply ValueConversion Type based on Type
+                    if (project.ValueConversionMaps?.TryGetValue(column.Type, out ValueConversion) == true)
+                    {
+                        lines.Add($"HasConversion(typeof({ValueConversion?.FullName}))");
+                    }
 
                     configLines.Add(new CodeLine("{0};", string.Join(".", lines)));
                 }

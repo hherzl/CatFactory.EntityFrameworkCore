@@ -88,5 +88,13 @@ namespace CatFactory.EntityFrameworkCore
 
             OnScaffoldedDefinition(new ScaffoldedDefinitionEventArgs(Logger, codeBuilder));
         }
+
+        /// <summary>
+        /// A dictionary of (string)CatFactory.ObjectRelationalMapping.DatabaseTypeMap.DatabaseType to
+        /// {OutputDirectory}\{EntityFrameworkCoreProjectNamespaces.ValueConversions}\Type can be
+        /// submitted to the Entity Framework Core project via ValueConversionMaps for use in {Enity}Configuration.cs
+        /// files
+        /// </summary>
+        public System.Collections.Generic.Dictionary<string, System.Type> ValueConversionMaps { get; set; }
     }
 }
