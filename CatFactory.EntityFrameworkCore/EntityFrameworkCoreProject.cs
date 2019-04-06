@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using CatFactory.CodeFactory;
 using CatFactory.CodeFactory.Scaffolding;
@@ -89,12 +91,25 @@ namespace CatFactory.EntityFrameworkCore
             OnScaffoldedDefinition(new ScaffoldedDefinitionEventArgs(Logger, codeBuilder));
         }
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private Dictionary<string, Type> m_valueConversionMaps;
+
         /// <summary>
         /// A dictionary of (string)CatFactory.ObjectRelationalMapping.DatabaseTypeMap.DatabaseType to
         /// {OutputDirectory}\{EntityFrameworkCoreProjectNamespaces.ValueConversions}\Type can be
         /// submitted to the Entity Framework Core project via ValueConversionMaps for use in {Enity}Configuration.cs
         /// files
         /// </summary>
-        public System.Collections.Generic.Dictionary<string, System.Type> ValueConversionMaps { get; set; }
+        public Dictionary<string, Type> ValueConversionMaps
+        {
+            get
+            {
+                return m_valueConversionMaps ?? (m_valueConversionMaps = new Dictionary<string, Type>());
+            }
+            set
+            {
+                m_valueConversionMaps = value;
+            }
+        }
     }
 }

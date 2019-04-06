@@ -1,7 +1,4 @@
-﻿using System.Linq;
-using CatFactory.CodeFactory;
-using CatFactory.EntityFrameworkCore.Definitions;
-using CatFactory.SqlServer;
+﻿using CatFactory.SqlServer;
 using Xunit;
 
 namespace CatFactory.EntityFrameworkCore.Tests
@@ -61,15 +58,6 @@ namespace CatFactory.EntityFrameworkCore.Tests
             project.ScaffoldingDefinition += (source, args) =>
             {
                 // Add code to perform operations with code builder instance before to create code file
-
-                if (args.CodeBuilder.ObjectDefinition is EntityConfigurationClassDefinition cast)
-                {
-                    cast.Namespaces.Add("ValueConversion");
-
-                    cast.Methods.First(item => item.Name == "Configure").Lines.Add(
-                        new TodoLine("builder.Property(p => p.DeleteFlag).HasConversion(\"OnlineStore.DataLayer.ValueConversion.BoolToStringConverters.bYN\");")
-                    );
-                }
             };
 
             project.ScaffoldedDefinition += (source, args) =>
@@ -80,9 +68,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
             // Scaffolding =^^=
             project
                 .ScaffoldEntityLayer()
-                .ScaffoldValueConversion()
-                .ScaffoldDataLayer()
-                ;
+                .ScaffoldDataLayer();
         }
 
         [Fact]
@@ -154,7 +140,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
             };
 
             var database = factory.Import();
-            
+
             // Create instance of Entity Framework Core Project
             var project = new EntityFrameworkCoreProject
             {

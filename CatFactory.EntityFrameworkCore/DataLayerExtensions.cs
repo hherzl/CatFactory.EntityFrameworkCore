@@ -20,7 +20,7 @@ namespace CatFactory.EntityFrameworkCore
             return project;
         }
 
-        private static void ScaffoldConfigurations(EntityFrameworkCoreProject project)
+        internal static void ScaffoldConfigurations(EntityFrameworkCoreProject project)
         {
             var projectSelection = project.GlobalSelection();
 
@@ -42,29 +42,29 @@ namespace CatFactory.EntityFrameworkCore
             }
         }
 
-        private static void ScaffoldDbContext(EntityFrameworkCoreProject project)
+        internal static void ScaffoldDbContext(EntityFrameworkCoreProject project)
         {
             var projectSelection = project.GlobalSelection();
             
             project.Scaffold(project.GetDbContextClassDefinition(projectSelection), project.GetDataLayerDirectory());
         }
 
-        private static void ScaffoldRepositoryInterface(EntityFrameworkCoreProject project)
+        internal static void ScaffoldRepositoryInterface(EntityFrameworkCoreProject project)
         {
             project.Scaffold(project.GetRepositoryInterfaceDefinition(), project.GetDataLayerContractsDirectory());
         }
 
-        private static void ScaffoldBaseRepositoryClassDefinition(EntityFrameworkCoreProject project)
+        internal static void ScaffoldBaseRepositoryClassDefinition(EntityFrameworkCoreProject project)
         {
             project.Scaffold(project.GetRepositoryBaseClassDefinition(), project.GetDataLayerRepositoriesDirectory());
         }
 
-        private static void ScaffoldRepositoryExtensionsClassDefinition(EntityFrameworkCoreProject project)
+        internal static void ScaffoldRepositoryExtensionsClassDefinition(EntityFrameworkCoreProject project)
         {
             project.Scaffold(project.GetRepositoryExtensionsClassDefinition(), project.GetDataLayerRepositoriesDirectory());
         }
 
-        private static void ScaffoldDataContracts(EntityFrameworkCoreProject project)
+        internal static void ScaffoldDataContracts(EntityFrameworkCoreProject project)
         {
             foreach (var table in project.Database.Tables)
             {
@@ -77,7 +77,7 @@ namespace CatFactory.EntityFrameworkCore
             }
         }
 
-        private static void ScaffoldDataRepositories(EntityFrameworkCoreProject project)
+        internal static void ScaffoldDataRepositories(EntityFrameworkCoreProject project)
         {
             var projectSelection = project.GlobalSelection();
 
@@ -106,7 +106,7 @@ namespace CatFactory.EntityFrameworkCore
             }
         }
 
-        private static void ScaffoldReadMe(this EntityFrameworkCoreProject project)
+        internal static void ScaffoldReadMe(this EntityFrameworkCoreProject project)
         {
             var lines = new List<string>
             {
