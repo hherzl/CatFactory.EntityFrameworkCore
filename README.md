@@ -1,6 +1,6 @@
 # CatFactory.EntityFrameworkCore ==^^==
 
-This if the *CatFactory* package for *Entity Framework Core*.
+This is the *CatFactory* package for *Entity Framework Core*.
 
 ## What Is CatFactory?
 
