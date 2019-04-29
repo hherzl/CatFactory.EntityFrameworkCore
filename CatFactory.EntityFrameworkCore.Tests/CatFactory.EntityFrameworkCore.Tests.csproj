@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="CatFactory.SqlServer" Version="1.0.0-beta-sun-build33" />
+        <PackageReference Include="CatFactory.SqlServer" Version="1.0.0-beta-sun-build34" />
         <PackageReference Include="Microsoft.AspNetCore.App" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
         <PackageReference Include="xunit" Version="2.4.1" />
