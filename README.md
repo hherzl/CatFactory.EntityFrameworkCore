@@ -237,3 +237,7 @@ project.ScaffoldedDefinition += (source, args) =>
 [`Scaffolding ASP.NET Core 2 with CatFactory`](https://www.codeproject.com/Tips/1229909/Scaffolding-ASP-NET-Core-with-CatFactory)
 
 [`Scaffolding TypeScript with CatFactory`](https://www.codeproject.com/Tips/1166380/Scaffolding-TypeScript-with-CatFactory)
+
+## Donate
+
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=XB49JFNSMGY6U&currency_code=USD&source=url)
