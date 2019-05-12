@@ -20,71 +20,15 @@ The flow to import an existing database is:
 4. Build Features (One feature per schema)
 5. Scaffold objects, these methods read all objects from database and create instances for code builders
 
+## Donation
+
+You can make a donation via PayPal using this link: [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=XB49JFNSMGY6U&item_name=CatFactory&currency_code=USD&source=url)
+
+Thanks for your help! ==^^==
+
 ## Code Snippet
 
-```csharp
-// Create database factory
-var databaseFactory = new SqlServerDatabaseFactory
-{
-	DatabaseImportSettings = new DatabaseImportSettings
-	{
-		ConnectionString = "server=(local);database=OnlineStore;integrated security=yes;",
-		ImportTableFunctions = true,
-		Exclusions =
-		{
-			"dbo.sysdiagrams",
-			"dbo.fn_diagramobjects"
-		}
-	}
-};
-
-// Import database
-var database = databaseFactory.Import();
-
-// Create instance of Entity Framework Core project
-var project = new EntityFrameworkCoreProject
-{
-	Name = "OnlineStore.Core",
-	Database = database,
-	OutputDirectory = @"C:\Projects\OnlineStore.Core"
-};
-
-// Apply settings for Entity Framework Core project
-project.GlobalSelection(settings =>
-{
-	settings.ForceOverwrite = true;
-	settings.ConcurrencyToken = "Timestamp";
-	settings.AuditEntity = new AuditEntity
-	{
-		CreationUserColumnName = "CreationUser",
-		CreationDateTimeColumnName = "CreationDateTime",
-		LastUpdateUserColumnName = "LastUpdateUser",
-		LastUpdateDateTimeColumnName = "LastUpdateDateTime"
-	};
-});
-
-project.Selection("Sales.OrderHeader", settings => settings.EntitiesWithDataContracts = true);
-
-// Build features for project, group all entities by schema into a feature
-project.BuildFeatures();
-
-// Add event handlers to before and after of scaffold
-
-project.ScaffoldingDefinition += (source, args) =>
-{
-	// Add code to perform operations with code builder instance before to create code file
-};
-
-project.ScaffoldedDefinition += (source, args) =>
-{
-	// Add code to perform operations after of create code file
-};
-
-// Scaffolding =^^=
-project
-	.ScaffoldEntityLayer()
-	.ScaffoldDataLayer();
-```
+You can check the [`Wiki`](https://github.com/hherzl/CatFactory.EntityFrameworkCore/wiki) to get code snippets for this package.
 
 Also these technologies are supported:
 
@@ -237,7 +181,3 @@ project.ScaffoldedDefinition += (source, args) =>
 [`Scaffolding ASP.NET Core 2 with CatFactory`](https://www.codeproject.com/Tips/1229909/Scaffolding-ASP-NET-Core-with-CatFactory)
 
 [`Scaffolding TypeScript with CatFactory`](https://www.codeproject.com/Tips/1166380/Scaffolding-TypeScript-with-CatFactory)
-
-## Donate
-
-[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=XB49JFNSMGY6U&item_name=CatFactory&currency_code=USD&source=url)
