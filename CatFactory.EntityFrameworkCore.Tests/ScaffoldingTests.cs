@@ -213,5 +213,46 @@ namespace CatFactory.EntityFrameworkCore.Tests
                 .ScaffoldEntityLayer()
                 .ScaffoldDataLayer();
         }
+
+        [Fact]
+        public void ProjectScaffoldingForWideWorldImportersDatabaseTest()
+        {
+            // Create database factory
+            var databaseFactory = new SqlServerDatabaseFactory
+            {
+                DatabaseImportSettings = new DatabaseImportSettings
+                {
+                    ConnectionString = "server=(local);database=WideWorldImporters;integrated security=yes;",
+                    ImportTableFunctions = true,
+                    Exclusions =
+                    {
+                        "dbo.sysdiagrams",
+                        "dbo.fn_diagramobjects"
+                    }
+                }
+            };
+
+            // Import database
+            var database = databaseFactory.Import();
+
+            // Create instance of Entity Framework Core project
+            var project = new EntityFrameworkCoreProject
+            {
+                Name = "WideWorldImporters.Core",
+                Database = database,
+                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\WideWorldImporters.Core"
+            };
+
+            // Apply settings for Entity Framework Core project
+            project.GlobalSelection(settings => settings.ForceOverwrite = true);
+
+            // Build features for project, group all entities by schema into a feature
+            project.BuildFeatures();
+
+            // Scaffolding =^^=
+            project
+                .ScaffoldEntityLayer()
+                .ScaffoldDataLayer();
+        }
     }
 }

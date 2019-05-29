@@ -306,16 +306,21 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
 
                 lines.Add(new CodeLine(1, "};"));
-                lines.Add(new CodeLine());
+                lines.Add(new EmptyLine());
             }
             else
             {
                 returnType = project.GetEntityName(table);
 
-                lines.Add(new CommentLine(" Get query from DbSet"));
-                lines.Add(new CodeLine("var query = DbContext.{0}.AsQueryable();", project.GetDbSetPropertyName(table)));
+                var existingViews = project.Database.Views.Count(item => item.Name == table.Name);
 
-                lines.Add(new CodeLine());
+                returnType = existingViews == 0 ? project.GetEntityName(table) : project.GetFullEntityName(table);
+                var dbSetName = existingViews == 0 ? project.GetDbSetPropertyName(table) : project.GetFullDbSetPropertyName(table);
+
+                lines.Add(new CommentLine(" Get query from DbSet"));
+                lines.Add(new CodeLine("var query = DbContext.{0}.AsQueryable();", dbSetName));
+
+                lines.Add(new EmptyLine());
             }
 
             var parameters = new List<ParameterDefinition>();
@@ -343,28 +348,28 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                             lines.Add(new CommentLine(" Filter by: '{0}'", column.Name));
                             lines.Add(new CodeLine("if ({0}.HasValue)", parameterName));
                             lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", project.GetPropertyName(table, column), parameterName));
-                            lines.Add(new CodeLine());
+                            lines.Add(new EmptyLine());
                         }
                         else if (projectFeature.Project.Database.ColumnIsNumber(column))
                         {
                             lines.Add(new CommentLine(" Filter by: '{0}'", column.Name));
                             lines.Add(new CodeLine("if ({0}.HasValue)", parameterName));
                             lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", project.GetPropertyName(table, column), parameterName));
-                            lines.Add(new CodeLine());
+                            lines.Add(new EmptyLine());
                         }
                         else if (projectFeature.Project.Database.ColumnIsString(column))
                         {
                             lines.Add(new CommentLine(" Filter by: '{0}'", column.Name));
                             lines.Add(new CodeLine("if (!string.IsNullOrEmpty({0}))", parameterName));
                             lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", project.GetPropertyName(table, column), parameterName));
-                            lines.Add(new CodeLine());
+                            lines.Add(new EmptyLine());
                         }
                         else
                         {
                             lines.Add(new CommentLine(" Filter by: '{0}'", column.Name));
                             lines.Add(new CodeLine("if ({0} != null)", parameterName));
                             lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", project.GetPropertyName(table, column), parameterName));
-                            lines.Add(new CodeLine());
+                            lines.Add(new EmptyLine());
                         }
                     }
                     else
@@ -376,8 +381,12 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 lines.Add(new CodeLine("return query;"));
             }
 
-            definition.Methods.Add(new MethodDefinition(AccessModifier.Public, string.Format("IQueryable<{0}>", returnType), project.GetGetAllRepositoryMethodName(table), parameters.ToArray())
+            definition.Methods.Add(new MethodDefinition
             {
+                AccessModifier = AccessModifier.Public,
+                Type = string.Format("IQueryable<{0}>", returnType),
+                Name = project.GetGetAllRepositoryMethodName(table),
+                Parameters = parameters,
                 Lines = lines
             });
         }
@@ -386,11 +395,19 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
         {
             var project = projectFeature.GetEntityFrameworkCoreProject();
 
-            return new MethodDefinition(AccessModifier.Public, string.Format("IQueryable<{0}>", project.GetEntityName(table)), project.GetGetAllRepositoryMethodName(table))
+            var existingViews = project.Database.Views.Count(item => item.Name == table.Name);
+
+            var genericTypeName = existingViews == 0 ? project.GetEntityName(table) : project.GetFullEntityName(table);
+            var dbSetName = existingViews == 0 ? project.GetDbSetPropertyName(table) : project.GetFullDbSetPropertyName(table);
+
+            return new MethodDefinition
             {
+                AccessModifier = AccessModifier.Public,
+                Type = string.Format("IQueryable<{0}>", genericTypeName),
+                Name = project.GetGetAllRepositoryMethodName(table),
                 Lines =
                 {
-                    new CodeLine("return DbContext.{0};", project.GetDbSetPropertyName(table))
+                    new CodeLine("return DbContext.{0};", dbSetName)
                 }
             };
         }
@@ -416,14 +433,19 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             var lines = new List<ILine>();
 
+            var existingTables = project.Database.Tables.Count(item => item.Name == view.Name);
+
+            var genericTypeName = existingTables == 0 ? project.GetEntityName(view) : project.GetFullEntityName(view);
+            var dbSetName = existingTables == 0 ? project.GetDbSetPropertyName(view) : project.GetFullDbSetPropertyName(view);
+
             if (parameters.Count == 0)
             {
-                lines.Add(new CodeLine("return DbContext.{0};", project.GetDbSetPropertyName(view)));
+                lines.Add(new CodeLine("return DbContext.{0};", dbSetName));
             }
             else
             {
-                lines.Add(new CodeLine("var query = DbContext.{0}.AsQueryable();", project.GetDbSetPropertyName(view)));
-                lines.Add(new CodeLine());
+                lines.Add(new CodeLine("var query = DbContext.{0}.AsQueryable();", dbSetName));
+                lines.Add(new EmptyLine());
 
                 foreach (var pk in result)
                 {
@@ -431,21 +453,24 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     {
                         lines.Add(new CodeLine("if ({0}.HasValue)", project.CodeNamingConvention.GetParameterName(pk.Name)));
                         lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", project.CodeNamingConvention.GetPropertyName(pk.Name), project.CodeNamingConvention.GetParameterName(pk.Name)));
-                        lines.Add(new CodeLine());
+                        lines.Add(new EmptyLine());
                     }
                     else if (project.Database.ColumnIsString(pk))
                     {
                         lines.Add(new CodeLine("if (!string.IsNullOrEmpty({0}))", project.CodeNamingConvention.GetParameterName(pk.Name)));
                         lines.Add(new CodeLine(1, "query = query.Where(item => item.{0} == {1});", project.CodeNamingConvention.GetPropertyName(pk.Name), project.CodeNamingConvention.GetParameterName(pk.Name)));
-                        lines.Add(new CodeLine());
+                        lines.Add(new EmptyLine());
                     }
                 }
 
                 lines.Add(new CodeLine("return query;"));
             }
 
-            return new MethodDefinition(AccessModifier.Public, string.Format("IQueryable<{0}>", project.GetEntityName(view)), project.GetGetAllRepositoryMethodName(view))
+            return new MethodDefinition
             {
+                AccessModifier = AccessModifier.Public,
+                Type = string.Format("IQueryable<{0}>", genericTypeName),
+                Name = project.GetGetAllRepositoryMethodName(view),
                 Parameters = parameters,
                 Lines = lines
             };
@@ -487,16 +512,19 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             lines.Add(new CodeLine("};"));
 
-            lines.Add(new CodeLine());
+            lines.Add(new EmptyLine());
 
             lines.Add(new ReturnLine("await DbContext"));
             lines.Add(new CodeLine(1, ".Query<{0}>()", project.GetEntityResultName(tableFunction)));
             lines.Add(new CodeLine(1, ".FromSql(query.Text, query.Parameters)"));
             lines.Add(new CodeLine(1, ".ToListAsync();"));
 
-            return new MethodDefinition(AccessModifier.Public, string.Format("Task<IEnumerable<{0}>>", project.GetEntityResultName(tableFunction)), project.GetGetAllRepositoryMethodName(tableFunction))
+            return new MethodDefinition
             {
+                AccessModifier = AccessModifier.Public,
                 IsAsync = true,
+                Type = string.Format("Task<IEnumerable<{0}>>", project.GetEntityResultName(tableFunction)),
+                Name = project.GetGetAllRepositoryMethodName(tableFunction),
                 Parameters = parameters,
                 Lines = lines
             };
@@ -538,16 +566,19 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             lines.Add(new CodeLine("};"));
 
-            lines.Add(new CodeLine());
+            lines.Add(new EmptyLine());
 
             lines.Add(new ReturnLine("await DbContext"));
             lines.Add(new CodeLine(1, ".Query<{0}>()", project.GetEntityResultName(storedProcedure)));
             lines.Add(new CodeLine(1, ".FromSql(query.Text, query.Parameters)"));
             lines.Add(new CodeLine(1, ".ToListAsync();"));
 
-            return new MethodDefinition(AccessModifier.Public, string.Format("Task<IEnumerable<{0}>>", project.GetEntityResultName(storedProcedure)), project.GetGetAllRepositoryMethodName(storedProcedure))
+            return new MethodDefinition
             {
+                AccessModifier = AccessModifier.Public,
                 IsAsync = true,
+                Type = string.Format("Task<IEnumerable<{0}>>", project.GetEntityResultName(storedProcedure)),
+                Name = project.GetGetAllRepositoryMethodName(storedProcedure),
                 Parameters = parameters,
                 Lines = lines
             };
@@ -561,12 +592,24 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             var expression = string.Format("item => {0}", string.Join(" && ", unique.Key.Select(item => string.Format("item.{0} == entity.{0}", project.CodeNamingConvention.GetPropertyName(item)))));
 
-            return new MethodDefinition(AccessModifier.Public, string.Format("Task<{0}>", project.GetEntityName(table)), project.GetGetByUniqueRepositoryMethodName(table, unique), new ParameterDefinition(project.GetEntityName(table), "entity"))
+            var existingViews = project.Database.Views.Count(item => item.Name == table.Name);
+
+            var genericTypeName = existingViews == 0 ? project.GetEntityName(table) : project.GetFullEntityName(table);
+            var dbSetName = existingViews == 0 ? project.GetDbSetPropertyName(table) : project.GetFullDbSetPropertyName(table);
+
+            return new MethodDefinition
             {
+                AccessModifier = AccessModifier.Public,
                 IsAsync = true,
+                Type = string.Format("Task<{0}>", project.GetEntityName(table)),
+                Name = project.GetGetByUniqueRepositoryMethodName(table, unique),
+                Parameters =
+                {
+                    new ParameterDefinition(project.GetEntityName(table), "entity")
+                },
                 Lines =
                 {
-                    new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", project.GetDbSetPropertyName(table), expression)
+                    new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", dbSetName, expression)
                 }
             };
         }
@@ -582,11 +625,16 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             else
                 expression = string.Format("item => item.{0} == entity.{0}", project.CodeNamingConvention.GetPropertyName(table.Identity.Name));
 
+            var existingViews = project.Database.Views.Count(item => item.Name == table.Name);
+
+            var genericTypeName = existingViews == 0 ? project.GetEntityName(table) : project.GetFullEntityName(table);
+            var dbSetName = existingViews == 0 ? project.GetDbSetPropertyName(table) : project.GetFullDbSetPropertyName(table);
+
             if (projectSelection.Settings.EntitiesWithDataContracts)
             {
                 var lines = new List<ILine>
                 {
-                    new CodeLine("return await DbContext.{0}", project.GetDbSetPropertyName(table))
+                    new CodeLine("return await DbContext.{0}", dbSetName)
                 };
 
                 foreach (var foreignKey in table.ForeignKeys)
@@ -601,20 +649,34 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                 lines.Add(new CodeLine(1, ".FirstOrDefaultAsync({0});", expression));
 
-                return new MethodDefinition(AccessModifier.Public, string.Format("Task<{0}>", project.GetEntityName(table)), project.GetGetRepositoryMethodName(table), new ParameterDefinition(project.GetEntityName(table), "entity"))
+                return new MethodDefinition
                 {
+                    AccessModifier = AccessModifier.Public,
                     IsAsync = true,
+                    Type = string.Format("Task<{0}>", project.GetEntityName(table)),
+                    Name = project.GetGetRepositoryMethodName(table),
+                    Parameters =
+                    {
+                        new ParameterDefinition(project.GetEntityName(table), "entity")
+                    },
                     Lines = lines
                 };
             }
             else
             {
-                return new MethodDefinition(AccessModifier.Public, string.Format("Task<{0}>", project.GetEntityName(table)), project.GetGetRepositoryMethodName(table), new ParameterDefinition(project.GetEntityName(table), "entity"))
+                return new MethodDefinition
                 {
+                    AccessModifier = AccessModifier.Public,
                     IsAsync = true,
+                    Type = string.Format("Task<{0}>", project.GetEntityName(table)),
+                    Name = project.GetGetRepositoryMethodName(table),
+                    Parameters =
+                    {
+                        new ParameterDefinition(project.GetEntityName(table), "entity")
+                    },
                     Lines =
                     {
-                        new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", project.GetDbSetPropertyName(table), expression)
+                        new CodeLine("return await DbContext.{0}.FirstOrDefaultAsync({1});", dbSetName, expression)
                     }
                 };
             }
