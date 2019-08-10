@@ -190,26 +190,38 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             }
             else
             {
+                var schemas = project.Database.DbObjects.Select(item => item.Schema).Distinct().OrderBy(item => item);
+
                 if (project.Database.Tables.Count > 0)
                 {
                     lines.Add(new CommentLine(" Apply all configurations for tables"));
                     lines.Add(new EmptyLine());
 
-                    lines.Add(new CodeLine("modelBuilder"));
-
-                    foreach (var table in project.Database.Tables)
+                    foreach (var schema in schemas)
                     {
-                        var existingViews = project.Database.Views.Count(item => item.Name == table.Name);
+                        var tables = project.Database.Tables.Where(item => item.Schema == schema).ToList();
 
-                        var genericTypeName = existingViews == 0 ? project.GetEntityName(table) : project.GetFullEntityName(table);
-                        var name = existingViews == 0 ? project.GetEntityConfigurationName(table) : project.GetFullEntityConfigurationName(table);
+                        if (tables.Count == 0)
+                            continue;
 
-                        lines.Add(new CodeLine(1, ".ApplyConfiguration(new {0}())", name));
+                        lines.Add(new CommentLine(" Schema '{0}'", schema));
+
+                        lines.Add(new CodeLine("modelBuilder"));
+
+                        foreach (var table in tables)
+                        {
+                            var existingViews = project.Database.Views.Count(item => item.Name == table.Name);
+
+                            var genericTypeName = existingViews == 0 ? project.GetEntityName(table) : project.GetFullEntityName(table);
+                            var name = existingViews == 0 ? project.GetEntityConfigurationName(table) : project.GetFullEntityConfigurationName(table);
+
+                            lines.Add(new CodeLine(1, ".ApplyConfiguration(new {0}())", name));
+                        }
+
+                        lines.Add(new CodeLine(";"));
+
+                        lines.Add(new EmptyLine());
                     }
-
-                    lines.Add(new CodeLine(";"));
-
-                    lines.Add(new EmptyLine());
                 }
 
                 if (project.Database.Views.Count > 0)
@@ -217,20 +229,30 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     lines.Add(new CommentLine(" Apply all configurations for views"));
                     lines.Add(new EmptyLine());
 
-                    lines.Add(new CodeLine("modelBuilder"));
-
-                    foreach (var view in project.Database.Views)
+                    foreach (var schema in schemas)
                     {
-                        var existingTables = project.Database.Tables.Count(item => item.Name == view.Name);
+                        var views = project.Database.Views.Where(item => item.Schema == schema).ToList();
 
-                        var genericTypeName = existingTables == 0 ? project.GetEntityName(view) : project.GetFullEntityName(view);
-                        var name = existingTables == 0 ? project.GetEntityConfigurationName(view) : project.GetFullEntityConfigurationName(view);
+                        if (views.Count == 0)
+                            continue;
 
-                        lines.Add(new CodeLine(1, ".ApplyConfiguration(new {0}())", name));
+                        lines.Add(new CommentLine(" Schema '{0}'", schema));
+
+                        lines.Add(new CodeLine("modelBuilder"));
+
+                        foreach (var view in views)
+                        {
+                            var existingTables = project.Database.Tables.Count(item => item.Name == view.Name);
+
+                            var genericTypeName = existingTables == 0 ? project.GetEntityName(view) : project.GetFullEntityName(view);
+                            var name = existingTables == 0 ? project.GetEntityConfigurationName(view) : project.GetFullEntityConfigurationName(view);
+
+                            lines.Add(new CodeLine(1, ".ApplyConfiguration(new {0}())", name));
+                        }
+
+                        lines.Add(new CodeLine(";"));
+                        lines.Add(new EmptyLine());
                     }
-
-                    lines.Add(new CodeLine(";"));
-                    lines.Add(new EmptyLine());
                 }
 
                 if (project.Database.TableFunctions.Count > 0)

@@ -3,17 +3,16 @@
     <PropertyGroup>
         <TargetFramework>netcoreapp2.2</TargetFramework>
         <LangVersion>latest</LangVersion>
-        <Version>1.0.0-beta-sun-build35</Version>
+        <Version>1.0.0-beta-sun-build36</Version>
         <Authors>H. Herzl</Authors>
         <Company>Herzl Corp.</Company>
         <Description>CatFactory Package for Entity Framework Core</Description>
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</RepositoryUrl>
         <PackageTags>Entity Framework Core; ORM; Scaffolding</PackageTags>
-        <PackageReleaseNotes>1.0.0-beta-sun-build35 Version:
+        <PackageReleaseNotes>1.0.0-beta-sun-build36 Version:
 
-* Add default SQL values in entity configurations
-* Fix references for tables and views with same names from different schemas
+* Refactor code in applying configurations for DbContext
 
 Quick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory
 </PackageReleaseNotes>
