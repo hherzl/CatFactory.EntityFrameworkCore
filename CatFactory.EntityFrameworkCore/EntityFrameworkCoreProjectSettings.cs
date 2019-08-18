@@ -8,14 +8,18 @@ namespace CatFactory.EntityFrameworkCore
 {
     public class EntityFrameworkCoreProjectSettings : IProjectSettings
     {
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)] private List<string> m_backingFields;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)] private List<string> m_insertExclusions;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)] private List<string> m_updateExclusions;
+
+        public EntityFrameworkCoreProjectSettings()
+        {
+        }
+
         public ValidationResult Validate()
         {
             // todo: Add implementation
             throw new NotImplementedException();
-        }
-
-        public EntityFrameworkCoreProjectSettings()
-        {
         }
 
         public bool ForceOverwrite { get; set; }
@@ -48,49 +52,40 @@ namespace CatFactory.EntityFrameworkCore
 
         public bool EntitiesWithDataContracts { get; set; }
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private List<string> m_backingFields;
-
         public List<string> BackingFields
         {
-            get { return m_backingFields ?? (m_backingFields = new List<string>()); }
-            set { m_backingFields = value; }
+            get => m_backingFields ?? (m_backingFields = new List<string>());
+            set => m_backingFields = value;
         }
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private List<string> m_insertExclusions;
 
         public List<string> InsertExclusions
         {
-            get { return m_insertExclusions ?? (m_insertExclusions = new List<string>()); }
-            set { m_insertExclusions = value; }
+            get => m_insertExclusions ?? (m_insertExclusions = new List<string>());
+            set => m_insertExclusions = value;
         }
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private List<string> m_updateExclusions;
 
         public List<string> UpdateExclusions
         {
-            get { return m_updateExclusions ?? (m_updateExclusions = new List<string>()); }
-            set { m_updateExclusions = value; }
+            get => m_updateExclusions ?? (m_updateExclusions = new List<string>());
+            set => m_updateExclusions = value;
         }
 
         /// <summary>
         /// When true the Database DefaultSchema is also used as a namespace and folder
         /// </summary>
-        public Boolean DefaultSchemaAsSubdirectory { get; set; }
+        public bool DefaultSchemaAsSubdirectory { get; set; }
 
         /// <summary>
         /// Navigation Property Enumerable Interface Type
         /// Typically ICollection
         /// </summary>
-        public String NavigationPropertyEnumerableInterfaceType { get; set; }
+        public string NavigationPropertyEnumerableInterfaceType { get; set; }
 
         /// <summary>
         /// DefaultSchemaAsNamespace
         /// default = false;
         /// When true use DefaultSchema (dbo) as namespace and class
         /// </summary>
-        public Boolean DefaultSchemaAsNamespace { get; set; }
+        public bool DefaultSchemaAsNamespace { get; set; }
     }
 }

@@ -15,6 +15,9 @@ namespace CatFactory.EntityFrameworkCore
 {
     public class EntityFrameworkCoreProject : CSharpProject<EntityFrameworkCoreProjectSettings>
     {
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)] private EntityFrameworkCoreProjectNamespaces m_projectNamespaces;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)] private Dictionary<string, Type> m_valueConversionMaps;
+
         public EntityFrameworkCoreProject()
             : base()
         {
@@ -25,19 +28,22 @@ namespace CatFactory.EntityFrameworkCore
         {
         }
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private EntityFrameworkCoreProjectNamespaces m_projectNamespaces;
-
         public EntityFrameworkCoreProjectNamespaces ProjectNamespaces
         {
-            get
-            {
-                return m_projectNamespaces ?? (m_projectNamespaces = new EntityFrameworkCoreProjectNamespaces());
-            }
-            set
-            {
-                m_projectNamespaces = value;
-            }
+            get => m_projectNamespaces ?? (m_projectNamespaces = new EntityFrameworkCoreProjectNamespaces());
+            set => m_projectNamespaces = value;
+        }
+
+        /// <summary>
+        /// A dictionary of (string)CatFactory.ObjectRelationalMapping.DatabaseTypeMap.DatabaseType to
+        /// {OutputDirectory}\{EntityFrameworkCoreProjectNamespaces.ValueConversions}\Type can be
+        /// submitted to the Entity Framework Core project via ValueConversionMaps for use in {Enity}Configuration.cs
+        /// files
+        /// </summary>
+        public Dictionary<string, Type> ValueConversionMaps
+        {
+            get => m_valueConversionMaps ?? (m_valueConversionMaps = new Dictionary<string, Type>());
+            set => m_valueConversionMaps = value;
         }
 
         // todo: Add logic to show author's info
@@ -89,27 +95,6 @@ namespace CatFactory.EntityFrameworkCore
             codeBuilder.CreateFile(subdirectory: subdirectory);
 
             OnScaffoldedDefinition(new ScaffoldedDefinitionEventArgs(Logger, codeBuilder));
-        }
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private Dictionary<string, Type> m_valueConversionMaps;
-
-        /// <summary>
-        /// A dictionary of (string)CatFactory.ObjectRelationalMapping.DatabaseTypeMap.DatabaseType to
-        /// {OutputDirectory}\{EntityFrameworkCoreProjectNamespaces.ValueConversions}\Type can be
-        /// submitted to the Entity Framework Core project via ValueConversionMaps for use in {Enity}Configuration.cs
-        /// files
-        /// </summary>
-        public Dictionary<string, Type> ValueConversionMaps
-        {
-            get
-            {
-                return m_valueConversionMaps ?? (m_valueConversionMaps = new Dictionary<string, Type>());
-            }
-            set
-            {
-                m_valueConversionMaps = value;
-            }
         }
     }
 }

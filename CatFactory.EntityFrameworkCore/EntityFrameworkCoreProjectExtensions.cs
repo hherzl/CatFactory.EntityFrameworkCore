@@ -34,20 +34,11 @@ namespace CatFactory.EntityFrameworkCore
         public static string GetFullDbSetPropertyName(this EntityFrameworkCoreProject project, IDbObject dbObject)
             => project.NamingService.Pluralize(string.Concat(project.CodeNamingConvention.GetNamespace(dbObject.Schema), project.GetEntityName(dbObject)));
 
-
-
-
-
         public static string GetEntityConfigurationName(this EntityFrameworkCoreProject project, IDbObject dbObject)
             => string.Format("{0}Configuration", project.GetEntityName(dbObject));
 
         public static string GetFullEntityConfigurationName(this EntityFrameworkCoreProject project, IDbObject dbObject)
-        {
-            return string.Join(".", project.CodeNamingConvention.GetNamespace(project.ProjectNamespaces.Configurations), project.CodeNamingConvention.GetNamespace(dbObject.Schema), string.Format("{0}Configuration", project.GetEntityName(dbObject)));
-        }
-
-
-
+            => string.Join(".", project.CodeNamingConvention.GetNamespace(project.ProjectNamespaces.Configurations), project.CodeNamingConvention.GetNamespace(dbObject.Schema), string.Format("{0}Configuration", project.GetEntityName(dbObject)));
 
         public static string GetFullEntityName(this EntityFrameworkCoreProject project, IDbObject dbObject)
             => string.Join(".", project.CodeNamingConvention.GetNamespace(project.ProjectNamespaces.EntityLayer), project.CodeNamingConvention.GetClassName(dbObject.Schema), project.CodeNamingConvention.GetClassName(dbObject.Name));
