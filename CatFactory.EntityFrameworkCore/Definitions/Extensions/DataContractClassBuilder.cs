@@ -40,12 +40,14 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                 foreach (var column in foreignTable?.GetColumnsWithNoPrimaryKey())
                 {
-                    var propertyName = project.GetPropertyName(foreignTable, column);
+                    var col = (Column)column;
+
+                    var propertyName = project.GetPropertyName(foreignTable, col);
 
                     var target = string.Format("{0}{1}", project.GetEntityName(foreignTable), propertyName);
 
                     if (definition.Properties.Count(item => item.Name == propertyName) == 0)
-                        definition.Properties.Add(new PropertyDefinition(AccessModifier.Public, project.Database.ResolveDatabaseType(column), target)
+                        definition.Properties.Add(new PropertyDefinition(AccessModifier.Public, project.Database.ResolveDatabaseType(col), target)
                         {
                             IsAutomatic = true
                         });

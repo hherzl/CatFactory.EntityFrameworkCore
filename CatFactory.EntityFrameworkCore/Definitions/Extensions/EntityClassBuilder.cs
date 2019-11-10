@@ -59,11 +59,13 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                 foreach (var key in table.GetColumnsFromConstraint(table.PrimaryKey))
                 {
-                    var propertyType = project.Database.ResolveDatabaseType(key);
+                    var col = (Column)key;
 
-                    constructor.Parameters.Add(new ParameterDefinition(propertyType, project.GetParameterName(key)));
+                    var propertyType = project.Database.ResolveDatabaseType(col);
 
-                    constructor.Lines.Add(new CodeLine("{0} = {1};", project.GetPropertyName(key.Name), project.GetParameterName(key)));
+                    constructor.Parameters.Add(new ParameterDefinition(propertyType, project.GetParameterName(col)));
+
+                    constructor.Lines.Add(new CodeLine("{0} = {1};", project.GetPropertyName(key.Name), project.GetParameterName(col)));
                 }
 
                 definition.Constructors.Add(constructor);

@@ -177,7 +177,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                     foreach (var column in foreignTable?.GetColumnsWithNoPrimaryKey())
                     {
-                        var propertyName = project.GetPropertyName(foreignTable, column);
+                        var col = (Column)column;
+
+                        var propertyName = project.GetPropertyName(foreignTable, col);
 
                         if (dataContractPropertiesSets.Where(item => string.Format("{0}.{1}", item.ObjectSource, item.PropertySource) == string.Format("{0}.{1}", entityAlias, propertyName)).Count() == 0)
                         {
