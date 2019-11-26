@@ -8,17 +8,22 @@ namespace CatFactory.EntityFrameworkCore
 {
     public class EntityFrameworkCoreProjectSettings : IProjectSettings
     {
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)] private List<string> m_backingFields;
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)] private List<string> m_insertExclusions;
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)] private List<string> m_updateExclusions;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private List<string> m_backingFields;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private List<string> m_insertExclusions;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private List<string> m_updateExclusions;
 
         public EntityFrameworkCoreProjectSettings()
         {
         }
 
+        // todo: Add implementation
         public ValidationResult Validate()
         {
-            // todo: Add implementation
             throw new NotImplementedException();
         }
 

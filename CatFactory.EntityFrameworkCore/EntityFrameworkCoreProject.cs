@@ -15,8 +15,19 @@ namespace CatFactory.EntityFrameworkCore
 {
     public class EntityFrameworkCoreProject : CSharpProject<EntityFrameworkCoreProjectSettings>
     {
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)] private EntityFrameworkCoreProjectNamespaces m_projectNamespaces;
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)] private Dictionary<string, Type> m_valueConversionMaps;
+        public static EntityFrameworkCoreProject Create(string name, Database database, string outputDirectory)
+            => new EntityFrameworkCoreProject
+            {
+                Name = name,
+                Database = database,
+                OutputDirectory = outputDirectory
+            };
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private EntityFrameworkCoreProjectNamespaces m_projectNamespaces;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private Dictionary<string, Type> m_valueConversionMaps;
 
         public EntityFrameworkCoreProject()
             : base()

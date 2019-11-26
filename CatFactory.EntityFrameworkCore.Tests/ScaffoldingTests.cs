@@ -27,12 +27,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
             var database = databaseFactory.Import();
 
             // Create instance of Entity Framework Core project
-            var project = new EntityFrameworkCoreProject
-            {
-                Name = "OnlineStore.Core",
-                Database = database,
-                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\OnlineStore.Core"
-            };
+            var project = EntityFrameworkCoreProject.Create("OnlineStore.Core", database, @"C:\Temp\CatFactory.EntityFrameworkCore\OnlineStore.Core");
 
             // Apply settings for Entity Framework Core project
             project.GlobalSelection(settings =>
@@ -79,12 +74,8 @@ namespace CatFactory.EntityFrameworkCore.Tests
                 .Import(SqlServerDatabaseFactory.GetLogger(), "server=(local);database=OnlineStore;integrated security=yes;", "dbo.sysdiagrams");
 
             // Create instance of Entity Framework Core Project
-            var project = new EntityFrameworkCoreProject
-            {
-                Name = "OnlineStoreWithDataAnnotations.Core",
-                Database = database,
-                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\OnlineStoreWithDataAnnotations.Core"
-            };
+            var project = EntityFrameworkCoreProject
+                .Create("OnlineStoreWithDataAnnotations.Core", database, @"C:\Temp\CatFactory.EntityFrameworkCore\OnlineStoreWithDataAnnotations.Core");
 
             // Apply settings for Entity Framework Core project
             project.GlobalSelection(settings =>
@@ -142,12 +133,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
             var database = factory.Import();
 
             // Create instance of Entity Framework Core Project
-            var project = new EntityFrameworkCoreProject
-            {
-                Name = "Northwind.Core",
-                Database = database,
-                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\Northwind.Core"
-            };
+            var project = EntityFrameworkCoreProject.Create("Northwind.Core", database, @"C:\Temp\CatFactory.EntityFrameworkCore\Northwind.Core");
 
             // Apply settings for Entity Framework Core project
             project.GlobalSelection(settings => settings.ForceOverwrite = true);
@@ -192,18 +178,10 @@ namespace CatFactory.EntityFrameworkCore.Tests
             var database = databaseFactory.Import();
 
             // Create instance of Entity Framework Core Project
-            var project = new EntityFrameworkCoreProject
-            {
-                Name = "AdventureWorks",
-                Database = database,
-                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\AdventureWorks.Core"
-            };
+            var project = EntityFrameworkCoreProject.Create("AdventureWorks", database, @"C:\Temp\CatFactory.EntityFrameworkCore\AdventureWorks.Core");
 
             // Apply settings for Entity Framework Core project
-            project.GlobalSelection(settings =>
-            {
-                settings.ForceOverwrite = true;
-            });
+            project.GlobalSelection(settings => settings.ForceOverwrite = true);
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
@@ -236,12 +214,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
             var database = databaseFactory.Import();
 
             // Create instance of Entity Framework Core project
-            var project = new EntityFrameworkCoreProject
-            {
-                Name = "WideWorldImporters.Core",
-                Database = database,
-                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\WideWorldImporters.Core"
-            };
+            var project = EntityFrameworkCoreProject.Create("WideWorldImporters.Core", database, @"C:\Temp\CatFactory.EntityFrameworkCore\WideWorldImporters.Core");
 
             // Apply settings for Entity Framework Core project
             project.GlobalSelection(settings => settings.ForceOverwrite = true);
