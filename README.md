@@ -1,16 +1,16 @@
 # CatFactory.EntityFrameworkCore ==^^==
 
-This is the *CatFactory* package for *Entity Framework Core*.
+This is the **CatFactory** package for *Entity Framework Core*.
 
 ## What Is CatFactory?
 
-CatFactory is a scaffolding engine for .NET Core built with C#.
+**CatFactory** is a scaffolding engine for .NET Core built with C#.
 
 ## How does it Works?
 
-The concept behind CatFactory is to import an existing database from SQL Server instance and then to scaffold a target technology.
+The concept behind **CatFactory** is to import an existing database from *SQL Server* instance and then to scaffold a target technology.
 
-We can also replace the database from SQL Server instance with an in-memory database.
+We can also replace the database from *SQL Server* instance with an in-memory database.
 
 The flow to import an existing database is:
 
@@ -48,7 +48,7 @@ Also these technologies are supported:
 
 ## Roadmap
 
-There will be a lot of improvements for CatFactory on road:
+There will be a lot of improvements for **CatFactory** on road:
 
 * Scaffolding Services Layer
 * Dapper Integration for ASP.NET Core
@@ -62,11 +62,11 @@ There will be a lot of improvements for CatFactory on road:
 
 ### Database Type Map
 
-One of things I don't like to get equivalent between SQL data type for CLR is use magic strings, after of review the more "fancy" way to resolve a type equivalence is to have a class that allows to know the equivalence between SQL data type and CLR type.
+One of things I don't like to get equivalent between *SQL Server* data type for CLR is use magic strings, after of review the more "fancy" way to resolve a type equivalence is to have a class that allows to know the equivalence between *SQL Server* data type and CLR type.
 
 This concept was created from this matrix: [`SQL Server Data Type Mappings`](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql-server-data-type-mappings).
 
-Using this matrix as reference, now CatFactory has a class named DatabaseTypeMap. Database class contains a property with all mappings named DatebaseTypeMaps, so this property is filled by Import feature for SQL Server package.
+Using this matrix as reference, now **CatFactory** has a class named DatabaseTypeMap. Database class contains a property with all mappings named DatebaseTypeMaps, so this property is filled by Import feature for *SQL Server* package.
 
 ```csharp
 public class DatabaseTypeMap
@@ -99,11 +99,9 @@ public class DatabaseTypeMap
 }
 ```
 
-DatabaseTypeMap is the class to represent database type definition, for database instance we need to create a collection of DatabaseTypeMap class to have a matrix to resolve data types.
+**DatabaseTypeMap** is the class to represent database type definition, for database instance we need to create a collection of **DatabaseTypeMap** class to have a matrix to resolve data types.
 
 Suppose there is a class with name DatabaseTypeMapList, this class has a property to get data types. Once we have imported an existing database we can resolve data types:
-
-Resolve without extension methods:
 
 ```csharp
 // Import database
@@ -117,13 +115,13 @@ var mapsForString = database.DatabaseTypeMaps.Where(item => item.GetClrType() ==
 var mapForVarchar = database.DatabaseTypeMaps.FirstOrDefault(item => item.DatabaseType == "varchar");
 ```
 
-SQL Server allows to define data types, suppose the database instance has a data type defined by user with name Flag, Flag data type is a bit, bool in C#. Import method retrieve user data types, so in DatabaseTypeMaps collection we can search the parent data type for Flag:
+*SQL Server* allows to define data types, suppose the database instance has a data type defined by user with name Flag, Flag data type is a bit, bool in C#. Import method retrieves user data types, so in DatabaseTypeMaps collection we can search the parent data type for Flag:
 
 ### Project Selection
 
 A project selection is a limit to apply settings for objects that match with pattern.
 
-GlobalSelection is the default selection for project, contains a default instance of settings.
+**GlobalSelection** is the default selection for project, contains a default instance of settings.
 
 Patterns:
 
@@ -146,10 +144,7 @@ project.GlobalSelection(settings =>
 });
 
 // Apply settings for specific object
-project.Select("Sales.OrderHeader", settings =>
-{
-    settings.EntitiesWithDataContracts = true;
-});
+project.Select("Sales.OrderHeader", settings => settings.EntitiesWithDataContracts = true);
 ```
 
 ### Event Handlers to Scaffold
@@ -169,6 +164,43 @@ project.ScaffoldedDefinition += (source, args) =>
     // Add code to perform operations after of create code file
 };
 ```
+
+### Document Object Model
+
+The most databases now have a document object model, this model provides a simple way to know the structure for database and objects.
+
+In *SQL Server* there are views like *sys.tables*, *sys.views*, *sys.columns* that contain all information about these objects.
+
+Also there are stored procedures and functions like *sp_help* and *dm_exec_describe_first_result_set_for_object* that retrieve information about a *database object* and columns for the result of execute an object.
+
+In **CatFactory**, this model is available through extension methods for *DbConnection* class:
+
+```csharp
+using (var connection = new SqlConnection("server=(local);database=OnlineStore;integrated security=yes;"))
+{
+	connection.Open();
+
+	// Retrieve all tables defined in database
+	var tables = connection.GetSysTables().ToList();	
+}
+```
+
+These methods are available for *SQL Server Document Object Model*:
+
+    GetSysSchemas
+    GetSysTypes
+    GetSysTables
+    GetSysViews
+    GetSysColumns
+    GetSysSequencesAsync
+
+### Import Bag
+
+Based on **ViewBag** concept from *ASP MVC*, this concept allows to add specific data for different databases providers.
+
+**ImportBag** is a dynamic property, the **CatFactory** engine saves specific information in this property, for *SQL Server* saves *extended properties*, *scalar functions*, *table functions*, *stored procedures* and *sequences*.
+
+For *Postgre SQL* saves *sequences*, in the future versions it will save another information related to database objects like *stored procedures*.
 
 ## Quick Starts
 
