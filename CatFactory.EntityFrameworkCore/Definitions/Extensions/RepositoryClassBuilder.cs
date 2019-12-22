@@ -32,11 +32,11 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 },
                 Namespace = project.GetDataLayerRepositoriesNamespace(),
                 AccessModifier = AccessModifier.Public,
-                Name = projectFeature.GetClassRepositoryName(),
+                Name = projectFeature.GetRepositoryClassName(),
                 BaseClass = "Repository",
                 Implements =
                 {
-                    projectFeature.GetInterfaceRepositoryName()
+                    projectFeature.GetRepositoryInterfaceName()
                 },
                 Constructors =
                 {

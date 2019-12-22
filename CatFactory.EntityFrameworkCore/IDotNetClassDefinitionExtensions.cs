@@ -63,10 +63,12 @@ namespace CatFactory.EntityFrameworkCore
                 .Database
                 .Tables
                 .Where(item => item.PrimaryKey != null)
-                .Select(item => item.GetColumnsFromConstraint(item.PrimaryKey).Select(c => c.Name).First())
+                .Select(item => item.GetColumnsFromConstraint(item.PrimaryKey).Select(column => column.Name).First())
                 .ToList();
 
-            var result = view.Columns.Where(item => primaryKeys.Contains(item.Name)).ToList();
+            var result = view.Columns
+                .Where(item => primaryKeys.Contains(item.Name))
+                .ToList();
 
             for (var i = 0; i < view.Columns.Count; i++)
             {

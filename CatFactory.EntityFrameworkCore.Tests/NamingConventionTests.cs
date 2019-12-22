@@ -6,7 +6,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
     public class NamingConventionTests
     {
         [Fact]
-        public void TestMapName()
+        public void CheckEntityConfigurationName()
         {
             // Arrange
             var efCoreProject = new EntityFrameworkCoreProject();

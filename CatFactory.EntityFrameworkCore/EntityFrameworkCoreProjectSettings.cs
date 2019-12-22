@@ -37,7 +37,8 @@ namespace CatFactory.EntityFrameworkCore
 
         public bool UseDataAnnotations { get; set; }
 
-        [Obsolete("Temporarily disabled")] public bool UseMefForEntitiesMapping { get; set; } = true;
+        [Obsolete("Temporarily disabled")]
+        public bool UseMefForEntitiesMapping { get; set; } = true;
 
         public bool DeclareDbSetPropertiesInDbContext { get; } = true;
 

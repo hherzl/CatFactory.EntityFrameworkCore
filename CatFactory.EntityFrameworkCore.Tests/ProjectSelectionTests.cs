@@ -1,4 +1,5 @@
-﻿using CatFactory.SqlServer;
+﻿using System.Threading.Tasks;
+using CatFactory.SqlServer;
 using Xunit;
 
 namespace CatFactory.EntityFrameworkCore.Tests
@@ -6,21 +7,17 @@ namespace CatFactory.EntityFrameworkCore.Tests
     public class ProjectSelectionTests
     {
         [Fact]
-        public void TestProjectSelectionScope()
+        public async Task ProjectSelectionScopeAsync()
         {
             // Arrange
 
             // Import database
-            var database = SqlServerDatabaseFactory
-                .Import(SqlServerDatabaseFactory.GetLogger(), "server=(local);database=OnlineStore;integrated security=yes;", "dbo.sysdiagrams");
+            var database = await SqlServerDatabaseFactory
+                .ImportAsync("server=(local);database=OnlineStore;integrated security=yes;", "dbo.sysdiagrams");
 
             // Create instance of Entity Framework Core project
-            var project = new EntityFrameworkCoreProject
-            {
-                Name = "OnLineStore",
-                Database = database,
-                OutputDirectory = "C:\\Temp\\CatFactory.EntityFrameworkCore\\OnlineStore"
-            };
+            var project = EntityFrameworkCoreProject
+                .Create("OnlineStore", database, @"C:\Temp\CatFactory.EntityFrameworkCore\OnlineStore");
 
             // Act
 

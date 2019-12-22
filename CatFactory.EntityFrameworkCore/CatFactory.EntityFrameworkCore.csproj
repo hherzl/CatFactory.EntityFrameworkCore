@@ -3,14 +3,14 @@
     <PropertyGroup>
         <TargetFramework>netcoreapp2.2</TargetFramework>
         <LangVersion>latest</LangVersion>
-        <Version>1.0.0-beta-sun-build40</Version>
+        <Version>1.0.0-beta-sun-build41</Version>
         <Authors>H. Herzl</Authors>
         <Company>Herzl Corp.</Company>
         <Description>CatFactory Package for Entity Framework Core</Description>
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</RepositoryUrl>
         <PackageTags>Entity Framework Core; ORM; Scaffolding</PackageTags>
-        <PackageReleaseNotes>1.0.0-beta-sun-build40 Version:
+        <PackageReleaseNotes>1.0.0-beta-sun-build41 Version:
 
 * Core package update
 
@@ -20,7 +20,7 @@ Quick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Fra
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="CatFactory.NetCore" Version="1.0.0-beta-sun-build34" />
+        <PackageReference Include="CatFactory.NetCore" Version="1.0.0-beta-sun-build35" />
         <PackageReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 

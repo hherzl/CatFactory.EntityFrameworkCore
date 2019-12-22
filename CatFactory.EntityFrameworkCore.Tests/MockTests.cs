@@ -6,15 +6,11 @@ namespace CatFactory.EntityFrameworkCore.Tests
     public class MockTests
     {
         [Fact]
-        public void ProjectScaffoldingForMockDatabaseTest()
+        public void ProjectScaffoldingForMockDatabase()
         {
             // Create instance of EF Core Project
-            var project = new EntityFrameworkCoreProject
-            {
-                Name = "College.Mock",
-                Database = Databases.College,
-                OutputDirectory = @"C:\Temp\CatFactory.EntityFrameworkCore\College.Mock"
-            };
+            var project = EntityFrameworkCoreProject
+                .Create("College.Mock", Databases.College, @"C:\Temp\CatFactory.EntityFrameworkCore\College.Mock");
 
             // Apply settings for EF Core project
             project.GlobalSelection(settings => settings.ForceOverwrite = true);
