@@ -60,6 +60,30 @@ namespace CatFactory.EntityFrameworkCore
         // todo: Add logic to show author's info
         public AuthorInfo AuthorInfo { get; set; }
 
+        protected override IEnumerable<DbObject> GetDbObjectsBySchema(string schema)
+        {
+            foreach (var item in base.GetDbObjectsBySchema(schema))
+            {
+                yield return item;
+            }
+
+            foreach (var item in Database.GetTableFunctions().Where(tableFunction => tableFunction.Schema == schema))
+            {
+                yield return new DbObject(item.Schema, item.Name)
+                {
+                    Type = "TableFunction"
+                };
+            }
+
+            foreach (var item in Database.GetStoredProcedures().Where(storedProcedure => storedProcedure.Schema == schema))
+            {
+                yield return new DbObject(item.Schema, item.Name)
+                {
+                    Type = "StoredProcedure"
+                };
+            }
+        }
+
         public override void BuildFeatures()
         {
             if (Database == null)

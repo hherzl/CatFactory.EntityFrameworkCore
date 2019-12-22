@@ -101,25 +101,25 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     definition.SimplifyDataTypes();
             }
 
-            //foreach (var tableFunction in projectFeature.GetTableFunctions())
-            //{
-            //    var projectSelection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(tableFunction);
+            foreach (var tableFunction in project.Database.GetTableFunctions())
+            {
+                var projectSelection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(tableFunction);
 
-            //    definition.Methods.Add(GetGetAllMethod(projectFeature, tableFunction));
+                definition.Methods.Add(GetGetAllMethod(projectFeature, tableFunction));
 
-            //    if (projectSelection.Settings.SimplifyDataTypes)
-            //        definition.SimplifyDataTypes();
-            //}
+                if (projectSelection.Settings.SimplifyDataTypes)
+                    definition.SimplifyDataTypes();
+            }
 
-            //foreach (var storedProcedure in projectFeature.GetStoredProcedures())
-            //{
-            //    var projectSelection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(storedProcedure);
+            foreach (var storedProcedure in project.Database.GetStoredProcedures())
+            {
+                var projectSelection = projectFeature.GetEntityFrameworkCoreProject().GetSelection(storedProcedure);
 
-            //    definition.Methods.Add(GetGetAllMethod(projectFeature, storedProcedure));
+                definition.Methods.Add(GetGetAllMethod(projectFeature, storedProcedure));
 
-            //    if (projectSelection.Settings.SimplifyDataTypes)
-            //        definition.SimplifyDataTypes();
-            //}
+                if (projectSelection.Settings.SimplifyDataTypes)
+                    definition.SimplifyDataTypes();
+            }
 
             return definition;
         }

@@ -97,55 +97,57 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     definition.Namespaces.AddUnique(project.GetDataLayerConfigurationsNamespace(view.Schema));
             }
 
-            //foreach (var scalarFunction in project.Database.ScalarFunctions)
-            //{
-            //    var parameterType = string.Empty;
+            var scalarFunctions = project.Database.GetScalarFunctions();
 
-            //    if (project.Database.HasTypeMappedToClr(scalarFunction.Parameters[0]))
-            //    {
-            //        var clrType = project.Database.GetClrMapForType(scalarFunction.Parameters[0]);
+            foreach (var scalarFunction in scalarFunctions)
+            {
+                var parameterType = string.Empty;
 
-            //        parameterType = clrType.AllowClrNullable ? string.Format("{0}?", clrType.GetClrType().Name) : clrType.GetClrType().Name;
-            //    }
-            //    else
-            //    {
-            //        parameterType = "object";
-            //    }
+                if (project.Database.HasTypeMappedToClr(scalarFunction.Parameters[0]))
+                {
+                    var clrType = project.Database.GetClrMapForType(scalarFunction.Parameters[0]);
 
-            //    var method = new MethodDefinition
-            //    {
-            //        Attributes =
-            //        {
-            //            new MetadataAttribute("DbFunction")
-            //            {
-            //                Sets =
-            //                {
-            //                    new MetadataAttributeSet("FunctionName", string.Format("\"{0}\"", scalarFunction.Name)),
-            //                    new MetadataAttributeSet("Schema", string.Format("\"{0}\"", scalarFunction.Schema))
-            //                }
-            //            }
-            //        },
-            //        IsStatic = true,
-            //        Type = parameterType,
-            //        AccessModifier = AccessModifier.Public,
-            //        Name = project.GetScalarFunctionMethodName(scalarFunction),
-            //        Lines =
-            //        {
-            //            new CodeLine("throw new Exception();")
-            //        }
-            //    };
+                    parameterType = clrType.AllowClrNullable ? string.Format("{0}?", clrType.GetClrType().Name) : clrType.GetClrType().Name;
+                }
+                else
+                {
+                    parameterType = "object";
+                }
 
-            //    var parameters = scalarFunction.Parameters.Where(item => !string.IsNullOrEmpty(item.Name)).ToList();
+                var method = new MethodDefinition
+                {
+                    Attributes =
+                    {
+                        new MetadataAttribute("DbFunction")
+                        {
+                            Sets =
+                            {
+                                new MetadataAttributeSet("FunctionName", string.Format("\"{0}\"", scalarFunction.Name)),
+                                new MetadataAttributeSet("Schema", string.Format("\"{0}\"", scalarFunction.Schema))
+                            }
+                        }
+                    },
+                    IsStatic = true,
+                    Type = parameterType,
+                    AccessModifier = AccessModifier.Public,
+                    Name = project.GetScalarFunctionMethodName(scalarFunction),
+                    Lines =
+                    {
+                        new CodeLine("throw new Exception();")
+                    }
+                };
 
-            //    foreach (var parameter in parameters)
-            //    {
-            //        var propertyType = project.Database.ResolveDatabaseType(parameter);
+                var parameters = scalarFunction.Parameters.Where(item => !string.IsNullOrEmpty(item.Name)).ToList();
 
-            //        method.Parameters.Add(new ParameterDefinition(parameterType, project.GetPropertyName(parameter)));
-            //    }
+                foreach (var parameter in parameters)
+                {
+                    var propertyType = project.Database.ResolveDatabaseType(parameter);
 
-            //    definition.Methods.Add(method);
-            //}
+                    method.Parameters.Add(new ParameterDefinition(parameterType, project.GetPropertyName(parameter)));
+                }
+
+                definition.Methods.Add(method);
+            }
 
             if (projectSelection.Settings.SimplifyDataTypes)
                 definition.SimplifyDataTypes();
@@ -174,15 +176,21 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                     if (result.Count == 0)
                     {
-                        lines.Add(
-                            new CodeLine("modelBuilder.Entity<{0}>().HasKey(e => new {{ {1} }});", project.GetEntityName(view), string.Join(", ", view.Columns.Select(item => string.Format("e.{0}", project.GetPropertyName(view, item))))));
+                        lines.Add(new CodeLine(
+                            "modelBuilder.Entity<{0}>().HasKey(e => new {{ {1} }});",
+                            project.GetEntityName(view),
+                            string.Join(", ", view.Columns.Select(item => string.Format("e.{0}", project.GetPropertyName(view, item))))
+                        ));
 
                         lines.Add(new EmptyLine());
                     }
                     else
                     {
-                        lines.Add(
-                            new CodeLine("modelBuilder.Entity<{0}>().HasKey(e => new {{ {1} }});", project.GetEntityName(view), string.Join(", ", result.Select(item => string.Format("e.{0}", project.GetPropertyName(view, item))))));
+                        lines.Add(new CodeLine(
+                            "modelBuilder.Entity<{0}>().HasKey(e => new {{ {1} }});",
+                            project.GetEntityName(view),
+                            string.Join(", ", result.Select(item => string.Format("e.{0}", project.GetPropertyName(view, item))))
+                        ));
 
                         lines.Add(new EmptyLine());
                     }
@@ -255,31 +263,35 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     }
                 }
 
-                //if (project.Database.TableFunctions.Count > 0)
-                //{
-                //    lines.Add(new CommentLine(" Register query types for table functions"));
-                //    lines.Add(new EmptyLine());
+                var tableFunctions = project.Database.GetTableFunctions();
 
-                //    foreach (var view in project.Database.TableFunctions)
-                //    {
-                //        lines.Add(new CodeLine("modelBuilder.Query<{0}>();", project.GetEntityResultName(view)));
-                //    }
+                if (tableFunctions.Count > 0)
+                {
+                    lines.Add(new CommentLine(" Register query types for table functions"));
+                    lines.Add(new EmptyLine());
 
-                //    lines.Add(new EmptyLine());
-                //}
+                    foreach (var view in tableFunctions)
+                    {
+                        lines.Add(new CodeLine("modelBuilder.Query<{0}>();", project.GetEntityResultName(view)));
+                    }
 
-                //if (project.Database.StoredProcedures.Count > 0)
-                //{
-                //    lines.Add(new CommentLine(" Register query types for stored procedures"));
-                //    lines.Add(new EmptyLine());
+                    lines.Add(new EmptyLine());
+                }
 
-                //    foreach (var view in project.Database.StoredProcedures)
-                //    {
-                //        lines.Add(new CodeLine("modelBuilder.Query<{0}>();", project.GetEntityResultName(view)));
-                //    }
+                var storedProcedures = project.Database.GetStoredProcedures();
 
-                //    lines.Add(new EmptyLine());
-                //}
+                if (storedProcedures.Count > 0)
+                {
+                    lines.Add(new CommentLine(" Register query types for stored procedures"));
+                    lines.Add(new EmptyLine());
+
+                    foreach (var view in storedProcedures)
+                    {
+                        lines.Add(new CodeLine("modelBuilder.Query<{0}>();", project.GetEntityResultName(view)));
+                    }
+
+                    lines.Add(new EmptyLine());
+                }
             }
 
             lines.Add(new CodeLine("base.OnModelCreating(modelBuilder);"));
