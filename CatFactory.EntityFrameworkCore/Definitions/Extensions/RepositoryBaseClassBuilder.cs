@@ -22,6 +22,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 {
                     new FieldDefinition(AccessModifier.Protected, "bool", "Disposed"),
                     new FieldDefinition(AccessModifier.Protected, project.GetDbContextName(project.Database), "DbContext")
+                    {
+                        IsReadOnly = true
+                    }
                 },
                 Constructors =
                 {
@@ -37,14 +40,15 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 {
                     new MethodDefinition(AccessModifier.Public, "void", "Dispose")
                     {
+                        IsVirtual = true,
                         Lines =
                         {
-                            new CodeLine("if (!Disposed)"),
-                            new CodeLine("{"),
-                            new CodeLine(1, "DbContext?.Dispose();"),
-                            new CodeLine(),
-                            new CodeLine(1, "Disposed = true;"),
-                            new CodeLine("}")
+                            new CodeLine("if (Disposed)"),
+                            new CodeLine(1, "return;"),
+                            new EmptyLine(),
+                            new CodeLine("DbContext?.Dispose();"),
+                            new EmptyLine(),
+                            new CodeLine("Disposed = true;")
                         }
                     },
                     GetAddMethod(project),
@@ -59,9 +63,10 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     },
                     new MethodDefinition(AccessModifier.Public, "Task<int>", "CommitChangesAsync")
                     {
+                        IsAsync = true,
                         Lines =
                         {
-                            new CodeLine("return DbContext.SaveChangesAsync();")
+                            new CodeLine("return await DbContext.SaveChangesAsync();")
                         }
                     }
                 }

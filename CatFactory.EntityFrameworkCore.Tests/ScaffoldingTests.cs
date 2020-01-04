@@ -43,9 +43,16 @@ namespace CatFactory.EntityFrameworkCore.Tests
                     LastUpdateUserColumnName = "LastUpdateUser",
                     LastUpdateDateTimeColumnName = "LastUpdateDateTime"
                 };
+
+                settings.AddConfigurationForUniquesInFluentAPI = true;
+                settings.AddConfigurationForForeignKeysInFluentAPI = true;
             });
 
-            project.Selection("Sales.OrderHeader", settings => settings.EntitiesWithDataContracts = true);
+            project.Selection("Sales.OrderHeader", settings =>
+            {
+                settings.EntitiesWithDataContracts = true;
+                settings.DeclareNavigationProperties = true;
+            });
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
@@ -80,6 +87,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
                     LastUpdateUserColumnName = "LastUpdateUser",
                     LastUpdateDateTimeColumnName = "LastUpdateDateTime"
                 };
+                settings.DeclareNavigationProperties = true;
             });
 
             project.Selection("Sales.OrderHeader", settings => settings.EntitiesWithDataContracts = true);
@@ -127,7 +135,11 @@ namespace CatFactory.EntityFrameworkCore.Tests
                 .Create("Northwind.Core", database, @"C:\Temp\CatFactory.EntityFrameworkCore\Northwind.Core");
 
             // Apply settings for Entity Framework Core project
-            project.GlobalSelection(settings => settings.ForceOverwrite = true);
+            project.GlobalSelection(settings =>
+            {
+                settings.ForceOverwrite = true;
+                settings.DeclareNavigationProperties = true;
+            });
 
             project.Selection("dbo.Orders", settings => settings.EntitiesWithDataContracts = true);
 
@@ -173,7 +185,11 @@ namespace CatFactory.EntityFrameworkCore.Tests
                 .Create("AdventureWorks", database, @"C:\Temp\CatFactory.EntityFrameworkCore\AdventureWorks.Core");
 
             // Apply settings for Entity Framework Core project
-            project.GlobalSelection(settings => settings.ForceOverwrite = true);
+            project.GlobalSelection(settings =>
+            {
+                settings.ForceOverwrite = true;
+                settings.DeclareNavigationProperties = true;
+            });
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();

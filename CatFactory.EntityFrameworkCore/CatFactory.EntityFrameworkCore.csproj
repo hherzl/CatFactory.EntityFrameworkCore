@@ -3,16 +3,17 @@
     <PropertyGroup>
         <TargetFramework>netcoreapp2.2</TargetFramework>
         <LangVersion>latest</LangVersion>
-        <Version>1.0.0-beta-sun-build42</Version>
+        <Version>1.0.0-beta-sun-build43</Version>
         <Authors>H. Herzl</Authors>
         <Company>Herzl Corp.</Company>
         <Description>CatFactory Package for Entity Framework Core</Description>
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</RepositoryUrl>
         <PackageTags>Entity Framework Core; ORM; Scaffolding</PackageTags>
-        <PackageReleaseNotes>1.0.0-beta-sun-build42 Version:
+        <PackageReleaseNotes>1.0.0-beta-sun-build43 Version:
 
-* Code fix: get scalar functions, table functions and stored procedures from database
+* Code fix: set object names for columns in table functions
+* Code fix: minor fixes in settings for EntityFrameworkCore
 
 Quick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory
 </PackageReleaseNotes>

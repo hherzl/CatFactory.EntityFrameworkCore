@@ -86,8 +86,11 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     if (projectSelection.Settings.BackingFields.Contains(table.GetFullColumnName(column)))
                         definition.AddPropertyWithField(propertyType, project.GetPropertyName(table, column));
                     else if (projectSelection.Settings.UseAutomaticPropertiesForEntities)
-                        definition.Properties.Add(new PropertyDefinition(AccessModifier.Public, propertyType, project.GetPropertyName(table, column))
+                        definition.Properties.Add(new PropertyDefinition
                         {
+                            AccessModifier = AccessModifier.Public,
+                            Type = propertyType,
+                            Name = project.GetPropertyName(table, column),
                             IsAutomatic = true
                         });
                     else
@@ -109,7 +112,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         count += 1;
                 }
 
-                if (count == projectSelection.Settings.AuditEntity.Names.Length)
+                if (count == projectSelection.Settings.AuditEntity.Names.Count())
                     definition.Implements.Add("IAuditEntity");
                 else
                     definition.Implements.Add("IEntity");
@@ -134,7 +137,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                     var fkProperty = foreignKey.GetParentNavigationProperty(foreignTable, project);
 
-                    if (definition.Properties.FirstOrDefault(item => item.Name == fkProperty.Name) == null)
+                    if (!definition.Properties.Any(item => item.Name == fkProperty.Name))
                         definition.Properties.Add(fkProperty);
                 }
 
@@ -152,7 +155,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                             var navigationProperty = project.GetChildNavigationProperty(projectSelection, child, foreignKey);
 
-                            if (definition.Properties.FirstOrDefault(item => item.Name == navigationProperty.Name) == null)
+                            if (!definition.Properties.Any(item => item.Name == navigationProperty.Name))
                                 definition.Properties.Add(navigationProperty);
                         }
                     }
@@ -199,8 +202,11 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             {
                 var propertyType = project.Database.ResolveDatabaseType(column);
 
-                definition.Properties.Add(new PropertyDefinition(AccessModifier.Public, propertyType, project.GetPropertyName(view, column))
+                definition.Properties.Add(new PropertyDefinition
                 {
+                    AccessModifier = AccessModifier.Public,
+                    Type = propertyType,
+                    Name = project.GetPropertyName(view, column),
                     IsAutomatic = true
                 });
             }
@@ -242,8 +248,11 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             {
                 var type = project.Database.ResolveDatabaseType(column);
 
-                definition.Properties.Add(new PropertyDefinition(AccessModifier.Public, type, project.GetPropertyName(column.Name))
+                definition.Properties.Add(new PropertyDefinition
                 {
+                    AccessModifier = AccessModifier.Public,
+                    Type = type,
+                    Name = project.GetPropertyName(column.Name),
                     IsAutomatic = true
                 });
             }
@@ -291,8 +300,11 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 {
                     var propertyType = project.Database.ResolveDatabaseType(property.SystemTypeName);
 
-                    definition.Properties.Add(new PropertyDefinition(AccessModifier.Public, propertyType, project.GetPropertyName(property.Name))
+                    definition.Properties.Add(new PropertyDefinition
                     {
+                        AccessModifier = AccessModifier.Public,
+                        Type = propertyType,
+                        Name = project.GetPropertyName(property.Name),
                         IsAutomatic = true
                     });
                 }

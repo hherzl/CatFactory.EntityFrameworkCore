@@ -1,4 +1,6 @@
-﻿namespace CatFactory.EntityFrameworkCore
+﻿using System.Collections.Generic;
+
+namespace CatFactory.EntityFrameworkCore
 {
     public class AuditEntity
     {
@@ -14,7 +16,13 @@
 
         public string LastUpdateDateTimeColumnName { get; set; }
 
-        public string[] Names
-            => new string[] { CreationUserColumnName, CreationDateTimeColumnName, LastUpdateUserColumnName, LastUpdateDateTimeColumnName };
+        public IEnumerable<string> Names
+            => new string[]
+            {
+                CreationUserColumnName,
+                CreationDateTimeColumnName,
+                LastUpdateUserColumnName,
+                LastUpdateDateTimeColumnName
+            };
     }
 }

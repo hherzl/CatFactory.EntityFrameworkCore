@@ -9,11 +9,20 @@ namespace CatFactory.EntityFrameworkCore
     {
         public static PropertyDefinition GetParentNavigationProperty(this ForeignKey foreignKey, ITable table, EntityFrameworkCoreProject project)
         {
-            var propertyType = string.Join(".", (new string[]
+            var propertyType = "";
+
+            if (table.HasSameEnclosingName())
             {
-                project.Name, project.ProjectNamespaces.EntityLayer,
-                project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema, project.GetEntityName(table)
-            }).Where(item => !string.IsNullOrEmpty(item)));
+                propertyType = string.Join(".", (new string[]
+                {
+                    project.ProjectNamespaces.EntityLayer,
+                    project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema, project.GetEntityName(table)
+                }).Where(item => !string.IsNullOrEmpty(item)));
+            }
+            else
+            {
+                propertyType = project.GetEntityName(table);
+            }
 
             var selection = project.GetSelection(table);
 
@@ -21,7 +30,10 @@ namespace CatFactory.EntityFrameworkCore
             {
                 AccessModifier = AccessModifier.Public,
                 IsVirtual = selection.Settings.DeclareNavigationPropertiesAsVirtual,
-                Attributes = selection.Settings.UseDataAnnotations ? new List<MetadataAttribute> { new MetadataAttribute("ForeignKey", $"\"{string.Join(",", foreignKey.Key)}\"") } : null
+                Attributes = selection.Settings.UseDataAnnotations ? new List<MetadataAttribute>
+                {
+                    new MetadataAttribute("ForeignKey", $"\"{string.Join(",", foreignKey.Key)}\"")
+                } : null
             };
         }
     }

@@ -64,13 +64,13 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                 foreach (var foreignKey in table.ForeignKeys)
                 {
-                    if (string.IsNullOrEmpty(foreignKey.Child))
-                    {
-                        var child = projectFeature.Project.Database.FindTable(foreignKey.Child);
+                    if (!string.IsNullOrEmpty(foreignKey.Child))
+                        continue;
 
-                        if (child != null)
-                            definition.Namespaces.AddUnique(project.GetDataLayerDataContractsNamespace());
-                    }
+                    var child = projectFeature.Project.Database.FindTable(foreignKey.Child);
+
+                    if (child != null)
+                        definition.Namespaces.AddUnique(project.GetDataLayerDataContractsNamespace());
                 }
 
                 if (table.ForeignKeys.Count == 0)
@@ -208,7 +208,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     if (foreignTable == null)
                         continue;
 
-                    var foreignKeyEntityName = project.GetDbSetPropertyName(foreignTable);
+                    var foreignKeyEntityName = project.GetDbSetPropertyName(foreignTable, projectSelection.Settings.PluralizeDbSetPropertyNames);
 
                     var foreignKeyAlias = NamingConvention.GetCamelCase(project.GetEntityName(foreignTable));
 
@@ -317,7 +317,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 var existingViews = project.Database.Views.Count(item => item.Name == table.Name);
 
                 returnType = existingViews == 0 ? project.GetEntityName(table) : project.GetFullEntityName(table);
-                var dbSetName = existingViews == 0 ? project.GetDbSetPropertyName(table) : project.GetFullDbSetPropertyName(table);
+
+                var dbSetName = existingViews == 0 ? project.GetDbSetPropertyName(table, projectSelection.Settings.PluralizeDbSetPropertyNames) : project.GetFullDbSetPropertyName(table);
 
                 lines.Add(new CommentLine(" Get query from DbSet"));
                 lines.Add(new CodeLine("var query = DbContext.{0}.AsQueryable();", dbSetName));
@@ -400,7 +401,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             var existingViews = project.Database.Views.Count(item => item.Name == table.Name);
 
             var genericTypeName = existingViews == 0 ? project.GetEntityName(table) : project.GetFullEntityName(table);
-            var dbSetName = existingViews == 0 ? project.GetDbSetPropertyName(table) : project.GetFullDbSetPropertyName(table);
+            var dbSetName = existingViews == 0 ? project.GetDbSetPropertyName(table, projectSelection.Settings.PluralizeDbSetPropertyNames) : project.GetFullDbSetPropertyName(table);
 
             return new MethodDefinition
             {
@@ -438,7 +439,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             var existingTables = project.Database.Tables.Count(item => item.Name == view.Name);
 
             var genericTypeName = existingTables == 0 ? project.GetEntityName(view) : project.GetFullEntityName(view);
-            var dbSetName = existingTables == 0 ? project.GetDbSetPropertyName(view) : project.GetFullDbSetPropertyName(view);
+            var selection = project.GetSelection(view);
+            var dbSetName = existingTables == 0 ? project.GetDbSetPropertyName(view, selection.Settings.PluralizeDbSetPropertyNames) : project.GetFullDbSetPropertyName(view);
 
             if (parameters.Count == 0)
             {
@@ -491,7 +493,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             lines.Add(new CodeLine("var query = new"));
             lines.Add(new CodeLine("{"));
-            lines.Add(new CodeLine(1, "Text = \" select {0} from {1}({2}) \",", string.Join(", ", tableFunction.Columns.Select(item => item.Name)), project.Database.GetFullName(tableFunction), string.Join(", ", tableFunction.Parameters.Select(item => item.Name))));
+            lines.Add(new CodeLine(1, "Text = \" select {0} from {1}({2}) \",", string.Join(", ", tableFunction.Columns.Select(item => project.Database.NamingConvention.GetObjectName(item.Name))), project.Database.GetFullName(tableFunction), string.Join(", ", tableFunction.Parameters.Select(item => item.Name))));
 
             if (tableFunction.Parameters.Count == 0)
             {
@@ -540,7 +542,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             var lines = new List<ILine>()
             {
-                new CommentLine(" Create query for table function")
+                new CommentLine(" Create query for stored procedure")
             };
 
             lines.Add(new CodeLine("var query = new"));
@@ -558,9 +560,11 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                 foreach (var parameter in storedProcedure.Parameters)
                 {
-                    lines.Add(new CodeLine(2, "new SqlParameter(\"{0}\", {1}),", parameter.Name, project.CodeNamingConvention.GetParameterName(parameter.Name)));
+                    var parameterName = project.CodeNamingConvention.GetParameterName(parameter.Name);
 
-                    parameters.Add(new ParameterDefinition(project.Database.ResolveDatabaseType(parameter), project.CodeNamingConvention.GetParameterName(parameter.Name)));
+                    lines.Add(new CodeLine(2, "new SqlParameter(\"{0}\", {1}),", parameter.Name, parameterName));
+
+                    parameters.Add(new ParameterDefinition(project.Database.ResolveDatabaseType(parameter), parameterName));
                 }
 
                 lines.Add(new CodeLine(1, "}"));
@@ -597,7 +601,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             var existingViews = project.Database.Views.Count(item => item.Name == table.Name);
 
             var genericTypeName = existingViews == 0 ? project.GetEntityName(table) : project.GetFullEntityName(table);
-            var dbSetName = existingViews == 0 ? project.GetDbSetPropertyName(table) : project.GetFullDbSetPropertyName(table);
+            var dbSetName = existingViews == 0 ? project.GetDbSetPropertyName(table, selection.Settings.PluralizeDbSetPropertyNames) : project.GetFullDbSetPropertyName(table);
 
             return new MethodDefinition
             {
@@ -630,7 +634,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             var existingViews = project.Database.Views.Count(item => item.Name == table.Name);
 
             var genericTypeName = existingViews == 0 ? project.GetEntityName(table) : project.GetFullEntityName(table);
-            var dbSetName = existingViews == 0 ? project.GetDbSetPropertyName(table) : project.GetFullDbSetPropertyName(table);
+            var dbSetName = existingViews == 0 ? project.GetDbSetPropertyName(table, projectSelection.Settings.PluralizeDbSetPropertyNames) : project.GetFullDbSetPropertyName(table);
 
             if (projectSelection.Settings.EntitiesWithDataContracts)
             {

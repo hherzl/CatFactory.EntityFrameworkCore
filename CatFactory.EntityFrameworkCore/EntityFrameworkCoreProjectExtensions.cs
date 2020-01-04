@@ -27,8 +27,8 @@ namespace CatFactory.EntityFrameworkCore
         public static string GetDbContextName(this EntityFrameworkCoreProject project, Database database)
             => project.CodeNamingConvention.GetClassName(string.Format("{0}DbContext", database.Name));
 
-        public static string GetDbSetPropertyName(this EntityFrameworkCoreProject project, IDbObject dbObject)
-            => project.NamingService.Pluralize(project.GetEntityName(dbObject));
+        public static string GetDbSetPropertyName(this EntityFrameworkCoreProject project, IDbObject dbObject, bool pluralize)
+            => pluralize ? project.NamingService.Pluralize(project.GetEntityName(dbObject)) : project.GetEntityName(dbObject);
 
         public static string GetFullDbSetPropertyName(this EntityFrameworkCoreProject project, IDbObject dbObject)
             => project.NamingService.Pluralize(string.Concat(project.CodeNamingConvention.GetNamespace(dbObject.Schema), project.GetEntityName(dbObject)));
@@ -116,6 +116,9 @@ namespace CatFactory.EntityFrameworkCore
 
         public static string GetDataLayerRepositoriesDirectory(this EntityFrameworkCoreProject project)
             => Path.Combine(project.OutputDirectory, project.ProjectNamespaces.DataLayer, project.ProjectNamespaces.Repositories);
+
+        public static bool HasSameEnclosingName(this ITable table)
+            => table.Schema == table.Name;
 
         public static PropertyDefinition GetChildNavigationProperty(this EntityFrameworkCoreProject project, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection, ITable table, ForeignKey foreignKey)
         {

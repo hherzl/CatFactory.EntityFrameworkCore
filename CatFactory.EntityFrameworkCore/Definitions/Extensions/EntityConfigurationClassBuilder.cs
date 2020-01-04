@@ -21,7 +21,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     "Microsoft.EntityFrameworkCore",
                     "Microsoft.EntityFrameworkCore.Metadata.Builders"
                 },
-                Namespace = project.Database.HasDefaultSchema(table)? project.GetDataLayerConfigurationsNamespace(): project.GetDataLayerConfigurationsNamespace(table.Schema),
+                Namespace = project.Database.HasDefaultSchema(table) ? project.GetDataLayerConfigurationsNamespace() : project.GetDataLayerConfigurationsNamespace(table.Schema),
                 AccessModifier = AccessModifier.Public,
                 Name = project.GetEntityConfigurationName(table),
                 DbObject = table
@@ -31,7 +31,12 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             // todo: Check logic to build property's name
 
-            var propertyType = string.Join(".", (new string[] { project.Name, project.ProjectNamespaces.EntityLayer, project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema, project.GetEntityName(table) }).Where(item => !string.IsNullOrEmpty(item)));
+            var propertyType = "";
+
+            if (table.HasSameEnclosingName())
+                propertyType = string.Join(".", (new string[] { project.ProjectNamespaces.EntityLayer, project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema, project.GetEntityName(table) }).Where(item => !string.IsNullOrEmpty(item)));
+            else
+                propertyType = project.GetEntityName(table);
 
             definition.Implements.Add(string.Format("IEntityTypeConfiguration<{0}>", propertyType));
 
@@ -91,39 +96,57 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 {
                     var lines = new List<string>
                     {
-                        string.Format("builder.Property(p => p.{0})", project.GetPropertyName( table, column))
+                        string.Format("Property(p => p.{0})", project.GetPropertyName(table, column))
                     };
 
                     if (string.Compare(column.Name, project.GetPropertyName(table, column)) != 0)
                         lines.Add(string.Format("HasColumnName(\"{0}\")", column.Name));
 
-                    if (project.Database.ColumnIsString(column))
-                        lines.Add(column.Length <= 0 ? string.Format("HasColumnType(\"{0}(max)\")", column.Type) : string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
+                    if (project.Database.ColumnIsByteArray(column))
+                        lines.Add(string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
                     else if (project.Database.ColumnIsDecimal(column))
                         lines.Add(string.Format("HasColumnType(\"{0}({1}, {2})\")", column.Type, column.Prec, column.Scale));
                     else if (project.Database.ColumnIsDouble(column) || project.Database.ColumnIsSingle(column))
                         lines.Add(string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Prec));
-                    else if (project.Database.ColumnIsByteArray(column))
-                        lines.Add(string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
+                    else if (project.Database.ColumnIsString(column))
+                    {
+                        if (column.Length <= 0)
+                        {
+                            lines.Add(string.Format("HasColumnType(\"{0}(max)\")", column.Type));
+                        }
+                        else
+                        {
+                            lines.Add(string.Format("HasColumnType(\"{0}\")", column.Type));
+                            lines.Add(string.Format("HasMaxLength({0})", column.Length));
+                        }
+                    }
                     else
                         lines.Add(string.Format("HasColumnType(\"{0}\")", column.Type));
 
                     // Use ValueConversionMaps to detect and apply ValueConversion Type based on Type
+
                     if (project.ValueConversionMaps.TryGetValue(column.Type, out valueConversion) == true)
-                        lines.Add($"HasConversion(typeof({valueConversion?.FullName}))");
+                        lines.Add($".HasConversion(typeof({valueConversion?.FullName}))");
 
                     if (!column.Nullable)
                         lines.Add("IsRequired()");
 
-                    configLines.Add(new CodeLine("{0};", string.Join(".", lines)));
+                    configLines.Add(new CodeLine("builder"));
+
+                    foreach (var line in lines)
+                    {
+                        configLines.Add(new CodeLine(1, ".{0}", line));
+                    }
+
+                    configLines.Add(new CodeLine(1, ";"));
+                    configLines.Add(new EmptyLine());
                 }
                 else
                 {
                     configLines.Add(new CodeLine("builder.Ignore(p => p.{0});", project.GetPropertyName(table, column)));
+                    configLines.Add(new EmptyLine());
                 }
             }
-
-            configLines.Add(new EmptyLine());
 
             var projectSelection = project.GetSelection(table);
 
@@ -142,7 +165,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
             }
 
-            if (table.Uniques.Count > 0)
+            if (projectSelection.Settings.AddConfigurationForUniquesInFluentAPI && table.Uniques.Count > 0)
             {
                 configLines.Add(new CommentLine(" Add configuration for uniques"));
                 configLines.Add(new EmptyLine());
@@ -167,7 +190,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
             }
 
-            if (projectSelection.Settings.DeclareNavigationProperties && table.ForeignKeys.Count > 0)
+            if (projectSelection.Settings.AddConfigurationForForeignKeysInFluentAPI && projectSelection.Settings.DeclareNavigationProperties && table.ForeignKeys.Count > 0)
             {
                 configLines.Add(new CommentLine(" Add configuration for foreign keys"));
                 configLines.Add(new EmptyLine());
@@ -197,7 +220,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
             }
 
-            if (table.Defaults.Count > 0)
+            if (projectSelection.Settings.AddConfigurationForDefaultsInFluentAPI && table.Defaults.Count > 0)
             {
                 configLines.Add(new CommentLine(" Add configuration for defaults"));
                 configLines.Add(new EmptyLine());
@@ -213,8 +236,15 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
             }
 
-            definition.Methods.Add(new MethodDefinition(AccessModifier.Public, "void", "Configure", new ParameterDefinition(string.Format("EntityTypeBuilder<{0}>", propertyType), "builder"))
+            definition.Methods.Add(new MethodDefinition
             {
+                AccessModifier = AccessModifier.Public,
+                Type = "void",
+                Name = "Configure",
+                Parameters =
+                {
+                    new ParameterDefinition(string.Format("EntityTypeBuilder<{0}>", propertyType), "builder")
+                },
                 Lines = configLines
             });
 
@@ -287,18 +317,18 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 {
                     var lines = new List<string>
                     {
-                        string.Format("builder.Property(p => p.{0})" , project.GetPropertyName( view, column))
+                        string.Format("Property(p => p.{0})" , project.GetPropertyName( view, column))
                     };
 
                     if (string.Compare(column.Name, project.GetPropertyName(view, column)) != 0)
                         lines.Add(string.Format("HasColumnName(\"{0}\")", column.Name));
 
-                    if (project.Database.ColumnIsString(column))
-                        lines.Add(column.Length <= 0 ? string.Format("HasColumnType(\"{0}(max)\")", column.Type) : string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
                     else if (project.Database.ColumnIsDecimal(column))
                         lines.Add(string.Format("HasColumnType(\"{0}({1}, {2})\")", column.Type, column.Prec, column.Scale));
                     else if (project.Database.ColumnIsDouble(column) || project.Database.ColumnIsSingle(column))
                         lines.Add(string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Prec));
+                    if (project.Database.ColumnIsString(column))
+                        lines.Add(column.Length <= 0 ? string.Format("HasColumnType(\"{0}(max)\")", column.Type) : string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
                     else
                         lines.Add(string.Format("HasColumnType(\"{0}\")", column.Type));
 
@@ -307,7 +337,15 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     if (project.ValueConversionMaps?.TryGetValue(column.Type, out valueConversion) == true)
                         lines.Add($"HasConversion(typeof({valueConversion?.FullName}))");
 
-                    configLines.Add(new CodeLine("{0};", string.Join(".", lines)));
+                    configLines.Add(new CodeLine("builder"));
+
+                    foreach (var line in lines)
+                    {
+                        configLines.Add(new CodeLine(1, ".{0}", line));
+                    }
+
+                    configLines.Add(new CodeLine(1, ";"));
+                    configLines.Add(new EmptyLine());
                 }
                 else
                 {
@@ -320,8 +358,15 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
             }
 
-            definition.Methods.Add(new MethodDefinition(AccessModifier.Public, "void", "Configure", new ParameterDefinition(string.Format("EntityTypeBuilder<{0}>", project.GetEntityName(view)), "builder"))
+            definition.Methods.Add(new MethodDefinition
             {
+                AccessModifier = AccessModifier.Public,
+                Type = "void",
+                Name = "Configure",
+                Parameters =
+                {
+                    new ParameterDefinition(string.Format("EntityTypeBuilder<{0}>", project.GetEntityName(view)), "builder")
+                },
                 Lines = configLines
             });
 

@@ -51,7 +51,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 var existingViews = project.Database.Views.Count(item => item.Name == table.Name);
 
                 var genericTypeName = existingViews == 0 ? project.GetEntityName(table) : project.GetFullEntityName(table);
-                var name = existingViews == 0 ? project.GetDbSetPropertyName(table) : project.GetFullDbSetPropertyName(table);
+                var name = existingViews == 0 ? project.GetDbSetPropertyName(table, projectSelection.Settings.PluralizeDbSetPropertyNames) : project.GetFullDbSetPropertyName(table);
 
                 definition.Properties.Add(
                     new PropertyDefinition
@@ -72,7 +72,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 var existingTables = project.Database.Tables.Count(item => item.Name == view.Name);
 
                 var genericTypeName = existingTables == 0 ? project.GetEntityName(view) : project.GetFullEntityName(view);
-                var name = existingTables == 0 ? project.GetDbSetPropertyName(view) : project.GetFullDbSetPropertyName(view);
+                var name = existingTables == 0 ? project.GetDbSetPropertyName(view, projectSelection.Settings.PluralizeDbSetPropertyNames) : project.GetFullDbSetPropertyName(view);
 
                 definition.Properties.Add(
                     new PropertyDefinition
@@ -174,24 +174,22 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 {
                     var result = view.Columns.Where(item => primaryKeys.Contains(item.Name)).ToList();
 
+                    var exp = "modelBuilder.Entity<{0}>().HasKey(e => new {{ {1} }});";
+                    var properties = string.Join(", ", view.Columns.Select(item => string.Format("e.{0}", project.GetPropertyName(view, item))));
+
+                    //"modelBuilder.Entity<{0}>().HasKey(e => new {{ {1} }});"
+                    //string.Join(", ", result.Select(item => string.Format("e.{0}", project.GetPropertyName(view, item))))
+
                     if (result.Count == 0)
                     {
-                        lines.Add(new CodeLine(
-                            "modelBuilder.Entity<{0}>().HasKey(e => new {{ {1} }});",
-                            project.GetEntityName(view),
-                            string.Join(", ", view.Columns.Select(item => string.Format("e.{0}", project.GetPropertyName(view, item))))
-                        ));
-
+                        lines.Add(new CodeLine(exp, project.GetEntityName(view), properties));
                         lines.Add(new EmptyLine());
                     }
                     else
                     {
-                        lines.Add(new CodeLine(
-                            "modelBuilder.Entity<{0}>().HasKey(e => new {{ {1} }});",
-                            project.GetEntityName(view),
-                            string.Join(", ", result.Select(item => string.Format("e.{0}", project.GetPropertyName(view, item))))
-                        ));
+                        properties = string.Join(", ", result.Select(item => string.Format("e.{0}", project.GetPropertyName(view, item))));
 
+                        lines.Add(new CodeLine(exp, project.GetEntityName(view), properties));
                         lines.Add(new EmptyLine());
                     }
                 }
@@ -299,13 +297,13 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             return new MethodDefinition
             {
                 AccessModifier = AccessModifier.Protected,
+                IsOverride = true,
                 Type = "void",
                 Name = "OnModelCreating",
                 Parameters =
                 {
                     new ParameterDefinition("ModelBuilder", "modelBuilder")
                 },
-                IsOverride = true,
                 Lines = lines
             };
         }

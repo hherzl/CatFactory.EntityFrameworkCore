@@ -42,7 +42,9 @@ namespace CatFactory.EntityFrameworkCore
 
         public bool DeclareDbSetPropertiesInDbContext { get; } = true;
 
-        public bool DeclareNavigationProperties { get; set; } = true;
+        public bool PluralizeDbSetPropertyNames { get; set; }
+
+        public bool DeclareNavigationProperties { get; set; }
 
         public bool DeclareNavigationPropertiesAsVirtual { get; set; }
 
@@ -57,6 +59,14 @@ namespace CatFactory.EntityFrameworkCore
         public AuditEntity AuditEntity { get; set; }
 
         public bool EntitiesWithDataContracts { get; set; }
+
+        public bool AddConfigurationForForeignKeysInFluentAPI { get; set; }
+
+        public bool AddConfigurationForUniquesInFluentAPI { get; set; } = true;
+
+        public bool AddConfigurationForChecksInFluentAPI { get; set; }
+
+        public bool AddConfigurationForDefaultsInFluentAPI { get; set; } = true;
 
         public List<string> BackingFields
         {
