@@ -93,7 +93,11 @@ namespace CatFactory.EntityFrameworkCore
                         EntitiesWithDataContracts = globalSettings.EntitiesWithDataContracts,
                         BackingFields = globalSettings.BackingFields.Select(item => item).ToList(),
                         InsertExclusions = globalSettings.InsertExclusions.Select(item => item).ToList(),
-                        UpdateExclusions = globalSettings.UpdateExclusions.Select(item => item).ToList()
+                        UpdateExclusions = globalSettings.UpdateExclusions.Select(item => item).ToList(),
+                        AddConfigurationForForeignKeysInFluentAPI = globalSettings.AddConfigurationForForeignKeysInFluentAPI,
+                        AddConfigurationForUniquesInFluentAPI = globalSettings.AddConfigurationForUniquesInFluentAPI,
+                        AddConfigurationForChecksInFluentAPI = globalSettings.AddConfigurationForChecksInFluentAPI,
+                        AddConfigurationForDefaultsInFluentAPI = globalSettings.AddConfigurationForDefaultsInFluentAPI,
                     }
                 };
 

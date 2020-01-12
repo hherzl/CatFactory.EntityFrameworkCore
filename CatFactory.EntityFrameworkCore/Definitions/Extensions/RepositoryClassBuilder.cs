@@ -643,14 +643,17 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     new CodeLine("return await DbContext.{0}", dbSetName)
                 };
 
-                foreach (var foreignKey in table.ForeignKeys)
+                if (projectSelection.Settings.DeclareNavigationProperties)
                 {
-                    var foreignTable = project.Database.FindTable(foreignKey.References);
+                    foreach (var foreignKey in table.ForeignKeys)
+                    {
+                        var foreignTable = project.Database.FindTable(foreignKey.References);
 
-                    if (foreignKey == null)
-                        continue;
+                        if (foreignKey == null)
+                            continue;
 
-                    lines.Add(new CodeLine(1, ".Include(p => p.{0})", foreignKey.GetParentNavigationProperty(foreignTable, project).Name));
+                        lines.Add(new CodeLine(1, ".Include(p => p.{0})", foreignKey.GetParentNavigationProperty(foreignTable, project).Name));
+                    }
                 }
 
                 lines.Add(new CodeLine(1, ".FirstOrDefaultAsync({0});", expression));

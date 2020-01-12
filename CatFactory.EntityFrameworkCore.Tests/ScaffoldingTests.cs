@@ -46,11 +46,13 @@ namespace CatFactory.EntityFrameworkCore.Tests
 
                 settings.AddConfigurationForUniquesInFluentAPI = true;
                 settings.AddConfigurationForForeignKeysInFluentAPI = true;
+                settings.DeclareNavigationProperties = true;
             });
 
             project.Selection("Sales.OrderHeader", settings =>
             {
                 settings.EntitiesWithDataContracts = true;
+                settings.AddConfigurationForForeignKeysInFluentAPI = true;
                 settings.DeclareNavigationProperties = true;
             });
 
