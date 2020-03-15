@@ -3,16 +3,16 @@
     <PropertyGroup>
         <TargetFramework>netcoreapp2.2</TargetFramework>
         <LangVersion>latest</LangVersion>
-        <Version>1.0.0-beta-sun-build45</Version>
+        <Version>1.0.0-beta-sun-build46</Version>
         <Authors>H. Herzl</Authors>
         <Company>Herzl Corp.</Company>
         <Description>CatFactory Package for Entity Framework Core</Description>
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</RepositoryUrl>
         <PackageTags>Entity Framework Core; ORM; Scaffolding</PackageTags>
-        <PackageReleaseNotes>1.0.0-beta-sun-build45 Version:
+        <PackageReleaseNotes>1.0.0-beta-sun-build46 Version:
 
-Core package update
+Code improvement: addition of MD readme file
 
 Quick start: https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory
 </PackageReleaseNotes>

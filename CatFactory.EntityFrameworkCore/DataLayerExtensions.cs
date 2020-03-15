@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using CatFactory.Collections;
+﻿using System.IO;
 using CatFactory.EntityFrameworkCore.Definitions.Extensions;
+using CatFactory.Markdown;
 using CatFactory.NetCore.ObjectOrientedProgramming;
 using CatFactory.ObjectRelationalMapping;
 
@@ -15,7 +14,7 @@ namespace CatFactory.EntityFrameworkCore
             ScaffoldDbContext(project);
             ScaffoldDataContracts(project);
             ScaffoldDataRepositories(project);
-            ScaffoldReadMe(project);
+            ScaffoldMdReadMe(project);
 
             return project;
         }
@@ -45,7 +44,7 @@ namespace CatFactory.EntityFrameworkCore
         internal static void ScaffoldDbContext(EntityFrameworkCoreProject project)
         {
             var projectSelection = project.GlobalSelection();
-            
+
             project.Scaffold(project.GetDbContextClassDefinition(projectSelection), project.GetDataLayerDirectory());
         }
 
@@ -106,38 +105,50 @@ namespace CatFactory.EntityFrameworkCore
             }
         }
 
-        internal static void ScaffoldReadMe(this EntityFrameworkCoreProject project)
+        internal static void ScaffoldMdReadMe(this EntityFrameworkCoreProject project)
         {
-            var lines = new List<string>
-            {
-                "CatFactory: Scaffolding Made Easy",
-                string.Empty,
+            var readMe = new MdDocument();
 
-                "How to use this code on your ASP.NET Core Application:",
-                string.Empty,
+            readMe.H1("CatFactory ==^^==: Scaffolding Made Easy");
 
-                "1. Install EntityFrameworkCore.SqlServer package",
-                string.Empty,
+            readMe.WriteLine("How to use this code on your ASP.NET Core Application:");
 
-                "2. Register your DbContext and repositories in ConfigureServices method (Startup class):",
-                string.Format("   services.AddDbContext<{0}>(options => options.UseSqlServer(\"ConnectionString\"));", project.GetDbContextName(project.Database)),
+            readMe.OrderedList(
+                "Install EntityFrameworkCore.SqlServer package",
+                "Register the DbContext and Repositories in ConfigureServices method (Startup class)"
+                );
 
-                "   services.AddScoped<IDboRepository, DboRepository>();",
-                string.Empty,
+            readMe.H2("Install package");
 
-                "Happy scaffolding!",
-                string.Empty,
+            readMe.WriteLine("You can install the NuGet packages in Visual Studio or Windows Command Line, for more info:");
 
-                "You can check the guide for this package in:",
-                "https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory",
-                string.Empty,
-                "Also you can check source code on GitHub:",
-                "https://github.com/hherzl/CatFactory.EntityFrameworkCore",
-                string.Empty,
-                "CatFactory Development Team ==^^=="
-            };
+            readMe.WriteLine(
+                Md.Link("Install and manage packages with the Package Manager Console in Visual Studio (PowerShell)", "https://docs.microsoft.com/en-us/nuget/consume-packages/install-use-packages-powershell")
+                );
 
-            File.WriteAllText(Path.Combine(project.OutputDirectory, "CatFactory.EntityFrameworkCore.ReadMe.txt"), lines.ToStringBuilder().ToString());
+            readMe.WriteLine(
+                Md.Link(".NET Core CLI", "https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-add-package")
+                );
+
+            readMe.H2("Register DbContext and Repositories");
+
+            readMe.WriteLine("Add the following code lines in {0} method (Startup class):", Md.Bold("ConfigureServices"));
+            readMe.WriteLine("  services.AddDbContext<{0}>(options => options.UseSqlServer(\"ConnectionString\"));", project.GetDbContextName(project.Database));
+            readMe.WriteLine("  services.AddScope<{0}, {1}>()", "IDboRepository", "DboRepository");
+
+            readMe.WriteLine("Happy scaffolding!");
+
+            var codeProjectLink = Md.Link("Scaffolding Entity Framework Core with CatFactory", "https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory");
+
+            readMe.WriteLine("You can check the guide for this package in: {0}", codeProjectLink);
+
+            var gitHubRepositoryLink = Md.Link("GitHub repository", "https://github.com/hherzl/CatFactory.EntityFrameworkCore");
+
+            readMe.WriteLine("Also you can check the source code on {0}", gitHubRepositoryLink);
+
+            readMe.WriteLine("CatFactory Development Team ==^^==");
+
+            File.WriteAllText(Path.Combine(project.OutputDirectory, "CatFactory.EntityFrameworkCore.ReadMe.MD"), readMe.ToString());
         }
     }
 }
