@@ -17,7 +17,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
 
             // Create instance of Entity Framework Core project
             var project = EntityFrameworkCoreProject
-                .Create("OnlineStore", database, @"C:\Temp\CatFactory.EntityFrameworkCore\OnlineStore");
+                .CreateForV2x("OnlineStore", database, @"C:\Temp\CatFactory.EntityFrameworkCore\OnlineStore");
 
             // Act
 

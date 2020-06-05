@@ -15,6 +15,16 @@ namespace CatFactory.EntityFrameworkCore
 {
     public class EntityFrameworkCoreProject : CSharpProject<EntityFrameworkCoreProjectSettings>
     {
+        public static EntityFrameworkCoreProject CreateForV2x(string name, Database database, string outputDirectory)
+            => new EntityFrameworkCoreProject
+            {
+                Name = name,
+                Database = database,
+                OutputDirectory = outputDirectory,
+                Version = "2x"
+            };
+
+        [Obsolete("Replace using the CreateForV2x method")]
         public static EntityFrameworkCoreProject Create(string name, Database database, string outputDirectory)
             => new EntityFrameworkCoreProject
             {
@@ -38,6 +48,8 @@ namespace CatFactory.EntityFrameworkCore
             : base(logger)
         {
         }
+
+        public string Version { get; set; }
 
         public EntityFrameworkCoreProjectNamespaces ProjectNamespaces
         {

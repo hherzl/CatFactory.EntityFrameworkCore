@@ -130,10 +130,11 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     if (foreignTable == null)
                         continue;
 
-                    definition.Namespaces
-                        .AddUnique(project.Database.HasDefaultSchema(foreignTable) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(foreignTable.Schema));
-
-                    definition.Namespace = project.Database.HasDefaultSchema(table) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(table.Schema);
+                    if (definition.Namespace != project.GetEntityLayerNamespace(foreignTable.Schema))
+                    {
+                        definition.Namespaces
+                            .AddUnique(project.Database.HasDefaultSchema(foreignTable) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(foreignTable.Schema));
+                    }
 
                     var fkProperty = foreignKey.GetParentNavigationProperty(foreignTable, project);
 
@@ -150,8 +151,11 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                             definition.Namespaces
                                 .AddUnique(projectSelection.Settings.NavigationPropertyEnumerableNamespace);
 
-                            definition.Namespaces
+                            if (definition.Namespace != project.GetEntityLayerNamespace(child.Schema))
+                            {
+                                definition.Namespaces
                                 .AddUnique(project.Database.HasDefaultSchema(child) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(child.Schema));
+                            }
 
                             var navigationProperty = project.GetChildNavigationProperty(projectSelection, child, foreignKey);
 

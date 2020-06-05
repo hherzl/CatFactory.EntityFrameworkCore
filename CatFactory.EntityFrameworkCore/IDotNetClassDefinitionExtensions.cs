@@ -35,7 +35,10 @@ namespace CatFactory.EntityFrameworkCore
                     if (table.PrimaryKey != null && table.PrimaryKey.Key.Contains(column.Name))
                         property.Attributes.Add(new MetadataAttribute("Key"));
 
-                    property.Attributes.Add(new MetadataAttribute("Column", string.Format("\"{0}\"", column.Name)));
+                    if (property.Name == column.Name)
+                        property.Attributes.Add(new MetadataAttribute("Column"));
+                    else
+                        property.Attributes.Add(new MetadataAttribute("Column", string.Format("\"{0}\"", column.Name)));
 
                     if (!column.Nullable && table.Identity != null && table.Identity.Name != column.Name)
                         property.Attributes.Add(new MetadataAttribute("Required"));
@@ -79,13 +82,20 @@ namespace CatFactory.EntityFrameworkCore
                     if (project.GetPropertyName(view, column) != property.Name)
                         continue;
 
-                    property.Attributes.Add(new MetadataAttribute("Column", string.Format("\"{0}\"", column.Name))
+                    if (property.Name == column.Name)
                     {
-                        Sets =
+                        property.Attributes.Add(new MetadataAttribute("Column")
                         {
-                            new MetadataAttributeSet("Order", (i + 1).ToString())
-                        }
-                    });
+                            Sets = { new MetadataAttributeSet("Order", (i + 1).ToString()) }
+                        });
+                    }
+                    else
+                    {
+                        property.Attributes.Add(new MetadataAttribute("Column", string.Format("\"{0}\"", column.Name))
+                        {
+                            Sets = { new MetadataAttributeSet("Order", (i + 1).ToString()) }
+                        });
+                    }
 
                     if (!column.Nullable && primaryKeys.Contains(column.Name))
                         property.Attributes.Add(new MetadataAttribute("Key"));

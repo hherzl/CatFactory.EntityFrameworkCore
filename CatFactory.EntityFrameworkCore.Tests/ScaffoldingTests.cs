@@ -7,7 +7,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
     public class ScaffoldingTests
     {
         [Fact]
-        public async Task ProjectScaffoldingForOnlineStoreDatabaseAsync()
+        public async Task ProjectScaffoldingForOnlineStoreDbAsync()
         {
             // Create database factory
             var databaseFactory = new SqlServerDatabaseFactory
@@ -29,7 +29,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
 
             // Create instance of Entity Framework Core project
             var project = EntityFrameworkCoreProject
-                .Create("OnlineStore.Core", database, @"C:\Temp\CatFactory.EntityFrameworkCore\OnlineStore.Core");
+                .CreateForV2x("OnlineStore.Core", database, @"C:\Temp\CatFactory.EntityFrameworkCore\OnlineStore.Core");
 
             // Apply settings for Entity Framework Core project
             project.GlobalSelection(settings =>
@@ -66,7 +66,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
         }
 
         [Fact]
-        public async Task ProjectScaffoldingWithDataAnnotationsForOnlineStoreDatabaseAsync()
+        public async Task ProjectScaffoldingWithDataAnnotationsForOnlineStoreDbAsync()
         {
             // Import database
             var database = await SqlServerDatabaseFactory
@@ -74,7 +74,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
 
             // Create instance of Entity Framework Core Project
             var project = EntityFrameworkCoreProject
-                .Create("OnlineStoreWithDataAnnotations.Core", database, @"C:\Temp\CatFactory.EntityFrameworkCore\OnlineStoreWithDataAnnotations.Core");
+                .CreateForV2x("OnlineStoreWithDataAnnotations.Core", database, @"C:\Temp\CatFactory.EntityFrameworkCore\OnlineStoreWithDataAnnotations.Core");
 
             // Apply settings for Entity Framework Core project
             project.GlobalSelection(settings =>
@@ -104,7 +104,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
         }
 
         [Fact]
-        public async Task ProjectScaffoldingForNorthwindDatabaseAsync()
+        public async Task ProjectScaffoldingForNorthwindDbAsync()
         {
             // Import database
             var factory = new SqlServerDatabaseFactory
@@ -134,7 +134,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
 
             // Create instance of Entity Framework Core Project
             var project = EntityFrameworkCoreProject
-                .Create("Northwind.Core", database, @"C:\Temp\CatFactory.EntityFrameworkCore\Northwind.Core");
+                .CreateForV2x("Northwind.Core", database, @"C:\Temp\CatFactory.EntityFrameworkCore\Northwind.Core");
 
             // Apply settings for Entity Framework Core project
             project.GlobalSelection(settings =>
@@ -155,7 +155,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
         }
 
         [Fact]
-        public async Task ProjectScaffoldingForAdventureWorksDatabaseAsync()
+        public async Task ProjectScaffoldingForAdventureWorksDbAsync()
         {
             // Create instance of factory for SQL Server
             var databaseFactory = new SqlServerDatabaseFactory
@@ -184,13 +184,15 @@ namespace CatFactory.EntityFrameworkCore.Tests
 
             // Create instance of Entity Framework Core Project
             var project = EntityFrameworkCoreProject
-                .Create("AdventureWorks", database, @"C:\Temp\CatFactory.EntityFrameworkCore\AdventureWorks.Core");
+                .CreateForV2x("AdventureWorks", database, @"C:\Temp\CatFactory.EntityFrameworkCore\AdventureWorks.Core");
 
             // Apply settings for Entity Framework Core project
             project.GlobalSelection(settings =>
             {
                 settings.ForceOverwrite = true;
                 settings.DeclareNavigationProperties = true;
+
+                settings.AddConfigurationForForeignKeysInFluentAPI = true;
             });
 
             // Build features for project, group all entities by schema into a feature
@@ -203,7 +205,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
         }
 
         [Fact]
-        public async Task ProjectScaffoldingForWideWorldImportersDatabaseAsync()
+        public async Task ProjectScaffoldingForWideWorldImportersDbAsync()
         {
             // Create database factory
             var databaseFactory = new SqlServerDatabaseFactory
@@ -225,7 +227,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
 
             // Create instance of Entity Framework Core project
             var project = EntityFrameworkCoreProject
-                .Create("WideWorldImporters.Core", database, @"C:\Temp\CatFactory.EntityFrameworkCore\WideWorldImporters.Core");
+                .CreateForV2x("WideWorldImporters.Core", database, @"C:\Temp\CatFactory.EntityFrameworkCore\WideWorldImporters.Core");
 
             // Apply settings for Entity Framework Core project
             project.GlobalSelection(settings => settings.ForceOverwrite = true);
