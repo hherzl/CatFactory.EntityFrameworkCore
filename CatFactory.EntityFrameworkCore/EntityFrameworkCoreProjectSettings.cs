@@ -103,5 +103,16 @@ namespace CatFactory.EntityFrameworkCore
         /// When true use DefaultSchema (dbo) as namespace and class
         /// </summary>
         public bool DefaultSchemaAsNamespace { get; set; }
+
+        /// <summary>
+        /// Define EntityFrameworkCore version to target
+        /// </summary>
+        public EfCoreVersion EfCoreTargetVersion { get; set; }
+    }
+
+    public enum EfCoreVersion
+    {
+        EF2,
+        EF3,
     }
 }

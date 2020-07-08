@@ -27,6 +27,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 DbObject = table
             };
 
+            var projectSelection = project.GetSelection(table);
+
             definition.Namespaces.AddUnique(project.GetEntityLayerNamespace(project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema));
 
             // todo: Check logic to build property's name
@@ -77,8 +79,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             if (table.Identity != null)
             {
+                var identityColumnMethod = projectSelection.Settings.EfCoreTargetVersion == EfCoreVersion.EF2 ? "UseSqlServerIdentityColumn" : "UseIdentityColumn";
                 configLines.Add(new CommentLine(" Set identity for entity (auto increment)"));
-                configLines.Add(new CodeLine("builder.Property(p => p.{0}).UseSqlServerIdentityColumn();", project.CodeNamingConvention.GetPropertyName(table.Identity.Name)));
+                configLines.Add(new CodeLine("builder.Property(p => p.{0}).{1}();", project.CodeNamingConvention.GetPropertyName(table.Identity.Name), identityColumnMethod));
                 configLines.Add(new EmptyLine());
             }
 
@@ -147,8 +150,6 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     configLines.Add(new EmptyLine());
                 }
             }
-
-            var projectSelection = project.GetSelection(table);
 
             for (var i = 0; i < columns.Count; i++)
             {

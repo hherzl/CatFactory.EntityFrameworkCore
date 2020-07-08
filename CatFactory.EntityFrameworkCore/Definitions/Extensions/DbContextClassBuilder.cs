@@ -114,6 +114,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     parameterType = "object";
                 }
 
+                var functionNamePropertyName = projectSelection.Settings.EfCoreTargetVersion == EfCoreVersion.EF2 ? "FunctionName" : "Name";
                 var method = new MethodDefinition
                 {
                     Attributes =
@@ -122,7 +123,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         {
                             Sets =
                             {
-                                new MetadataAttributeSet("FunctionName", string.Format("\"{0}\"", scalarFunction.Name)),
+                                new MetadataAttributeSet(functionNamePropertyName, string.Format("\"{0}\"", scalarFunction.Name)),
                                 new MetadataAttributeSet("Schema", string.Format("\"{0}\"", scalarFunction.Schema))
                             }
                         }
