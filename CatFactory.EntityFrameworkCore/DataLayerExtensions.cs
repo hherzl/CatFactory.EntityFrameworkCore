@@ -11,10 +11,26 @@ namespace CatFactory.EntityFrameworkCore
         public static EntityFrameworkCoreProject ScaffoldDataLayer(this EntityFrameworkCoreProject project)
         {
             ScaffoldConfigurations(project);
-            ScaffoldDbContext(project);
+            ScaffoldDbContextInternal(project);
             ScaffoldDataContracts(project);
-            ScaffoldDataRepositories(project);
+            ScaffoldDataRepositoriesInternal(project);
             ScaffoldMdReadMe(project);
+
+            return project;
+        }
+
+        public static EntityFrameworkCoreProject ScaffoldDbContext(this EntityFrameworkCoreProject project)
+        {
+            ScaffoldConfigurations(project);
+            ScaffoldDbContextInternal(project);
+
+            return project;
+        }
+
+        public static EntityFrameworkCoreProject ScaffoldDataRepositories(this EntityFrameworkCoreProject project)
+        {
+            ScaffoldDataContracts(project);
+            ScaffoldDataRepositoriesInternal(project);
 
             return project;
         }
@@ -41,7 +57,7 @@ namespace CatFactory.EntityFrameworkCore
             }
         }
 
-        internal static void ScaffoldDbContext(EntityFrameworkCoreProject project)
+        internal static void ScaffoldDbContextInternal(EntityFrameworkCoreProject project)
         {
             var projectSelection = project.GlobalSelection();
 
@@ -76,7 +92,7 @@ namespace CatFactory.EntityFrameworkCore
             }
         }
 
-        internal static void ScaffoldDataRepositories(EntityFrameworkCoreProject project)
+        internal static void ScaffoldDataRepositoriesInternal(EntityFrameworkCoreProject project)
         {
             var projectSelection = project.GlobalSelection();
 
