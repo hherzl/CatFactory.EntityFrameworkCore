@@ -21,7 +21,16 @@ namespace CatFactory.EntityFrameworkCore
                 Name = name,
                 Database = database,
                 OutputDirectory = outputDirectory,
-                Version = "2x"
+                Version = EntityFrameworkCoreVersion.Version_2_0
+            };
+
+        public static EntityFrameworkCoreProject CreateForV3x(string name, Database database, string outputDirectory)
+            => new EntityFrameworkCoreProject
+            {
+                Name = name,
+                Database = database,
+                OutputDirectory = outputDirectory,
+                Version = EntityFrameworkCoreVersion.Version_3_0
             };
 
         [Obsolete("Replace using the CreateForV2x method")]
@@ -49,7 +58,7 @@ namespace CatFactory.EntityFrameworkCore
         {
         }
 
-        public string Version { get; set; }
+        public EntityFrameworkCoreVersion Version { get; set; }
 
         public EntityFrameworkCoreProjectNamespaces ProjectNamespaces
         {
