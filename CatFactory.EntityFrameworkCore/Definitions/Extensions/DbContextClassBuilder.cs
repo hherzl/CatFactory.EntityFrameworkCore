@@ -122,7 +122,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         {
                             Sets =
                             {
-                                new MetadataAttributeSet("FunctionName", string.Format("\"{0}\"", scalarFunction.Name)),
+                                new MetadataAttributeSet(project.Version >= EntityFrameworkCoreVersion.Version_3_0 ? "Name" : "FunctionName", string.Format("\"{0}\"", scalarFunction.Name)),
                                 new MetadataAttributeSet("Schema", string.Format("\"{0}\"", scalarFunction.Schema))
                             }
                         }
@@ -176,9 +176,6 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                     var exp = "modelBuilder.Entity<{0}>().HasKey(e => new {{ {1} }});";
                     var properties = string.Join(", ", view.Columns.Select(item => string.Format("e.{0}", project.GetPropertyName(view, item))));
-
-                    //"modelBuilder.Entity<{0}>().HasKey(e => new {{ {1} }});"
-                    //string.Join(", ", result.Select(item => string.Format("e.{0}", project.GetPropertyName(view, item))))
 
                     if (result.Count == 0)
                     {

@@ -3,17 +3,18 @@
     <PropertyGroup>
         <TargetFramework>netcoreapp2.2</TargetFramework>
         <LangVersion>latest</LangVersion>
-        <Version>1.0.0-beta-sun-build47</Version>
+        <Version>1.0.0-beta-sun-build48</Version>
         <Authors>H. Herzl</Authors>
         <Company>Herzl Corp.</Company>
         <Description>CatFactory Package for Entity Framework Core</Description>
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</RepositoryUrl>
         <PackageTags>Entity Framework Core; ORM; Scaffolding</PackageTags>
-        <PackageReleaseNotes>1.0.0-beta-sun-build47 Version:
+        <PackageReleaseNotes>1.0.0-beta-sun-build48 Version:
 
-Code improvement: addition of CreateForV2x method to create projects for 2x versions
-Code fix: remove name for column if is the same property name for data annotation in entities for tables and views
+Addition of enum for EF Core versions
+Generate configurations according to EF Core version
+Make configurations internals
 
 Quick start:
 

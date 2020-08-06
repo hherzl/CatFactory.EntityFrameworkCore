@@ -22,7 +22,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     "Microsoft.EntityFrameworkCore.Metadata.Builders"
                 },
                 Namespace = project.Database.HasDefaultSchema(table) ? project.GetDataLayerConfigurationsNamespace() : project.GetDataLayerConfigurationsNamespace(table.Schema),
-                AccessModifier = AccessModifier.Public,
+                AccessModifier = AccessModifier.Internal,
                 Name = project.GetEntityConfigurationName(table),
                 DbObject = table
             };
@@ -63,22 +63,34 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             {
                 configLines.Add(new CommentLine(" Set key for entity"));
 
-                if (table.PrimaryKey.Key.Count == 1)
+                if (project.Version >= EntityFrameworkCoreVersion.Version_3_0)
                 {
-                    configLines.Add(new CodeLine("builder.HasKey(p => p.{0});", project.CodeNamingConvention.GetPropertyName(table.PrimaryKey.Key[0])));
-                    configLines.Add(new EmptyLine());
+                    configLines.Add(new CodeLine("builder.HasNoKey();"));
                 }
-                else if (table.PrimaryKey.Key.Count > 1)
+                else
                 {
-                    configLines.Add(new CodeLine("builder.HasKey(p => new {{ {0} }});", string.Join(", ", table.PrimaryKey.Key.Select(item => string.Format("p.{0}", project.CodeNamingConvention.GetPropertyName(item))))));
-                    configLines.Add(new EmptyLine());
+                    if (table.PrimaryKey.Key.Count == 1)
+                    {
+                        configLines.Add(new CodeLine("builder.HasKey(p => p.{0});", project.CodeNamingConvention.GetPropertyName(table.PrimaryKey.Key[0])));
+                        configLines.Add(new EmptyLine());
+                    }
+                    else if (table.PrimaryKey.Key.Count > 1)
+                    {
+                        configLines.Add(new CodeLine("builder.HasKey(p => new {{ {0} }});", string.Join(", ", table.PrimaryKey.Key.Select(item => string.Format("p.{0}", project.CodeNamingConvention.GetPropertyName(item))))));
+                        configLines.Add(new EmptyLine());
+                    }
                 }
             }
 
             if (table.Identity != null)
             {
                 configLines.Add(new CommentLine(" Set identity for entity (auto increment)"));
-                configLines.Add(new CodeLine("builder.Property(p => p.{0}).UseSqlServerIdentityColumn();", project.CodeNamingConvention.GetPropertyName(table.Identity.Name)));
+
+                if (project.Version >= EntityFrameworkCoreVersion.Version_3_0)
+                    configLines.Add(new CodeLine("builder.Property(p => p.{0}).UseIdentityColumn();", project.CodeNamingConvention.GetPropertyName(table.Identity.Name)));
+                else
+                    configLines.Add(new CodeLine("builder.Property(p => p.{0}).UseSqlServerIdentityColumn();", project.CodeNamingConvention.GetPropertyName(table.Identity.Name)));
+
                 configLines.Add(new EmptyLine());
             }
 
@@ -261,7 +273,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     "Microsoft.EntityFrameworkCore.Metadata.Builders"
                 },
                 Namespace = project.Database.HasDefaultSchema(view) ? project.GetDataLayerConfigurationsNamespace() : project.GetDataLayerConfigurationsNamespace(view.Schema),
-                AccessModifier = AccessModifier.Public,
+                AccessModifier = AccessModifier.Internal,
                 Name = project.GetEntityConfigurationName(view),
                 Implements =
                 {
@@ -298,10 +310,17 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             configLines.Add(new CommentLine(" Add configuration for entity's key"));
 
-            if (result.Count == 1)
-                configLines.Add(new CodeLine("builder.HasKey(p => {0});", string.Format("p.{0}", project.CodeNamingConvention.GetPropertyName(result.First().Name))));
+            if (project.Version >= EntityFrameworkCoreVersion.Version_3_0)
+            {
+                configLines.Add(new CodeLine("builder.HasNoKey();"));
+            }
             else
-                configLines.Add(new CodeLine("builder.HasKey(p => new {{ {0} }});", string.Join(", ", result.Select(item => string.Format("p.{0}", project.CodeNamingConvention.GetPropertyName(item.Name))))));
+            {
+                if (result.Count == 1)
+                    configLines.Add(new CodeLine("builder.HasKey(p => {0});", string.Format("p.{0}", project.CodeNamingConvention.GetPropertyName(result.First().Name))));
+                else
+                    configLines.Add(new CodeLine("builder.HasKey(p => new {{ {0} }});", string.Join(", ", result.Select(item => string.Format("p.{0}", project.CodeNamingConvention.GetPropertyName(item.Name))))));
+            }
 
             configLines.Add(new EmptyLine());
 
