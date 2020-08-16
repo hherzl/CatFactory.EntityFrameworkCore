@@ -15,10 +15,10 @@ namespace CatFactory.EntityFrameworkCore
 
         private static void ScaffoldEntityInterface(EntityFrameworkCoreProject project)
         {
-            project.Scaffold(project.GetEntityInterfaceDefinition(), project.GetEntityLayerDirectory());
+            project.Scaffold(project.GetEntityInterfaceDefinition(false), project.GetEntityLayerDirectory());
 
             if (project.GlobalSelection().Settings.AuditEntity != null)
-                project.Scaffold(project.GetAuditEntityInterfaceDefinition(), project.GetEntityLayerDirectory());
+                project.Scaffold(project.GetAuditEntityInterfaceDefinition(false), project.GetEntityLayerDirectory());
         }
 
         private static EntityFrameworkCoreProject ScaffoldEntities(this EntityFrameworkCoreProject project)
@@ -27,7 +27,7 @@ namespace CatFactory.EntityFrameworkCore
             {
                 var selection = project.GetSelection(table);
 
-                var definition = project.GetEntityClassDefinition(table);
+                var definition = project.GetEntityClassDefinition(table, false);
 
                 if (selection.Settings.UseDataAnnotations)
                     definition.AddDataAnnotations(table, project);
@@ -39,13 +39,15 @@ namespace CatFactory.EntityFrameworkCore
             {
                 var selection = project.GetSelection(view);
 
-                var definition = project.GetEntityClassDefinition(view);
+                var definition = project.GetEntityClassDefinition(view, project.Database.HasDefaultSchema(view) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(view.Schema));
 
                 if (selection.Settings.UseDataAnnotations)
                     definition.AddDataAnnotations(view, project);
 
                 project.Scaffold(definition, project.GetEntityLayerDirectory(), project.Database.HasDefaultSchema(view) ? "" : view.Schema);
             }
+
+            // todo: Review this scaffolding
 
             //foreach (var tableFunction in project.Database.TableFunctions)
             //{
@@ -55,6 +57,8 @@ namespace CatFactory.EntityFrameworkCore
 
             //    project.Scaffold(definition, project.GetEntityLayerDirectory(), project.Database.HasDefaultSchema(tableFunction) ? "" : tableFunction.Schema);
             //}
+
+            // todo: Review this scaffolding
 
             //foreach (var storedProcedure in project.Database.StoredProcedures)
             //{

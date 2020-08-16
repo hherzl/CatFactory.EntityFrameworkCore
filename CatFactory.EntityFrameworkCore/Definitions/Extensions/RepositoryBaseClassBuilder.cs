@@ -6,9 +6,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 {
     public static class RepositoryBaseClassBuilder
     {
-        public static RepositoryBaseClassDefinition GetRepositoryBaseClassDefinition(this EntityFrameworkCoreProject project)
+        public static PagingExtensionsClassDefinition GetRepositoryBaseClassDefinition(this EntityFrameworkCoreProject project)
         {
-            var definition = new RepositoryBaseClassDefinition
+            var definition = new PagingExtensionsClassDefinition
             {
                 Namespaces =
                 {

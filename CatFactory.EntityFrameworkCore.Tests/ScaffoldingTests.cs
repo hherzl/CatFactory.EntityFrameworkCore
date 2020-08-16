@@ -7,7 +7,63 @@ namespace CatFactory.EntityFrameworkCore.Tests
     public class ScaffoldingTests
     {
         [Fact]
-        public async Task ProjectScaffoldingForOnlineStoreDbAsync()
+        public async Task ScaffoldingDomainProjectForOnlineStoreDbAsync()
+        {
+            // Create database factory
+            var databaseFactory = new SqlServerDatabaseFactory
+            {
+                DatabaseImportSettings = new DatabaseImportSettings
+                {
+                    ConnectionString = "server=(local);database=OnlineStore;integrated security=yes;",
+                    Exclusions =
+                    {
+                        "dbo.sysdiagrams"
+                    }
+                }
+            };
+
+            // Import database
+            var database = await databaseFactory.ImportAsync();
+
+            // Create instance of Entity Framework Core project
+            var project = EntityFrameworkCoreProject
+                .CreateForV2x("OnlineStore.Domain", database, @"C:\Temp\CatFactory.EntityFrameworkCore\OnlineStore.Domain");
+
+            // Apply settings for Entity Framework Core project
+            project.GlobalSelection(settings =>
+            {
+                settings.ForceOverwrite = true;
+                settings.ConcurrencyToken = "Timestamp";
+                settings.AuditEntity = new AuditEntity
+                {
+                    CreationUserColumnName = "CreationUser",
+                    CreationDateTimeColumnName = "CreationDateTime",
+                    LastUpdateUserColumnName = "LastUpdateUser",
+                    LastUpdateDateTimeColumnName = "LastUpdateDateTime"
+                };
+
+                settings.AddConfigurationForUniquesInFluentAPI = true;
+                settings.AddConfigurationForForeignKeysInFluentAPI = true;
+                settings.DeclareNavigationProperties = true;
+            });
+
+            project.Selection("Sales.OrderHeader", settings =>
+            {
+                settings.EntitiesWithDataContracts = true;
+                settings.AddConfigurationForForeignKeysInFluentAPI = true;
+                settings.DeclareNavigationProperties = true;
+            });
+
+            // Build features for project, group all entities by schema into a feature
+            project.BuildFeatures();
+
+            // Scaffolding =^^=
+            project
+                .ScaffoldDomain();
+        }
+
+        [Fact]
+        public async Task ScaffoldingProjectWithRepositoriesForOnlineStoreDbAsync()
         {
             // Create database factory
             var databaseFactory = new SqlServerDatabaseFactory
@@ -58,7 +114,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
 
             // Build features for project, group all entities by schema into a feature
             project.BuildFeatures();
-            
+
             // Scaffolding =^^=
             project
                 .ScaffoldEntityLayer()
@@ -66,7 +122,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
         }
 
         [Fact]
-        public async Task ProjectScaffoldingWithDataAnnotationsForOnlineStoreDbAsync()
+        public async Task ScaffoldingProjectWithDataAnnotationsForOnlineStoreDbAsync()
         {
             // Import database
             var database = await SqlServerDatabaseFactory
@@ -104,7 +160,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
         }
 
         [Fact]
-        public async Task ProjectScaffoldingForNorthwindDbAsync()
+        public async Task ScaffoldingProjectForNorthwindDbAsync()
         {
             // Import database
             var factory = new SqlServerDatabaseFactory
@@ -155,7 +211,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
         }
 
         [Fact]
-        public async Task ProjectScaffoldingForAdventureWorksDbAsync()
+        public async Task ScaffoldingProjectForAdventureWorksDbAsync()
         {
             // Create instance of factory for SQL Server
             var databaseFactory = new SqlServerDatabaseFactory
@@ -205,7 +261,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
         }
 
         [Fact]
-        public async Task ProjectScaffoldingForWideWorldImportersDbAsync()
+        public async Task ScaffoldingProjectForWideWorldImportersDbAsync()
         {
             // Create database factory
             var databaseFactory = new SqlServerDatabaseFactory

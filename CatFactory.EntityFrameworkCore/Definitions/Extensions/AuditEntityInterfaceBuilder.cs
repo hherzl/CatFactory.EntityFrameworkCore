@@ -4,14 +4,14 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 {
     public static class AuditEntityInterfaceBuilder
     {
-        public static AuditEntityInterfaceDefinition GetAuditEntityInterfaceDefinition(this EntityFrameworkCoreProject project)
+        public static AuditEntityInterfaceDefinition GetAuditEntityInterfaceDefinition(this EntityFrameworkCoreProject project, bool isDomainDrivenDesign)
             => new AuditEntityInterfaceDefinition
             {
                 Namespaces =
                 {
                     "System"
                 },
-                Namespace = project.GetEntityLayerNamespace(),
+                Namespace = isDomainDrivenDesign ? project.GetDomainModelsNamespace() : project.GetEntityLayerNamespace(),
                 AccessModifier = AccessModifier.Public,
                 Name = "IAuditEntity",
                 Implements =

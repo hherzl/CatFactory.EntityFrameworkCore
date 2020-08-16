@@ -1,20 +1,63 @@
 ﻿using System.IO;
 using CatFactory.EntityFrameworkCore.Definitions.Extensions;
 using CatFactory.Markdown;
-using CatFactory.NetCore.ObjectOrientedProgramming;
 using CatFactory.ObjectRelationalMapping;
 
 namespace CatFactory.EntityFrameworkCore
 {
-    public static class DataLayerExtensions
+    public static class DomainExtensions
     {
-        public static EntityFrameworkCoreProject ScaffoldDataLayer(this EntityFrameworkCoreProject project)
+        public static EntityFrameworkCoreProject ScaffoldDomain(this EntityFrameworkCoreProject project)
         {
+            ScaffoldEntityInterface(project);
+            ScaffoldModels(project);
+
             ScaffoldConfigurations(project);
+
             ScaffoldDbContext(project);
-            ScaffoldDataContracts(project);
-            ScaffoldDataRepositories(project);
+
+            ScaffoldQueryModels(project);
+
+            ScaffoldExtensions(project);
+
             ScaffoldMdReadMe(project);
+
+            return project;
+        }
+
+        internal static void ScaffoldEntityInterface(EntityFrameworkCoreProject project)
+        {
+            project.Scaffold(project.GetEntityInterfaceDefinition(true), project.GetDomainModelsDirectory());
+
+            if (project.GlobalSelection().Settings.AuditEntity != null)
+                project.Scaffold(project.GetAuditEntityInterfaceDefinition(true), project.GetDomainModelsDirectory());
+        }
+
+        internal static EntityFrameworkCoreProject ScaffoldModels(this EntityFrameworkCoreProject project)
+        {
+            foreach (var table in project.Database.Tables)
+            {
+                var selection = project.GetSelection(table);
+
+                var definition = project.GetEntityClassDefinition(table, true);
+
+                if (selection.Settings.UseDataAnnotations)
+                    definition.AddDataAnnotations(table, project);
+
+                project.Scaffold(definition, project.GetDomainModelsDirectory(), project.Database.HasDefaultSchema(table) ? "" : table.Schema);
+            }
+
+            foreach (var view in project.Database.Views)
+            {
+                var selection = project.GetSelection(view);
+
+                var definition = project.GetEntityClassDefinition(view, project.Database.HasDefaultSchema(view) ? project.GetDomainModelsNamespace() : project.GetDomainModelsNamespace(view.Schema));
+
+                if (selection.Settings.UseDataAnnotations)
+                    definition.AddDataAnnotations(view, project);
+
+                project.Scaffold(definition, project.GetDomainModelsDirectory(), project.Database.HasDefaultSchema(view) ? "" : view.Schema);
+            }
 
             return project;
         }
@@ -27,16 +70,16 @@ namespace CatFactory.EntityFrameworkCore
             {
                 foreach (var table in project.Database.Tables)
                 {
-                    var definition = project.GetEntityConfigurationClassDefinition(table, false);
+                    var definition = project.GetEntityConfigurationClassDefinition(table, true);
 
-                    project.Scaffold(definition, project.GetDataLayerConfigurationsDirectory(), project.Database.HasDefaultSchema(table) ? "" : table.Schema);
+                    project.Scaffold(definition, project.GetDomainConfigurationsDirectory(), project.Database.HasDefaultSchema(table) ? "" : table.Schema);
                 }
 
                 foreach (var view in project.Database.Views)
                 {
-                    var definition = project.GetEntityConfigurationClassDefinition(view, false);
+                    var definition = project.GetEntityConfigurationClassDefinition(view, true);
 
-                    project.Scaffold(definition, project.GetDataLayerConfigurationsDirectory(), project.Database.HasDefaultSchema(view) ? "" : view.Schema);
+                    project.Scaffold(definition, project.GetDomainConfigurationsDirectory(), project.Database.HasDefaultSchema(view) ? "" : view.Schema);
                 }
             }
         }
@@ -45,25 +88,10 @@ namespace CatFactory.EntityFrameworkCore
         {
             var projectSelection = project.GlobalSelection();
 
-            project.Scaffold(project.GetDbContextClassDefinition(projectSelection, false), project.GetDataLayerDirectory());
+            project.Scaffold(project.GetDbContextClassDefinition(projectSelection, true), project.GetDomainDirectory());
         }
 
-        internal static void ScaffoldRepositoryInterface(EntityFrameworkCoreProject project)
-        {
-            project.Scaffold(project.GetRepositoryInterfaceDefinition(), project.GetDataLayerContractsDirectory());
-        }
-
-        internal static void ScaffoldBaseRepositoryClassDefinition(EntityFrameworkCoreProject project)
-        {
-            project.Scaffold(project.GetRepositoryBaseClassDefinition(), project.GetDataLayerRepositoriesDirectory());
-        }
-
-        internal static void ScaffoldRepositoryExtensionsClassDefinition(EntityFrameworkCoreProject project)
-        {
-            project.Scaffold(project.GetPagingExtensionsClassDefinition(false), project.GetDataLayerRepositoriesDirectory());
-        }
-
-        internal static void ScaffoldDataContracts(EntityFrameworkCoreProject project)
+        internal static void ScaffoldQueryModels(EntityFrameworkCoreProject project)
         {
             foreach (var table in project.Database.Tables)
             {
@@ -72,36 +100,17 @@ namespace CatFactory.EntityFrameworkCore
                 if (!selection.Settings.EntitiesWithDataContracts)
                     continue;
 
-                project.Scaffold(project.GetDataContractClassDefinition(table, false), project.GetDataLayerDataContractsDirectory());
+                project.Scaffold(project.GetQueryModelClassDefinition(table), project.GetDomainQueryModelsDirectory());
             }
         }
 
-        internal static void ScaffoldDataRepositories(EntityFrameworkCoreProject project)
+        internal static void ScaffoldExtensions(EntityFrameworkCoreProject project)
         {
-            var projectSelection = project.GlobalSelection();
-
-            if (!string.IsNullOrEmpty(projectSelection.Settings.ConcurrencyToken))
-            {
-                projectSelection.Settings.InsertExclusions.Add(projectSelection.Settings.ConcurrencyToken);
-                projectSelection.Settings.UpdateExclusions.Add(projectSelection.Settings.ConcurrencyToken);
-            }
-
-            ScaffoldRepositoryInterface(project);
-            ScaffoldBaseRepositoryClassDefinition(project);
-            ScaffoldRepositoryExtensionsClassDefinition(project);
+            project.Scaffold(project.GetPagingExtensionsClassDefinition(true), project.GetDomainDirectory());
 
             foreach (var projectFeature in project.Features)
             {
-                var repositoryClassDefinition = projectFeature.GetRepositoryClassDefinition();
-
-                project.Scaffold(repositoryClassDefinition, project.GetDataLayerRepositoriesDirectory());
-
-                var repositoryInterfaceDefinition = repositoryClassDefinition.RefactInterface();
-
-                repositoryInterfaceDefinition.Namespace = project.GetDataLayerContractsNamespace();
-                repositoryInterfaceDefinition.Implements.Add("IRepository");
-
-                project.Scaffold(repositoryInterfaceDefinition, project.GetDataLayerContractsDirectory());
+                project.Scaffold(projectFeature.GetDbContextQueryExtensionsClassDefinition(), project.GetDomainDirectory());
             }
         }
 
@@ -148,7 +157,7 @@ namespace CatFactory.EntityFrameworkCore
 
             readMe.WriteLine("CatFactory Development Team ==^^==");
 
-            File.WriteAllText(Path.Combine(project.OutputDirectory, "CatFactory.EntityFrameworkCore.ReadMe.MD"), readMe.ToString());
+            File.WriteAllText(Path.Combine(project.OutputDirectory, "README.md"), readMe.ToString());
         }
     }
 }

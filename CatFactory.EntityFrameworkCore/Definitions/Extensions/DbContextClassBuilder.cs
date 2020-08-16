@@ -12,7 +12,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 {
     public static class DbContextClassBuilder
     {
-        public static DbContextClassDefinition GetDbContextClassDefinition(this EntityFrameworkCoreProject project, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection)
+        public static DbContextClassDefinition GetDbContextClassDefinition(this EntityFrameworkCoreProject project, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection, bool isDomainDrivenDesign)
         {
             var definition = new DbContextClassDefinition
             {
@@ -20,16 +20,24 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 {
                     "System",
                     "Microsoft.EntityFrameworkCore",
-                    project.GetEntityLayerNamespace()
+                    isDomainDrivenDesign ? project.GetDomainModelsNamespace() : project.GetEntityLayerNamespace()
                 },
-                Namespace = project.GetDataLayerNamespace(),
+                Namespace = isDomainDrivenDesign ? project.Name : project.GetDataLayerNamespace(),
                 AccessModifier = AccessModifier.Public,
                 Name = project.GetDbContextName(project.Database),
                 BaseClass = "DbContext"
             };
 
-            if (!projectSelection.Settings.UseDataAnnotations)
-                definition.Namespaces.Add(project.GetDataLayerConfigurationsNamespace());
+            if (isDomainDrivenDesign)
+            {
+                if (!projectSelection.Settings.UseDataAnnotations)
+                    definition.Namespaces.Add(project.GetDomainConfigurationsNamespace());
+            }
+            else
+            {
+                if (!projectSelection.Settings.UseDataAnnotations)
+                    definition.Namespaces.Add(project.GetDataLayerConfigurationsNamespace());
+            }
 
             definition.Constructors.Add(new ClassConstructorDefinition
             {
@@ -45,8 +53,16 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             foreach (var table in project.Database.Tables)
             {
-                if (!project.Database.HasDefaultSchema(table))
-                    definition.Namespaces.AddUnique(project.GetEntityLayerNamespace(table.Schema));
+                if (isDomainDrivenDesign)
+                {
+                    if (!project.Database.HasDefaultSchema(table))
+                        definition.Namespaces.AddUnique(project.GetDomainModelsNamespace(table.Schema));
+                }
+                else
+                {
+                    if (!project.Database.HasDefaultSchema(table))
+                        definition.Namespaces.AddUnique(project.GetEntityLayerNamespace(table.Schema));
+                }
 
                 var existingViews = project.Database.Views.Count(item => item.Name == table.Name);
 
@@ -66,8 +82,16 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             foreach (var view in project.Database.Views)
             {
-                if (!project.Database.HasDefaultSchema(view))
-                    definition.Namespaces.AddUnique(project.GetEntityLayerNamespace(view.Schema));
+                if (isDomainDrivenDesign)
+                {
+                    if (!project.Database.HasDefaultSchema(view))
+                        definition.Namespaces.AddUnique(project.GetDomainModelsNamespace(view.Schema));
+                }
+                else
+                {
+                    if (!project.Database.HasDefaultSchema(view))
+                        definition.Namespaces.AddUnique(project.GetEntityLayerNamespace(view.Schema));
+                }
 
                 var existingTables = project.Database.Tables.Count(item => item.Name == view.Name);
 
@@ -87,14 +111,30 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             foreach (var table in project.Database.Tables)
             {
-                if (!projectSelection.Settings.UseDataAnnotations && !project.Database.HasDefaultSchema(table))
-                    definition.Namespaces.AddUnique(project.GetDataLayerConfigurationsNamespace(table.Schema));
+                if (isDomainDrivenDesign)
+                {
+                    if (!projectSelection.Settings.UseDataAnnotations && !project.Database.HasDefaultSchema(table))
+                        definition.Namespaces.AddUnique(project.GetDomainConfigurationsNamespace(table.Schema));
+                }
+                else
+                {
+                    if (!projectSelection.Settings.UseDataAnnotations && !project.Database.HasDefaultSchema(table))
+                        definition.Namespaces.AddUnique(project.GetDataLayerConfigurationsNamespace(table.Schema));
+                }
             }
 
             foreach (var view in project.Database.Views)
             {
-                if (!projectSelection.Settings.UseDataAnnotations && !project.Database.HasDefaultSchema(view))
-                    definition.Namespaces.AddUnique(project.GetDataLayerConfigurationsNamespace(view.Schema));
+                if (isDomainDrivenDesign)
+                {
+                    if (!projectSelection.Settings.UseDataAnnotations && !project.Database.HasDefaultSchema(view))
+                        definition.Namespaces.AddUnique(project.GetDomainConfigurationsNamespace(view.Schema));
+                }
+                else
+                {
+                    if (!projectSelection.Settings.UseDataAnnotations && !project.Database.HasDefaultSchema(view))
+                        definition.Namespaces.AddUnique(project.GetDataLayerConfigurationsNamespace(view.Schema));
+                }
             }
 
             var scalarFunctions = project.Database.GetScalarFunctions();
@@ -202,7 +242,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                     foreach (var schema in schemas)
                     {
-                        var tables = project.Database.Tables.Where(item => item.Schema == schema).ToList();
+                        var tables = project.Database.FindTablesBySchema(schema).ToList();
 
                         if (tables.Count == 0)
                             continue;
@@ -234,7 +274,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                     foreach (var schema in schemas)
                     {
-                        var views = project.Database.Views.Where(item => item.Schema == schema).ToList();
+                        var views = project.Database.FindViewsBySchema(schema).ToList();
 
                         if (views.Count == 0)
                             continue;

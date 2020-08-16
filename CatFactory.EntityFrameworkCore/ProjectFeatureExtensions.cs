@@ -8,15 +8,19 @@ namespace CatFactory.EntityFrameworkCore
             => projectFeature.Project as EntityFrameworkCoreProject;
 
         public static string GetRepositoryInterfaceName(this ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature)
-            => projectFeature
-                .GetEntityFrameworkCoreProject()
-                .CodeNamingConvention
-                .GetInterfaceName(string.Format("{0}Repository", projectFeature.Name));
+            => string.Format("{0}Repository",
+                    projectFeature.GetEntityFrameworkCoreProject().CodeNamingConvention.GetInterfaceName(projectFeature.Name)
+            );
 
         public static string GetRepositoryClassName(this ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature)
-            => projectFeature
-                .GetEntityFrameworkCoreProject()
-                .CodeNamingConvention
-                .GetClassName(string.Format("{0}Repository", projectFeature.Name));
+            => string.Format("{0}Repository",
+                projectFeature.GetEntityFrameworkCoreProject().CodeNamingConvention.GetClassName(projectFeature.Name)
+            );
+
+        public static string GetQueryExtensionsClassName(this ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature)
+            => string.Format("{0}{1}QueryExtensions",
+                projectFeature.GetEntityFrameworkCoreProject().GetDbContextName(projectFeature.Project.Database),
+                projectFeature.Project.CodeNamingConvention.GetClassName(projectFeature.Name)
+            );
     }
 }
