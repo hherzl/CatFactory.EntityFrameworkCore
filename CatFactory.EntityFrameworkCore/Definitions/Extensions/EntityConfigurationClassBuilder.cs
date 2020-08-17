@@ -12,7 +12,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 {
     public static class EntityConfigurationClassBuilder
     {
-        public static EntityConfigurationClassDefinition GetEntityConfigurationClassDefinition(this EntityFrameworkCoreProject project, ITable table)
+        public static EntityConfigurationClassDefinition GetEntityConfigurationClassDefinition(this EntityFrameworkCoreProject project, ITable table, bool isDomainDrivenDesign)
         {
             var definition = new EntityConfigurationClassDefinition
             {
@@ -21,13 +21,21 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     "Microsoft.EntityFrameworkCore",
                     "Microsoft.EntityFrameworkCore.Metadata.Builders"
                 },
-                Namespace = project.Database.HasDefaultSchema(table) ? project.GetDataLayerConfigurationsNamespace() : project.GetDataLayerConfigurationsNamespace(table.Schema),
                 AccessModifier = AccessModifier.Internal,
                 Name = project.GetEntityConfigurationName(table),
                 DbObject = table
             };
 
-            definition.Namespaces.AddUnique(project.GetEntityLayerNamespace(project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema));
+            if (isDomainDrivenDesign)
+            {
+                definition.Namespace = project.GetDomainConfigurationsNamespace(project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema);
+                definition.Namespaces.AddUnique(project.GetDomainModelsNamespace(project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema));
+            }
+            else
+            {
+                definition.Namespace = project.Database.HasDefaultSchema(table) ? project.GetDataLayerConfigurationsNamespace() : project.GetDataLayerConfigurationsNamespace(table.Schema);
+                definition.Namespaces.AddUnique(project.GetEntityLayerNamespace(project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema));
+            }
 
             // todo: Check logic to build property's name
 
@@ -263,7 +271,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             return definition;
         }
 
-        public static EntityConfigurationClassDefinition GetEntityConfigurationClassDefinition(this EntityFrameworkCoreProject project, IView view)
+        public static EntityConfigurationClassDefinition GetEntityConfigurationClassDefinition(this EntityFrameworkCoreProject project, IView view, bool isDomainDrivenDesign)
         {
             var definition = new EntityConfigurationClassDefinition
             {
@@ -272,7 +280,6 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     "Microsoft.EntityFrameworkCore",
                     "Microsoft.EntityFrameworkCore.Metadata.Builders"
                 },
-                Namespace = project.Database.HasDefaultSchema(view) ? project.GetDataLayerConfigurationsNamespace() : project.GetDataLayerConfigurationsNamespace(view.Schema),
                 AccessModifier = AccessModifier.Internal,
                 Name = project.GetEntityConfigurationName(view),
                 Implements =
@@ -282,7 +289,20 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 DbObject = view
             };
 
-            definition.Namespaces.AddUnique(project.GetEntityLayerNamespace(project.Database.HasDefaultSchema(view) ? string.Empty : view.Schema));
+            if (isDomainDrivenDesign)
+            {
+                definition.Namespace = project.GetDomainConfigurationsNamespace(project.Database.HasDefaultSchema(view) ? string.Empty : view.Schema);
+
+                definition.Namespaces.AddUnique(project.GetDomainModelsNamespace(project.Database.HasDefaultSchema(view) ? string.Empty : view.Schema));
+                definition.Namespaces.AddUnique(project.GetDomainModelsNamespace(project.Database.HasDefaultSchema(view) ? string.Empty : view.Schema));
+            }
+            else
+            {
+                definition.Namespace = project.Database.HasDefaultSchema(view) ? project.GetDataLayerConfigurationsNamespace() : project.GetDataLayerConfigurationsNamespace(view.Schema);
+
+                definition.Namespaces.AddUnique(project.GetEntityLayerNamespace(project.Database.HasDefaultSchema(view) ? string.Empty : view.Schema));
+                definition.Namespaces.AddUnique(project.GetEntityLayerNamespace(project.Database.HasDefaultSchema(view) ? string.Empty : view.Schema));
+            }
 
             var configLines = new List<ILine>
             {

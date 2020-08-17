@@ -2,9 +2,9 @@
 
 namespace CatFactory.EntityFrameworkCore.Definitions
 {
-    public class RepositoryBaseClassDefinition : CSharpClassDefinition
+    public class QueryModelClassDefinition : CSharpClassDefinition
     {
-        public RepositoryBaseClassDefinition()
+        public QueryModelClassDefinition()
             : base()
         {
         }

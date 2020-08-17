@@ -1,15 +1,17 @@
 cls
 set initialPath=%cd%
 set srcPath=%cd%\CatFactory.EntityFrameworkCore
-set testPath=%cd%\CatFactory.EntityFrameworkCore.Tests
+set testsPath=%cd%\CatFactory.EntityFrameworkCore.Tests
 set outputBasePath=C:\Temp\CatFactory.EntityFrameworkCore
 cd %srcPath%
 dotnet build
-cd %testPath%
+cd %testsPath%
 dotnet test
-cd %outputBasePath%\OnLineStore.Core.Tests
+cd %outputBasePath%\OnlineStore.Core.Tests
 dotnet test
-cd %outputBasePath%\OnLineStoreWithDataAnnotations.Core.Tests
+cd %outputBasePath%\OnlineStore.Domain.Tests
+dotnet test
+cd %outputBasePath%\OnlineStoreWithDataAnnotations.Core.Tests
 dotnet test
 cd %outputBasePath%\Northwind.Core.Tests
 dotnet test

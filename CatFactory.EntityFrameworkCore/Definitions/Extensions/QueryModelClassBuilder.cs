@@ -6,19 +6,19 @@ using CatFactory.ObjectRelationalMapping;
 
 namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 {
-    public static class DataContractClassBuilder
+    public static class QueryModelClassBuilder
     {
-        public static DataContractClassDefinition GetDataContractClassDefinition(this EntityFrameworkCoreProject project, ITable table, bool isDomainDrivenDesign)
+        public static QueryModelClassDefinition GetQueryModelClassDefinition(this EntityFrameworkCoreProject project, ITable table)
         {
-            var definition = new DataContractClassDefinition
+            var definition = new QueryModelClassDefinition
             {
                 Namespaces =
                 {
                     "System"
                 },
-                Namespace = isDomainDrivenDesign ? project.GetDomainQueryModelsNamespace() : project.GetDataLayerDataContractsNamespace(),
+                Namespace = project.GetDomainQueryModelsNamespace(),
                 AccessModifier = AccessModifier.Public,
-                Name = project.GetDataContractName(table),
+                Name = project.GetQueryModelName(table),
                 DbObject = table
             };
 

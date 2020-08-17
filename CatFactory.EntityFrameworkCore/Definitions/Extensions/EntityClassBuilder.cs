@@ -11,7 +11,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 {
     public static class EntityClassBuilder
     {
-        public static EntityClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, ITable table)
+        public static EntityClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, ITable table, bool isDomainDrivenDesign)
         {
             var definition = new EntityClassDefinition
             {
@@ -19,7 +19,6 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 {
                     "System"
                 },
-                Namespace = project.Database.HasDefaultSchema(table) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(table.Schema),
                 AccessModifier = AccessModifier.Public,
                 Name = project.GetEntityName(table),
                 IsPartial = true,
@@ -29,6 +28,11 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 },
                 DbObject = table
             };
+
+            if (isDomainDrivenDesign)
+                definition.Namespace = project.Database.HasDefaultSchema(table) ? project.GetDomainModelsNamespace() : project.GetDomainModelsNamespace(table.Schema);
+            else
+                definition.Namespace = project.Database.HasDefaultSchema(table) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(table.Schema);
 
             if (!string.IsNullOrEmpty(table.Description))
                 definition.Documentation.Summary = table.Description;
@@ -84,8 +88,11 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 else
                 {
                     if (projectSelection.Settings.BackingFields.Contains(table.GetFullColumnName(column)))
+                    {
                         definition.AddPropertyWithField(propertyType, project.GetPropertyName(table, column));
+                    }
                     else if (projectSelection.Settings.UseAutomaticPropertiesForEntities)
+                    {
                         definition.Properties.Add(new PropertyDefinition
                         {
                             AccessModifier = AccessModifier.Public,
@@ -93,8 +100,11 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                             Name = project.GetPropertyName(table, column),
                             IsAutomatic = true
                         });
+                    }
                     else
+                    {
                         definition.AddPropertyWithField(propertyType, project.GetPropertyName(table, column));
+                    }
                 }
             }
 
@@ -130,10 +140,21 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     if (foreignTable == null)
                         continue;
 
-                    if (definition.Namespace != project.GetEntityLayerNamespace(foreignTable.Schema))
+                    if (isDomainDrivenDesign)
                     {
-                        definition.Namespaces
-                            .AddUnique(project.Database.HasDefaultSchema(foreignTable) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(foreignTable.Schema));
+                        if (definition.Namespace != project.GetDomainModelsNamespace(foreignTable.Schema))
+                        {
+                            definition.Namespaces
+                                .AddUnique(project.Database.HasDefaultSchema(foreignTable) ? project.GetDomainModelsNamespace() : project.GetDomainModelsNamespace(foreignTable.Schema));
+                        }
+                    }
+                    else
+                    {
+                        if (definition.Namespace != project.GetEntityLayerNamespace(foreignTable.Schema))
+                        {
+                            definition.Namespaces
+                                .AddUnique(project.Database.HasDefaultSchema(foreignTable) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(foreignTable.Schema));
+                        }
                     }
 
                     var fkProperty = foreignKey.GetParentNavigationProperty(foreignTable, project);
@@ -151,10 +172,21 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                             definition.Namespaces
                                 .AddUnique(projectSelection.Settings.NavigationPropertyEnumerableNamespace);
 
-                            if (definition.Namespace != project.GetEntityLayerNamespace(child.Schema))
+                            if (isDomainDrivenDesign)
                             {
-                                definition.Namespaces
-                                .AddUnique(project.Database.HasDefaultSchema(child) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(child.Schema));
+                                if (definition.Namespace != project.GetDomainModelsNamespace(child.Schema))
+                                {
+                                    definition.Namespaces
+                                        .AddUnique(project.Database.HasDefaultSchema(child) ? project.GetDomainModelsNamespace() : project.GetDomainModelsNamespace(child.Schema));
+                                }
+                            }
+                            else
+                            {
+                                if (definition.Namespace != project.GetEntityLayerNamespace(child.Schema))
+                                {
+                                    definition.Namespaces
+                                        .AddUnique(project.Database.HasDefaultSchema(child) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(child.Schema));
+                                }
                             }
 
                             var navigationProperty = project.GetChildNavigationProperty(projectSelection, child, foreignKey);
@@ -169,7 +201,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             return definition;
         }
 
-        public static EntityClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, IView view)
+        public static EntityClassDefinition GetEntityClassDefinition(this EntityFrameworkCoreProject project, IView view, string ns)
         {
             var definition = new EntityClassDefinition
             {
@@ -177,7 +209,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 {
                     "System"
                 },
-                Namespace = project.Database.HasDefaultSchema(view) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(view.Schema),
+                Namespace = ns,
                 AccessModifier = AccessModifier.Public,
                 Name = project.GetEntityName(view),
                 IsPartial = true,

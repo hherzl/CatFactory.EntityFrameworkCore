@@ -4,6 +4,8 @@
     {
         public EntityFrameworkCoreProjectNamespaces()
         {
+            Models = "Models";
+            QueryModels = "QueryModels";
             EntityLayer = "EntityLayer";
             DataLayer = "DataLayer";
             Configurations = "Configurations";
@@ -12,6 +14,10 @@
             Repositories = "Repositories";
             ValueConversion = "ValueConversion";
         }
+
+        public string Models { get; set; }
+
+        public string QueryModels { get; set; }
 
         public string EntityLayer { get; set; }
 

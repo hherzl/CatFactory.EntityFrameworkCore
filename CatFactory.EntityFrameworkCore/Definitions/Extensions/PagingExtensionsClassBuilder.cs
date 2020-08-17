@@ -3,24 +3,28 @@ using CatFactory.ObjectOrientedProgramming;
 
 namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 {
-    public static class RepositoryExtensionsClassBuilder
+    public static class PagingExtensionsClassBuilder
     {
-        public static RepositoryExtensionsClassDefinition GetRepositoryExtensionsClassDefinition(this EntityFrameworkCoreProject project)
+        public static PagingExtensionsClassDefinition GetPagingExtensionsClassDefinition(this EntityFrameworkCoreProject project, bool isDomainDrivenDesign)
         {
-            var definition = new RepositoryExtensionsClassDefinition
+            var definition = new PagingExtensionsClassDefinition
             {
                 Namespaces =
                 {
                     "System",
                     "System.Linq",
-                    project.GetDataLayerNamespace(),
-                    project.GetEntityLayerNamespace()
                 },
-                Namespace = project.GetDataLayerRepositoriesNamespace(),
+                Namespace = isDomainDrivenDesign ? project.Name : project.GetDataLayerRepositoriesNamespace(),
                 AccessModifier = AccessModifier.Public,
                 IsStatic = true,
-                Name = "RepositoryExtensions"
+                Name = "PagingExtensions"
             };
+
+            if (!isDomainDrivenDesign)
+            {
+                definition.Namespaces.Add(project.GetDataLayerNamespace());
+                definition.Namespaces.Add(project.GetEntityLayerNamespace());
+            }
 
             definition.Methods.Add(new MethodDefinition("IQueryable<TEntity>", "Paging", new ParameterDefinition(project.GetDbContextName(project.Database), "dbContext"), new ParameterDefinition("int", "pageSize", "0"), new ParameterDefinition("int", "pageNumber", "0"))
             {
