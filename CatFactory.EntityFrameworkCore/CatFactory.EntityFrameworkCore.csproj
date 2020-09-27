@@ -3,16 +3,16 @@
     <PropertyGroup>
         <TargetFramework>netcoreapp2.2</TargetFramework>
         <LangVersion>latest</LangVersion>
-        <Version>1.0.0-beta-sun-build50</Version>
+        <Version>1.0.0-beta-sun-build51</Version>
         <Authors>H. Herzl</Authors>
         <Company>Herzl Corp.</Company>
         <Description>CatFactory Package for Entity Framework Core</Description>
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</RepositoryUrl>
         <PackageTags>Entity Framework Core; ORM; Scaffolding</PackageTags>
-        <PackageReleaseNotes>1.0.0-beta-sun-build50 Version:
+        <PackageReleaseNotes>1.0.0-beta-sun-build51 Version:
 
-Add extension method for Domain scaffolding
+ Fix parameter name in scalar functions using naming convention for parameters
 
 Quick start:
 

@@ -61,8 +61,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
 
             // Scaffolding =^^=
             project
-                .ScaffoldEntityLayer()
-                .ScaffoldDataLayer();
+                .ScaffoldDomain();
         }
     }
 }
