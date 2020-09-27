@@ -167,9 +167,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                             }
                         }
                     },
+                    AccessModifier = AccessModifier.Public,
                     IsStatic = true,
                     Type = parameterType,
-                    AccessModifier = AccessModifier.Public,
                     Name = project.GetScalarFunctionMethodName(scalarFunction),
                     Lines =
                     {
@@ -183,7 +183,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 {
                     var propertyType = project.Database.ResolveDatabaseType(parameter);
 
-                    method.Parameters.Add(new ParameterDefinition(parameterType, project.GetPropertyName(parameter)));
+                    method.Parameters.Add(new ParameterDefinition(parameterType, project.CodeNamingConvention.GetParameterName(parameter.Name)));
                 }
 
                 definition.Methods.Add(method);
