@@ -7,62 +7,6 @@ namespace CatFactory.EntityFrameworkCore.Tests
     public class ScaffoldingTests
     {
         [Fact]
-        public async Task Foo()
-        {
-            // Create database factory
-            var databaseFactory = new SqlServerDatabaseFactory
-            {
-                DatabaseImportSettings = new DatabaseImportSettings
-                {
-                    ConnectionString = "server=(local);database=OnlineStore;integrated security=yes;",
-                    Exclusions =
-                    {
-                        "dbo.sysdiagrams"
-                    }
-                }
-            };
-
-            // Import database
-            var database = await databaseFactory.ImportAsync();
-
-            // Create instance of Entity Framework Core project
-            var project = EntityFrameworkCoreProject
-                .CreateForV3x("OnlineStore.Domain", database, @"C:\Temp\CatFactory.EntityFrameworkCore\OnlineStore2.Domain");
-
-            // Apply settings for Entity Framework Core project
-            project.GlobalSelection(settings =>
-            {
-                settings.ForceOverwrite = true;
-                settings.ConcurrencyToken = "Timestamp";
-                settings.AuditEntity = new AuditEntity
-                {
-                    CreationUserColumnName = "CreationUser",
-                    CreationDateTimeColumnName = "CreationDateTime",
-                    LastUpdateUserColumnName = "LastUpdateUser",
-                    LastUpdateDateTimeColumnName = "LastUpdateDateTime"
-                };
-
-                settings.AddConfigurationForUniquesInFluentAPI = true;
-                settings.AddConfigurationForForeignKeysInFluentAPI = true;
-                settings.DeclareNavigationProperties = true;
-            });
-
-            project.Selection("Sales.OrderHeader", settings =>
-            {
-                settings.EntitiesWithDataContracts = true;
-                settings.AddConfigurationForForeignKeysInFluentAPI = true;
-                settings.DeclareNavigationProperties = true;
-            });
-
-            // Build features for project, group all entities by schema into a feature
-            project.BuildFeatures();
-
-            // Scaffolding =^^=
-            project
-                .ScaffoldDomain();
-        }
-
-        [Fact]
         public async Task ScaffoldingDomainProjectForOnlineStoreDbAsync()
         {
             // Create database factory
