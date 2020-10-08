@@ -70,23 +70,16 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             else
             {
                 configLines.Add(new CommentLine(" Set key for entity"));
-
-                if (project.Version >= EntityFrameworkCoreVersion.Version_3_0)
+                
+                if (table.PrimaryKey.Key.Count == 1)
                 {
-                    configLines.Add(new CodeLine("builder.HasNoKey();"));
+                    configLines.Add(new CodeLine("builder.HasKey(p => p.{0});", project.CodeNamingConvention.GetPropertyName(table.PrimaryKey.Key[0])));
+                    configLines.Add(new EmptyLine());
                 }
-                else
+                else if (table.PrimaryKey.Key.Count > 1)
                 {
-                    if (table.PrimaryKey.Key.Count == 1)
-                    {
-                        configLines.Add(new CodeLine("builder.HasKey(p => p.{0});", project.CodeNamingConvention.GetPropertyName(table.PrimaryKey.Key[0])));
-                        configLines.Add(new EmptyLine());
-                    }
-                    else if (table.PrimaryKey.Key.Count > 1)
-                    {
-                        configLines.Add(new CodeLine("builder.HasKey(p => new {{ {0} }});", string.Join(", ", table.PrimaryKey.Key.Select(item => string.Format("p.{0}", project.CodeNamingConvention.GetPropertyName(item))))));
-                        configLines.Add(new EmptyLine());
-                    }
+                    configLines.Add(new CodeLine("builder.HasKey(p => new {{ {0} }});", string.Join(", ", table.PrimaryKey.Key.Select(item => string.Format("p.{0}", project.CodeNamingConvention.GetPropertyName(item))))));
+                    configLines.Add(new EmptyLine());
                 }
             }
 
@@ -367,7 +360,17 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     else if (project.Database.ColumnIsDouble(column) || project.Database.ColumnIsSingle(column))
                         lines.Add(string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Prec));
                     if (project.Database.ColumnIsString(column))
-                        lines.Add(column.Length <= 0 ? string.Format("HasColumnType(\"{0}(max)\")", column.Type) : string.Format("HasColumnType(\"{0}({1})\")", column.Type, column.Length));
+                    {
+                        if (column.Length <= 0)
+                        {
+                            lines.Add(string.Format("HasColumnType(\"{0}(max)\")", column.Type));
+                        }
+                        else
+                        {
+                            lines.Add(string.Format("HasColumnType(\"{0}\")", column.Type));
+                            lines.Add(string.Format("HasMaxLength({0})", column.Length));
+                        }
+                    }
                     else
                         lines.Add(string.Format("HasColumnType(\"{0}\")", column.Type));
 
