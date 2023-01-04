@@ -10,7 +10,7 @@
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</RepositoryUrl>
         <PackageTags>Entity Framework Core; ORM; Scaffolding</PackageTags>
-        <PackageReleaseNotes>1.0.0-beta-sun-build54 Version:
+        <PackageReleaseNotes>1.0.0-beta-sun-build55 Version:
 
  Upgrade for .NET 6 version
 
