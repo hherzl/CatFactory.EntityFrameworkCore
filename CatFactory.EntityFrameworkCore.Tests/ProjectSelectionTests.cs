@@ -13,7 +13,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
 
             // Import database
             var database = await SqlServerDatabaseFactory
-                .ImportAsync("server=(local);database=OnlineStore;integrated security=yes;", "dbo.sysdiagrams");
+                .ImportAsync("server=(local); database=OnlineStore; integrated security=yes; TrustServerCertificate=True;", "dbo.sysdiagrams");
 
             // Create instance of Entity Framework Core project
             var project = EntityFrameworkCoreProject

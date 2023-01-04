@@ -14,7 +14,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
             {
                 DatabaseImportSettings = new DatabaseImportSettings
                 {
-                    ConnectionString = "server=(local);database=OnlineStore;integrated security=yes;",
+                    ConnectionString = "server=(local); database=OnlineStore; integrated security=yes; TrustServerCertificate=True;",
                     Exclusions =
                     {
                         "dbo.sysdiagrams"
@@ -59,7 +59,8 @@ namespace CatFactory.EntityFrameworkCore.Tests
 
             // Scaffolding =^^=
             project
-                .ScaffoldDomain();
+                .ScaffoldDomain()
+                ;
         }
 
         [Fact]
@@ -70,7 +71,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
             {
                 DatabaseImportSettings = new DatabaseImportSettings
                 {
-                    ConnectionString = "server=(local);database=OnlineStore;integrated security=yes;",
+                    ConnectionString = "server=(local); database=OnlineStore; integrated security=yes; TrustServerCertificate=True;",
                     ImportTableFunctions = true,
                     Exclusions =
                     {
@@ -118,7 +119,8 @@ namespace CatFactory.EntityFrameworkCore.Tests
             // Scaffolding =^^=
             project
                 .ScaffoldEntityLayer()
-                .ScaffoldDataLayer();
+                .ScaffoldDataLayer()
+                ;
         }
 
         [Fact]
@@ -126,7 +128,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
         {
             // Import database
             var database = await SqlServerDatabaseFactory
-                .ImportAsync("server=(local);database=OnlineStore;integrated security=yes;", "dbo.sysdiagrams");
+                .ImportAsync("server=(local); database=OnlineStore; integrated security=yes; TrustServerCertificate=True;", "dbo.sysdiagrams");
 
             // Create instance of Entity Framework Core Project
             var project = EntityFrameworkCoreProject
@@ -156,7 +158,8 @@ namespace CatFactory.EntityFrameworkCore.Tests
             // Scaffolding =^^=
             project
                 .ScaffoldEntityLayer()
-                .ScaffoldDataLayer();
+                .ScaffoldDataLayer()
+                ;
         }
 
         [Fact]
@@ -167,7 +170,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
             {
                 DatabaseImportSettings = new DatabaseImportSettings
                 {
-                    ConnectionString = "server=(local);database=Northwind;integrated security=yes;",
+                    ConnectionString = "server=(local); database=Northwind; integrated security=yes; TrustServerCertificate=True;",
                     ImportScalarFunctions = true,
                     ImportTableFunctions = true,
                     ImportStoredProcedures = true,
@@ -207,7 +210,8 @@ namespace CatFactory.EntityFrameworkCore.Tests
             // Scaffolding =^^=
             project
                 .ScaffoldEntityLayer()
-                .ScaffoldDataLayer();
+                .ScaffoldDataLayer()
+                ;
         }
 
         [Fact]
@@ -218,7 +222,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
             {
                 DatabaseImportSettings = new DatabaseImportSettings
                 {
-                    ConnectionString = "server=(local);database=AdventureWorks2017;integrated security=yes;",
+                    ConnectionString = "server=(local); database=AdventureWorks2017; integrated security=yes; TrustServerCertificate=True;",
                     ImportScalarFunctions = true,
                     ImportTableFunctions = true,
                     Exclusions =
@@ -257,7 +261,8 @@ namespace CatFactory.EntityFrameworkCore.Tests
             // Scaffolding =^^=
             project
                 .ScaffoldEntityLayer()
-                .ScaffoldDataLayer();
+                .ScaffoldDataLayer()
+                ;
         }
 
         [Fact]
@@ -268,7 +273,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
             {
                 DatabaseImportSettings = new DatabaseImportSettings
                 {
-                    ConnectionString = "server=(local);database=WideWorldImporters;integrated security=yes;",
+                    ConnectionString = "server=(local); database=WideWorldImporters; integrated security=yes; TrustServerCertificate=True;",
                     ImportTableFunctions = true,
                     Exclusions =
                     {
@@ -294,7 +299,8 @@ namespace CatFactory.EntityFrameworkCore.Tests
             // Scaffolding =^^=
             project
                 .ScaffoldEntityLayer()
-                .ScaffoldDataLayer();
+                .ScaffoldDataLayer()
+                ;
         }
     }
 }

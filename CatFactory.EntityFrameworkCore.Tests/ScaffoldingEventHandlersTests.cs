@@ -15,7 +15,7 @@ namespace CatFactory.EntityFrameworkCore.Tests
             {
                 DatabaseImportSettings = new DatabaseImportSettings
                 {
-                    ConnectionString = "server=(local);database=OnlineStore;integrated security=yes;"
+                    ConnectionString = "server=(local); database=OnlineStore; integrated security=yes; TrustServerCertificate=True;"
                 }
             };
 
@@ -61,7 +61,8 @@ namespace CatFactory.EntityFrameworkCore.Tests
 
             // Scaffolding =^^=
             project
-                .ScaffoldDomain();
+                .ScaffoldDomain()
+                ;
         }
     }
 }

@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <LangVersion>latest</LangVersion>
-        <Version>1.0.0-beta-sun-build54</Version>
+        <Version>1.0.0-beta-sun-build55</Version>
         <Authors>H. Herzl</Authors>
         <Company>Herzl Corp.</Company>
         <Description>CatFactory Package for Entity Framework Core</Description>
@@ -12,7 +12,7 @@
         <PackageTags>Entity Framework Core; ORM; Scaffolding</PackageTags>
         <PackageReleaseNotes>1.0.0-beta-sun-build54 Version:
 
- Upgrade for .NET Core version
+ Upgrade for .NET 6 version
 
 Quick start:
 
@@ -26,13 +26,11 @@ https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-w
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
   </ItemGroup>
-
-
+  
     <ItemGroup>
-        <PackageReference Include="CatFactory.NetCore" Version="1.0.0-beta-sun-build39" />
-        <PackageReference Include="Microsoft.AspNetCore.App" />
+        <PackageReference Include="CatFactory.NetCore" Version="1.0.0-beta-sun-build41" />
     </ItemGroup>
 
 </Project>
