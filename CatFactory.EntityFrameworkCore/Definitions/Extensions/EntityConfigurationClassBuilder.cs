@@ -136,7 +136,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     else
                         lines.Add(string.Format("HasColumnType(\"{0}\")", column.Type));
 
-                    // Use ValueConversionMaps to detect and apply ValueConversion Type based on Type
+                    // todo: Use ValueConversionMaps to detect and apply ValueConversion Type based on Type
 
                     if (project.ValueConversionMaps.TryGetValue(column.Type, out valueConversion) == true)
                         lines.Add($".HasConversion(typeof({valueConversion?.FullName}))");
@@ -173,7 +173,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     configLines.Add(new CodeLine("builder"));
                     configLines.Add(new CodeLine(1, ".Property(p => p.{0})", project.GetPropertyName(table, column)));
                     configLines.Add(new CodeLine(1, ".ValueGeneratedOnAddOrUpdate()"));
-                    configLines.Add(new CodeLine(1, ".IsConcurrencyToken();"));
+                    configLines.Add(new CodeLine(1, ".IsConcurrencyToken()"));
+                    configLines.Add(new CodeLine(1, ";"));
                     configLines.Add(new EmptyLine());
                 }
             }
@@ -198,7 +199,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         configLines.Add(new CodeLine(1, ".IsUnique()"));
                     }
 
-                    configLines.Add(new CodeLine(1, ".HasName(\"{0}\");", unique.ConstraintName));
+                    configLines.Add(new CodeLine(1, ".HasName(\"{0}\")", unique.ConstraintName));
+                    configLines.Add(new CodeLine(1, ";"));
                     configLines.Add(new EmptyLine());
                 }
             }
@@ -223,7 +225,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         configLines.Add(new CodeLine(1, ".HasOne(p => p.{0})", foreignProperty.Name));
                         configLines.Add(new CodeLine(1, ".WithMany(b => b.{0})", project.GetNavigationPropertyName(table)));
                         configLines.Add(new CodeLine(1, ".HasForeignKey(p => {0})", string.Format("p.{0}", project.CodeNamingConvention.GetPropertyName(foreignKey.Key.First()))));
-                        configLines.Add(new CodeLine(1, ".HasConstraintName(\"{0}\");", foreignKey.ConstraintName));
+                        configLines.Add(new CodeLine(1, ".HasConstraintName(\"{0}\")", foreignKey.ConstraintName));
+                        configLines.Add(new CodeLine(1, ";"));
                         configLines.Add(new EmptyLine());
                     }
                     else
@@ -374,7 +377,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     else
                         lines.Add(string.Format("HasColumnType(\"{0}\")", column.Type));
 
-                    // Use ValueConversionMaps to detect and apply ValueConversion Type based on Type
+                    // todo: Use ValueConversionMaps to detect and apply ValueConversion Type based on Type
 
                     if (project.ValueConversionMaps?.TryGetValue(column.Type, out valueConversion) == true)
                         lines.Add($"HasConversion(typeof({valueConversion?.FullName}))");
@@ -396,7 +399,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         string.Format("builder.Ignore(p => p.{0})", project.GetPropertyName( view, column))
                     };
 
-                    configLines.Add(new CodeLine("{0};", string.Join(".", lines)));
+                    configLines.Add(new CodeLine("{0}", string.Join(".", lines)));
+                    configLines.Add(new CodeLine(";"));
                 }
             }
 
