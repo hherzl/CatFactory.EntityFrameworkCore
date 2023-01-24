@@ -199,7 +199,11 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                         configLines.Add(new CodeLine(1, ".IsUnique()"));
                     }
 
-                    configLines.Add(new CodeLine(1, ".HasName(\"{0}\")", unique.ConstraintName));
+                    if (project.Version >= EntityFrameworkCoreVersion.Version_5_0)
+                        configLines.Add(new CodeLine(1, ".HasDatabaseName(\"{0}\")", unique.ConstraintName));
+                    else
+                        configLines.Add(new CodeLine(1, ".HasName(\"{0}\")", unique.ConstraintName));
+
                     configLines.Add(new CodeLine(1, ";"));
                     configLines.Add(new EmptyLine());
                 }

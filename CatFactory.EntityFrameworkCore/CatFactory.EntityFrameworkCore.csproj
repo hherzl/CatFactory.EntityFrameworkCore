@@ -13,6 +13,7 @@
         <PackageReleaseNotes>1.0.0-beta-sun-build56 Version:
 
 Upgrade for .NET 6 version
+Fix issue 20: https://github.com/hherzl/CatFactory.EntityFrameworkCore/issues/20
 Fix issue 21: https://github.com/hherzl/CatFactory.EntityFrameworkCore/issues/21
 
 Quick start:
