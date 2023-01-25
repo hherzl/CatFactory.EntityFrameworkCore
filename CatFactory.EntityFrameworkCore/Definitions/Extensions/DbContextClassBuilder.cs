@@ -28,6 +28,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 BaseClass = "DbContext"
             };
 
+            if (projectSelection.Settings.UseApplyConfigurationsFromAssemblyMethod)
+                definition.Namespaces.Add("System.Reflection");
+
             if (isDomainDrivenDesign)
             {
                 if (!projectSelection.Settings.UseDataAnnotations)
@@ -69,15 +72,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 var genericTypeName = existingViews == 0 ? project.GetEntityName(table) : project.GetFullEntityName(table);
                 var name = existingViews == 0 ? project.GetDbSetPropertyName(table, projectSelection.Settings.PluralizeDbSetPropertyNames) : project.GetFullDbSetPropertyName(table);
 
-                definition.Properties.Add(
-                    new PropertyDefinition
-                    {
-                        AccessModifier = AccessModifier.Public,
-                        Type = string.Format("DbSet<{0}>", genericTypeName),
-                        Name = name,
-                        IsAutomatic = true
-                    }
-                );
+                definition.Properties.Add(new PropertyDefinition(AccessModifier.Public, string.Format("DbSet<{0}>", genericTypeName), name) { IsAutomatic = true });
             }
 
             foreach (var view in project.Database.Views)
@@ -98,15 +93,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 var genericTypeName = existingTables == 0 ? project.GetEntityName(view) : project.GetFullEntityName(view);
                 var name = existingTables == 0 ? project.GetDbSetPropertyName(view, projectSelection.Settings.PluralizeDbSetPropertyNames) : project.GetFullDbSetPropertyName(view);
 
-                definition.Properties.Add(
-                    new PropertyDefinition
-                    {
-                        AccessModifier = AccessModifier.Public,
-                        Type = string.Format("DbSet<{0}>", genericTypeName),
-                        Name = name,
-                        IsAutomatic = true
-                    }
-                );
+                definition.Properties.Add(new PropertyDefinition(AccessModifier.Public, string.Format("DbSet<{0}>", genericTypeName), name) { IsAutomatic = true });
             }
 
             foreach (var table in project.Database.Tables)
@@ -233,68 +220,80 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             }
             else
             {
-                var schemas = project.Database.DbObjects.Select(item => item.Schema).Distinct().OrderBy(item => item);
-
-                if (project.Database.Tables.Count > 0)
+                if (selection.Settings.UseApplyConfigurationsFromAssemblyMethod)
                 {
-                    lines.Add(new CommentLine(" Apply all configurations for tables"));
+                    lines.Add(new CommentLine(" Apply all configurations from assembly"));
                     lines.Add(new EmptyLine());
 
-                    foreach (var schema in schemas)
-                    {
-                        var tables = project.Database.FindTablesBySchema(schema).ToList();
-
-                        if (tables.Count == 0)
-                            continue;
-
-                        lines.Add(new CommentLine(" Schema '{0}'", schema));
-
-                        lines.Add(new CodeLine("modelBuilder"));
-
-                        foreach (var table in tables)
-                        {
-                            var existingViews = project.Database.Views.Count(item => item.Name == table.Name);
-
-                            var genericTypeName = existingViews == 0 ? project.GetEntityName(table) : project.GetFullEntityName(table);
-                            var name = existingViews == 0 ? project.GetEntityConfigurationName(table) : project.GetFullEntityConfigurationName(table);
-
-                            lines.Add(new CodeLine(1, ".ApplyConfiguration(new {0}())", name));
-                        }
-
-                        lines.Add(new CodeLine(";"));
-
-                        lines.Add(new EmptyLine());
-                    }
+                    lines.Add(new CodeLine("modelBuilder"));
+                    lines.Add(new CodeLine(1, ".ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly())"));
+                    lines.Add(new CodeLine(1, ";"));
+                    lines.Add(new EmptyLine());
                 }
-
-                if (project.Database.Views.Count > 0)
+                else
                 {
-                    lines.Add(new CommentLine(" Apply all configurations for views"));
-                    lines.Add(new EmptyLine());
+                    var schemas = project.Database.DbObjects.Select(item => item.Schema).Distinct().OrderBy(item => item);
 
-                    foreach (var schema in schemas)
+                    if (project.Database.Tables.Count > 0)
                     {
-                        var views = project.Database.FindViewsBySchema(schema).ToList();
-
-                        if (views.Count == 0)
-                            continue;
-
-                        lines.Add(new CommentLine(" Schema '{0}'", schema));
-
-                        lines.Add(new CodeLine("modelBuilder"));
-
-                        foreach (var view in views)
-                        {
-                            var existingTables = project.Database.Tables.Count(item => item.Name == view.Name);
-
-                            var genericTypeName = existingTables == 0 ? project.GetEntityName(view) : project.GetFullEntityName(view);
-                            var name = existingTables == 0 ? project.GetEntityConfigurationName(view) : project.GetFullEntityConfigurationName(view);
-
-                            lines.Add(new CodeLine(1, ".ApplyConfiguration(new {0}())", name));
-                        }
-
-                        lines.Add(new CodeLine(";"));
+                        lines.Add(new CommentLine(" Apply all configurations for tables"));
                         lines.Add(new EmptyLine());
+
+                        foreach (var schema in schemas)
+                        {
+                            var tables = project.Database.FindTablesBySchema(schema).ToList();
+
+                            if (tables.Count == 0)
+                                continue;
+
+                            lines.Add(new CommentLine(" Schema '{0}'", schema));
+
+                            lines.Add(new CodeLine("modelBuilder"));
+
+                            foreach (var table in tables)
+                            {
+                                var existingViews = project.Database.Views.Count(item => item.Name == table.Name);
+
+                                var genericTypeName = existingViews == 0 ? project.GetEntityName(table) : project.GetFullEntityName(table);
+                                var name = existingViews == 0 ? project.GetEntityConfigurationName(table) : project.GetFullEntityConfigurationName(table);
+
+                                lines.Add(new CodeLine(1, ".ApplyConfiguration(new {0}())", name));
+                            }
+
+                            lines.Add(new CodeLine(";"));
+                            lines.Add(new EmptyLine());
+                        }
+                    }
+
+                    if (project.Database.Views.Count > 0)
+                    {
+                        lines.Add(new CommentLine(" Apply all configurations for views"));
+                        lines.Add(new EmptyLine());
+
+                        foreach (var schema in schemas)
+                        {
+                            var views = project.Database.FindViewsBySchema(schema).ToList();
+
+                            if (views.Count == 0)
+                                continue;
+
+                            lines.Add(new CommentLine(" Schema '{0}'", schema));
+
+                            lines.Add(new CodeLine("modelBuilder"));
+
+                            foreach (var view in views)
+                            {
+                                var existingTables = project.Database.Tables.Count(item => item.Name == view.Name);
+
+                                var genericTypeName = existingTables == 0 ? project.GetEntityName(view) : project.GetFullEntityName(view);
+                                var name = existingTables == 0 ? project.GetEntityConfigurationName(view) : project.GetFullEntityConfigurationName(view);
+
+                                lines.Add(new CodeLine(1, ".ApplyConfiguration(new {0}())", name));
+                            }
+
+                            lines.Add(new CodeLine(";"));
+                            lines.Add(new EmptyLine());
+                        }
                     }
                 }
 

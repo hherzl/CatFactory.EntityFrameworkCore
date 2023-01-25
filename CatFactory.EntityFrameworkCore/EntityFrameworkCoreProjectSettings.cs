@@ -94,6 +94,8 @@ namespace CatFactory.EntityFrameworkCore
             set => m_updateExclusions = value;
         }
 
+        public bool UseApplyConfigurationsFromAssemblyMethod { get; set; }
+
         /// <summary>
         /// When true the Database DefaultSchema is also used as a namespace and folder
         /// </summary>

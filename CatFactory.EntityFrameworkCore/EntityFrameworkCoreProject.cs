@@ -16,7 +16,7 @@ namespace CatFactory.EntityFrameworkCore
     public class EntityFrameworkCoreProject : CSharpProject<EntityFrameworkCoreProjectSettings>
     {
         public static EntityFrameworkCoreProject CreateForV2x(string name, Database database, string outputDirectory)
-            => new EntityFrameworkCoreProject
+            => new()
             {
                 Name = name,
                 Database = database,
@@ -25,7 +25,7 @@ namespace CatFactory.EntityFrameworkCore
             };
 
         public static EntityFrameworkCoreProject CreateForV3x(string name, Database database, string outputDirectory)
-            => new EntityFrameworkCoreProject
+            => new()
             {
                 Name = name,
                 Database = database,
@@ -33,9 +33,18 @@ namespace CatFactory.EntityFrameworkCore
                 Version = EntityFrameworkCoreVersion.Version_3_0
             };
 
+        public static EntityFrameworkCoreProject CreateForV5x(string name, Database database, string outputDirectory)
+            => new()
+            {
+                Name = name,
+                Database = database,
+                OutputDirectory = outputDirectory,
+                Version = EntityFrameworkCoreVersion.Version_5_0
+            };
+
         [Obsolete("Replace using the CreateForV2x method")]
         public static EntityFrameworkCoreProject Create(string name, Database database, string outputDirectory)
-            => new EntityFrameworkCoreProject
+            => new()
             {
                 Name = name,
                 Database = database,
@@ -62,7 +71,7 @@ namespace CatFactory.EntityFrameworkCore
 
         public EntityFrameworkCoreProjectNamespaces ProjectNamespaces
         {
-            get => m_projectNamespaces ?? (m_projectNamespaces = new EntityFrameworkCoreProjectNamespaces());
+            get => m_projectNamespaces ??= new EntityFrameworkCoreProjectNamespaces();
             set => m_projectNamespaces = value;
         }
 
@@ -74,7 +83,7 @@ namespace CatFactory.EntityFrameworkCore
         /// </summary>
         public Dictionary<string, Type> ValueConversionMaps
         {
-            get => m_valueConversionMaps ?? (m_valueConversionMaps = new Dictionary<string, Type>());
+            get => m_valueConversionMaps ??= new Dictionary<string, Type>();
             set => m_valueConversionMaps = value;
         }
 
