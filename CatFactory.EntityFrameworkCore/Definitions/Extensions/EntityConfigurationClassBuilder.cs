@@ -167,13 +167,24 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             {
                 var column = columns[i];
 
-                if (!string.IsNullOrEmpty(projectSelection.Settings.ConcurrencyToken) && string.Compare(column.Name, projectSelection.Settings.ConcurrencyToken) == 0)
+                if (projectSelection.Settings.HasConcurrencyToken && string.Compare(column.Name, projectSelection.Settings.ConcurrencyToken) == 0)
                 {
                     configLines.Add(new CommentLine(" Set concurrency token for entity"));
                     configLines.Add(new CodeLine("builder"));
                     configLines.Add(new CodeLine(1, ".Property(p => p.{0})", project.GetPropertyName(table, column)));
                     configLines.Add(new CodeLine(1, ".ValueGeneratedOnAddOrUpdate()"));
                     configLines.Add(new CodeLine(1, ".IsConcurrencyToken()"));
+                    configLines.Add(new CodeLine(1, ";"));
+                    configLines.Add(new EmptyLine());
+                }
+
+                if (projectSelection.Settings.HasRowVersion && string.Compare(column.Name, projectSelection.Settings.RowVersion) == 0)
+                {
+                    configLines.Add(new CommentLine(" Set row version for entity"));
+                    configLines.Add(new CodeLine("builder"));
+                    configLines.Add(new CodeLine(1, ".Property(p => p.{0})", project.GetPropertyName(table, column)));
+                    configLines.Add(new CodeLine(1, ".ValueGeneratedOnAddOrUpdate()"));
+                    configLines.Add(new CodeLine(1, ".IsRowVersion()"));
                     configLines.Add(new CodeLine(1, ";"));
                     configLines.Add(new EmptyLine());
                 }

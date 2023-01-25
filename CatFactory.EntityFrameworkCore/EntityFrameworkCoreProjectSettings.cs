@@ -54,6 +54,14 @@ namespace CatFactory.EntityFrameworkCore
 
         public string ConcurrencyToken { get; set; }
 
+        public bool HasConcurrencyToken
+            => !string.IsNullOrEmpty(ConcurrencyToken);
+
+        public string RowVersion { get; set; }
+
+        public bool HasRowVersion
+            => !string.IsNullOrEmpty(RowVersion);
+
         public string EntityInterfaceName { get; set; } = "IEntity";
 
         public AuditEntity AuditEntity { get; set; }
@@ -70,19 +78,19 @@ namespace CatFactory.EntityFrameworkCore
 
         public List<string> BackingFields
         {
-            get => m_backingFields ?? (m_backingFields = new List<string>());
+            get => m_backingFields ??= new List<string>();
             set => m_backingFields = value;
         }
 
         public List<string> InsertExclusions
         {
-            get => m_insertExclusions ?? (m_insertExclusions = new List<string>());
+            get => m_insertExclusions ??= new List<string>();
             set => m_insertExclusions = value;
         }
 
         public List<string> UpdateExclusions
         {
-            get => m_updateExclusions ?? (m_updateExclusions = new List<string>());
+            get => m_updateExclusions ??= new List<string>();
             set => m_updateExclusions = value;
         }
 
