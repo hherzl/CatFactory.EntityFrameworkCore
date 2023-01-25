@@ -1,31 +1,33 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-        <LangVersion>latest</LangVersion>
-        <Version>1.0.0-beta-sun-build55</Version>
-        <Authors>H. Herzl</Authors>
-        <Company>Herzl Corp.</Company>
-        <Description>CatFactory Package for Entity Framework Core</Description>
-        <RepositoryType>git</RepositoryType>
-        <RepositoryUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</RepositoryUrl>
-        <PackageTags>Entity Framework Core; ORM; Scaffolding</PackageTags>
-        <PackageReleaseNotes>1.0.0-beta-sun-build56 Version:
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Version>1.0.0-beta-sun-build55</Version>
+    <Authors>H. Herzl</Authors>
+    <Company>Herzl Corp.</Company>
+    <Description>CatFactory Package for Entity Framework Core</Description>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</RepositoryUrl>
+    <PackageTags>Entity Framework Core; ORM; Scaffolding</PackageTags>
+    <PackageReleaseNotes>
+      1.0.0-beta-sun-build56 Version:
 
-Upgrade for .NET 6 version
-Fix issue 19: https://github.com/hherzl/CatFactory.EntityFrameworkCore/issues/19
-Fix issue 20: https://github.com/hherzl/CatFactory.EntityFrameworkCore/issues/20
-Fix issue 21: https://github.com/hherzl/CatFactory.EntityFrameworkCore/issues/21
-Fix issue 22: https://github.com/hherzl/CatFactory.EntityFrameworkCore/issues/22
-Fix issue 23: https://github.com/hherzl/CatFactory.EntityFrameworkCore/issues/23
-Fix issue 24: https://github.com/hherzl/CatFactory.EntityFrameworkCore/issues/24
+      Upgrade for .NET 6 version
+      Fix issue 19: https://github.com/hherzl/CatFactory.EntityFrameworkCore/issues/19
+      Fix issue 20: https://github.com/hherzl/CatFactory.EntityFrameworkCore/issues/20
+      Fix issue 21: https://github.com/hherzl/CatFactory.EntityFrameworkCore/issues/21
+      Fix issue 22: https://github.com/hherzl/CatFactory.EntityFrameworkCore/issues/22
+      Fix issue 23: https://github.com/hherzl/CatFactory.EntityFrameworkCore/issues/23
+      Fix issue 24: https://github.com/hherzl/CatFactory.EntityFrameworkCore/issues/24
+      Fix issue 25: https://github.com/hherzl/CatFactory.EntityFrameworkCore/issues/25
 
-Quick start:
+      Quick start:
 
-https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory
-</PackageReleaseNotes>
-        <PackageProjectUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</PackageProjectUrl>
-    
+      https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-with-CatFactory
+    </PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</PackageProjectUrl>
+
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
@@ -34,9 +36,9 @@ https://www.codeproject.com/Articles/1160615/Scaffolding-Entity-Framework-Core-w
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
   </ItemGroup>
-  
-    <ItemGroup>
-        <PackageReference Include="CatFactory.NetCore" Version="1.0.0-beta-sun-build41" />
-    </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CatFactory.NetCore" Version="1.0.0-beta-sun-build41" />
+  </ItemGroup>
 
 </Project>

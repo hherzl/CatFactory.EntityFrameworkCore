@@ -88,7 +88,17 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 configLines.Add(new CommentLine(" Set identity for entity (auto increment)"));
 
                 if (project.Version >= EntityFrameworkCoreVersion.Version_3_0)
-                    configLines.Add(new CodeLine("builder.Property(p => p.{0}).UseIdentityColumn();", project.CodeNamingConvention.GetPropertyName(table.Identity.Name)));
+                {
+                    var exp = new List<string>();
+
+                    if (table.Identity.Seed != 1)
+                        exp.Add(string.Format("seed: {0}", table.Identity.Seed));
+
+                    if (table.Identity.Increment != 1)
+                        exp.Add(string.Format("increment: {0}", table.Identity.Increment));
+
+                    configLines.Add(new CodeLine("builder.Property(p => p.{0}).UseIdentityColumn({1});", project.CodeNamingConvention.GetPropertyName(table.Identity.Name), string.Join(",", exp)));
+                }
                 else
                     configLines.Add(new CodeLine("builder.Property(p => p.{0}).UseSqlServerIdentityColumn();", project.CodeNamingConvention.GetPropertyName(table.Identity.Name)));
 

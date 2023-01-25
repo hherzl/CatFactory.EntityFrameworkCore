@@ -19,6 +19,15 @@ namespace CatFactory.EntityFrameworkCore
 
         public EntityFrameworkCoreProjectSettings()
         {
+            SimplifyDataTypes = true;
+            UseAutomaticPropertiesForEntities = true;
+            UseMefForEntitiesMapping = true;
+            DeclareDbSetPropertiesInDbContext = true;
+            NavigationPropertyEnumerableNamespace = "System.Collections.ObjectModel";
+            NavigationPropertyEnumerableType = "Collection";
+            EntityInterfaceName = "IEntity";
+            AddConfigurationForUniquesInFluentAPI = true;
+            AddConfigurationForDefaultsInFluentAPI = true;
         }
 
         // todo: Add implementation
@@ -29,18 +38,18 @@ namespace CatFactory.EntityFrameworkCore
 
         public bool ForceOverwrite { get; set; }
 
-        public bool SimplifyDataTypes { get; set; } = true;
+        public bool SimplifyDataTypes { get; set; }
 
-        public bool UseAutomaticPropertiesForEntities { get; set; } = true;
+        public bool UseAutomaticPropertiesForEntities { get; set; }
 
         public bool EnableDataBindings { get; set; }
 
         public bool UseDataAnnotations { get; set; }
 
         [Obsolete("Temporarily disabled")]
-        public bool UseMefForEntitiesMapping { get; set; } = true;
+        public bool UseMefForEntitiesMapping { get; set; }
 
-        public bool DeclareDbSetPropertiesInDbContext { get; } = true;
+        public bool DeclareDbSetPropertiesInDbContext { get; }
 
         public bool PluralizeDbSetPropertyNames { get; set; }
 
@@ -48,9 +57,9 @@ namespace CatFactory.EntityFrameworkCore
 
         public bool DeclareNavigationPropertiesAsVirtual { get; set; }
 
-        public string NavigationPropertyEnumerableNamespace { get; set; } = "System.Collections.ObjectModel";
+        public string NavigationPropertyEnumerableNamespace { get; set; }
 
-        public string NavigationPropertyEnumerableType { get; set; } = "Collection";
+        public string NavigationPropertyEnumerableType { get; set; }
 
         public string ConcurrencyToken { get; set; }
 
@@ -62,19 +71,19 @@ namespace CatFactory.EntityFrameworkCore
         public bool HasRowVersion
             => !string.IsNullOrEmpty(RowVersion);
 
-        public string EntityInterfaceName { get; set; } = "IEntity";
+        public string EntityInterfaceName { get; set; }
 
         public AuditEntity AuditEntity { get; set; }
 
         public bool EntitiesWithDataContracts { get; set; }
 
-        public bool AddConfigurationForForeignKeysInFluentAPI { get; set; }
-
-        public bool AddConfigurationForUniquesInFluentAPI { get; set; } = true;
+        public bool AddConfigurationForUniquesInFluentAPI { get; set; }
 
         public bool AddConfigurationForChecksInFluentAPI { get; set; }
 
-        public bool AddConfigurationForDefaultsInFluentAPI { get; set; } = true;
+        public bool AddConfigurationForDefaultsInFluentAPI { get; set; }
+
+        public bool AddConfigurationForForeignKeysInFluentAPI { get; set; }
 
         public List<string> BackingFields
         {
