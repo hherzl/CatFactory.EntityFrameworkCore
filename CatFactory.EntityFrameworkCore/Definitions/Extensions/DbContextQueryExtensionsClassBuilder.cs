@@ -355,65 +355,49 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             var genericTypeName = existingViews == 0 ? project.GetEntityName(table) : project.GetFullEntityName(table);
             var dbSetName = existingViews == 0 ? project.GetDbSetPropertyName(table, projectSelection.Settings.PluralizeDbSetPropertyNames) : project.GetFullDbSetPropertyName(table);
 
-            if (projectSelection.Settings.EntitiesWithDataContracts)
+            var includeExpression = new List<string>();
+
+            if (projectSelection.Settings.DeclareNavigationProperties)
             {
-                var lines = new List<ILine>
+                foreach (var foreignKey in table.ForeignKeys)
                 {
-                    new CodeLine("return await dbContext.{0}", dbSetName)
-                };
+                    var foreignTable = project.Database.FindTable(foreignKey.References);
 
-                if (projectSelection.Settings.DeclareNavigationProperties)
-                {
-                    foreach (var foreignKey in table.ForeignKeys)
-                    {
-                        var foreignTable = project.Database.FindTable(foreignKey.References);
+                    if (foreignKey == null)
+                        continue;
 
-                        if (foreignKey == null)
-                            continue;
-
-                        lines.Add(new CodeLine(1, ".Include(p => p.{0})", foreignKey.GetParentNavigationProperty(foreignTable, project).Name));
-                    }
+                    includeExpression.Add(string.Format("Include(e => e.{0})", foreignKey.GetParentNavigationProperty(foreignTable, project).Name));
                 }
-
-                lines.Add(new CodeLine(1, ".FirstOrDefaultAsync({0});", expression));
-
-                return new MethodDefinition
-                {
-                    AccessModifier = AccessModifier.Public,
-                    IsStatic = true,
-                    IsAsync = true,
-                    Type = string.Format("Task<{0}>", project.GetEntityName(table)),
-                    Name = project.GetGetRepositoryMethodName(table),
-                    IsExtension = true,
-                    Parameters =
-                    {
-                        new ParameterDefinition(project.GetDbContextName(project.Database), "dbContext"),
-                        new ParameterDefinition(project.GetEntityName(table), "entity")
-                    },
-                    Lines = lines
-                };
             }
-            else
+
+            return new MethodDefinition
             {
-                return new MethodDefinition
+                AccessModifier = AccessModifier.Public,
+                IsStatic = true,
+                IsAsync = true,
+                Type = string.Format("Task<{0}>", project.GetEntityName(table)),
+                Name = project.GetGetRepositoryMethodName(table),
+                IsExtension = true,
+                Parameters =
                 {
-                    AccessModifier = AccessModifier.Public,
-                    IsStatic = true,
-                    IsAsync = true,
-                    Type = string.Format("Task<{0}>", project.GetEntityName(table)),
-                    Name = project.GetGetRepositoryMethodName(table),
-                    IsExtension = true,
-                    Parameters =
-                    {
-                        new ParameterDefinition(project.GetDbContextName(project.Database), "dbContext"),
-                        new ParameterDefinition(project.GetEntityName(table), "entity")
-                    },
-                    Lines =
-                    {
-                        new CodeLine("return await dbContext.{0}.FirstOrDefaultAsync({1});", dbSetName, expression)
-                    }
-                };
-            }
+                    new ParameterDefinition(project.GetDbContextName(project.Database), "dbContext"),
+                    new ParameterDefinition(project.GetEntityName(table), "entity"),
+                    new ParameterDefinition("bool", "tracking", "true"),
+                    new ParameterDefinition("bool", "include", "true")
+                },
+                Lines =
+                {
+                    new CodeLine("var query = dbContext.{0}.AsQueryable();", dbSetName),
+                    new EmptyLine(),
+                    new CodeLine("if (!tracking)"),
+                    new CodeLine(1, "query = query.AsNoTracking();"),
+                    new EmptyLine(),
+                    new CodeLine("if (include)"),
+                    new CodeLine(1, "query = query.{0};", string.Join(".", includeExpression)),
+                    new EmptyLine(),
+                    new CodeLine("return await query.FirstOrDefaultAsync({1});", dbSetName, expression)
+                }
+            };
         }
 
         private static MethodDefinition GetGetByUniqueMethods(ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, ITable table, Unique unique)
@@ -429,6 +413,21 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             var genericTypeName = existingViews == 0 ? project.GetEntityName(table) : project.GetFullEntityName(table);
             var dbSetName = existingViews == 0 ? project.GetDbSetPropertyName(table, selection.Settings.PluralizeDbSetPropertyNames) : project.GetFullDbSetPropertyName(table);
 
+            var includeExpression = new List<string>();
+
+            if (selection.Settings.DeclareNavigationProperties)
+            {
+                foreach (var foreignKey in table.ForeignKeys)
+                {
+                    var foreignTable = project.Database.FindTable(foreignKey.References);
+
+                    if (foreignKey == null)
+                        continue;
+
+                    includeExpression.Add(string.Format("Include(e => e.{0})", foreignKey.GetParentNavigationProperty(foreignTable, project).Name));
+                }
+            }
+
             return new MethodDefinition
             {
                 AccessModifier = AccessModifier.Public,
@@ -440,11 +439,21 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 Parameters =
                 {
                     new ParameterDefinition(project.GetDbContextName(project.Database), "dbContext"),
-                    new ParameterDefinition(project.GetEntityName(table), "entity")
+                    new ParameterDefinition(project.GetEntityName(table), "entity"),
+                    new ParameterDefinition("bool", "tracking", "true"),
+                    new ParameterDefinition("bool", "include", "true")
                 },
                 Lines =
                 {
-                    new CodeLine("return await dbContext.{0}.FirstOrDefaultAsync({1});", dbSetName, expression)
+                    new CodeLine("var query = dbContext.{0}.AsQueryable();", dbSetName),
+                    new EmptyLine(),
+                    new CodeLine("if (!tracking)"),
+                    new CodeLine(1, "query = query.AsNoTracking();"),
+                    new EmptyLine(),
+                    new CodeLine("if (include)"),
+                    new CodeLine(1, "query = query.{0};", string.Join(".", includeExpression)),
+                    new EmptyLine(),
+                    new CodeLine("return await query.FirstOrDefaultAsync({1});", dbSetName, expression)
                 }
             };
         }
