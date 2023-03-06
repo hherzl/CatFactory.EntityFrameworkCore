@@ -73,6 +73,7 @@ namespace CatFactory.EntityFrameworkCore.Tests.Models
             .AddDbObjectsFromTables()
             .AddDbObjectsFromViews()
             .SetPrimaryKeyForTables()
-            .LinkTables();
+            .LinkTables()
+            ;
     }
 }

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <Version>1.0.0-beta-sun-build56</Version>
+    <Version>1.0.0-beta-sun-build57</Version>
     <Authors>H. Herzl</Authors>
     <Company>Herzl Corp.</Company>
     <Description>CatFactory Package for Entity Framework Core</Description>
@@ -11,9 +11,10 @@
     <RepositoryUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</RepositoryUrl>
     <PackageTags>Entity Framework Core; ORM; Scaffolding</PackageTags>
     <PackageReleaseNotes>
-      1.0.0-beta-sun-build56 Version:
+      1.0.0-beta-sun-build57 Version:
 
       Upgrade for .NET 6 version
+      
       Fix issue 19: https://github.com/hherzl/CatFactory.EntityFrameworkCore/issues/19
       Fix issue 20: https://github.com/hherzl/CatFactory.EntityFrameworkCore/issues/20
       Fix issue 21: https://github.com/hherzl/CatFactory.EntityFrameworkCore/issues/21
@@ -38,7 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CatFactory.NetCore" Version="1.0.0-beta-sun-build41" />
+    <PackageReference Include="CatFactory.NetCore" Version="1.0.0-beta-sun-build42" />
   </ItemGroup>
 
 </Project>
