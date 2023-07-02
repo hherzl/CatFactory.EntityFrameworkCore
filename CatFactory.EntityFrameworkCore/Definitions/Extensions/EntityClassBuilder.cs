@@ -326,15 +326,15 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
             var projectSelection = project.GetSelection(storedProcedure);
 
-            if (storedProcedure.FirstResultSetsForObject.Count == 0)
+            if (storedProcedure.ResultSets.Count == 0)
             {
                 // todo: Add logic to stored procedures with no result set
             }
             else
             {
-                foreach (var property in storedProcedure.FirstResultSetsForObject)
+                foreach (var property in storedProcedure.ResultSets)
                 {
-                    var propertyType = project.Database.ResolveDatabaseType(property.SystemTypeName);
+                    var propertyType = project.Database.ResolveDatabaseType(property.Type);
 
                     definition.Properties.Add(new PropertyDefinition
                     {

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <Version>1.0.0-beta-sun-build58</Version>
+    <Version>1.0.0-beta-sun-build59</Version>
     <Authors>H. Herzl</Authors>
     <Company>Herzl Corp.</Company>
     <Description>CatFactory Package for Entity Framework Core</Description>
@@ -11,7 +11,7 @@
     <RepositoryUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</RepositoryUrl>
     <PackageTags>Entity Framework Core; ORM; Scaffolding</PackageTags>
     <PackageReleaseNotes>
-      1.0.0-beta-sun-build58 Version:
+      1.0.0-beta-sun-build59 Version:
 
       Core package update
 
@@ -31,7 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CatFactory.NetCore" Version="1.0.0-beta-sun-build43" />
+    <PackageReference Include="CatFactory.NetCore" Version="1.0.0-beta-sun-build44" />
   </ItemGroup>
 
 </Project>
