@@ -396,9 +396,6 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     new CodeLine("if (!tracking)"),
                     new CodeLine(1, "query = query.AsNoTracking();"),
                     new EmptyLine(),
-                    new CodeLine("if (include)"),
-                    new CodeLine(1, "query = query.{0};", string.Join(".", includeExpression)),
-                    new EmptyLine(),
                     new CodeLine("return await query.FirstOrDefaultAsync({1});", dbSetName, expression)
                 };
             }
@@ -410,6 +407,9 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     new EmptyLine(),
                     new CodeLine("if (!tracking)"),
                     new CodeLine(1, "query = query.AsNoTracking();"),
+                    new EmptyLine(),
+                    new CodeLine("if (include)"),
+                    new CodeLine(1, "query = query.{0};", string.Join(".", includeExpression)),
                     new EmptyLine(),
                     new CodeLine("return await query.FirstOrDefaultAsync({1});", dbSetName, expression)
                 };
