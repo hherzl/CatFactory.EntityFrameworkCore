@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <Version>1.0.0-beta-sun-build59</Version>
+    <Version>1.0.0-beta-sun-build60</Version>
     <Authors>H. Herzl</Authors>
     <Company>Herzl Corp.</Company>
     <Description>CatFactory Package for Entity Framework Core</Description>
@@ -11,9 +11,9 @@
     <RepositoryUrl>https://github.com/hherzl/CatFactory.EntityFrameworkCore</RepositoryUrl>
     <PackageTags>Entity Framework Core; ORM; Scaffolding</PackageTags>
     <PackageReleaseNotes>
-      1.0.0-beta-sun-build59 Version:
+      1.0.0-beta-sun-build60 Version:
 
-      Core package update
+      Fix issue 26 https://github.com/hherzl/CatFactory.EntityFrameworkCore/issues/26
 
       Quick start:
 

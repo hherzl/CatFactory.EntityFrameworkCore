@@ -93,11 +93,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     }
                     else if (projectSelection.Settings.UseAutomaticPropertiesForEntities)
                     {
-                        definition.Properties.Add(new PropertyDefinition
+                        definition.Properties.Add(new PropertyDefinition(AccessModifier.Public, propertyType, project.GetPropertyName(table, column))
                         {
-                            AccessModifier = AccessModifier.Public,
-                            Type = propertyType,
-                            Name = project.GetPropertyName(table, column),
                             IsAutomatic = true
                         });
                     }
@@ -144,16 +141,20 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     {
                         if (definition.Namespace != project.GetDomainModelsNamespace(foreignTable.Schema))
                         {
-                            definition.Namespaces
-                                .AddUnique(project.Database.HasDefaultSchema(foreignTable) ? project.GetDomainModelsNamespace() : project.GetDomainModelsNamespace(foreignTable.Schema));
+                            definition
+                                .Namespaces
+                                .AddUnique(project.Database.HasDefaultSchema(foreignTable) ? project.GetDomainModelsNamespace() : project.GetDomainModelsNamespace(foreignTable.Schema))
+                                ;
                         }
                     }
                     else
                     {
                         if (definition.Namespace != project.GetEntityLayerNamespace(foreignTable.Schema))
                         {
-                            definition.Namespaces
-                                .AddUnique(project.Database.HasDefaultSchema(foreignTable) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(foreignTable.Schema));
+                            definition
+                                .Namespaces
+                                .AddUnique(project.Database.HasDefaultSchema(foreignTable) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(foreignTable.Schema))
+                                ;
                         }
                     }
 
@@ -176,16 +177,20 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                             {
                                 if (definition.Namespace != project.GetDomainModelsNamespace(child.Schema))
                                 {
-                                    definition.Namespaces
-                                        .AddUnique(project.Database.HasDefaultSchema(child) ? project.GetDomainModelsNamespace() : project.GetDomainModelsNamespace(child.Schema));
+                                    definition
+                                        .Namespaces
+                                        .AddUnique(project.Database.HasDefaultSchema(child) ? project.GetDomainModelsNamespace() : project.GetDomainModelsNamespace(child.Schema))
+                                        ;
                                 }
                             }
                             else
                             {
                                 if (definition.Namespace != project.GetEntityLayerNamespace(child.Schema))
                                 {
-                                    definition.Namespaces
-                                        .AddUnique(project.Database.HasDefaultSchema(child) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(child.Schema));
+                                    definition
+                                        .Namespaces
+                                        .AddUnique(project.Database.HasDefaultSchema(child) ? project.GetEntityLayerNamespace() : project.GetEntityLayerNamespace(child.Schema))
+                                        ;
                                 }
                             }
 
@@ -284,13 +289,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
             {
                 var type = project.Database.ResolveDatabaseType(column);
 
-                definition.Properties.Add(new PropertyDefinition
-                {
-                    AccessModifier = AccessModifier.Public,
-                    Type = type,
-                    Name = project.GetPropertyName(column.Name),
-                    IsAutomatic = true
-                });
+                definition.Properties.Add(new PropertyDefinition(AccessModifier.Public, type, project.GetPropertyName(column.Name)) { IsAutomatic = true });
             }
 
             if (projectSelection.Settings.SimplifyDataTypes)
@@ -336,11 +335,8 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 {
                     var propertyType = project.Database.ResolveDatabaseType(property.Type);
 
-                    definition.Properties.Add(new PropertyDefinition
+                    definition.Properties.Add(new PropertyDefinition(AccessModifier.Public, propertyType, project.GetPropertyName(property.Name))
                     {
-                        AccessModifier = AccessModifier.Public,
-                        Type = propertyType,
-                        Name = project.GetPropertyName(property.Name),
                         IsAutomatic = true
                     });
                 }

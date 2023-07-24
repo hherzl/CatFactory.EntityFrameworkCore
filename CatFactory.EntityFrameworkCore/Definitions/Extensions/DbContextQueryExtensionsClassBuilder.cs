@@ -370,7 +370,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                 }
             }
 
-            return new MethodDefinition
+            var method = new MethodDefinition
             {
                 AccessModifier = AccessModifier.Public,
                 IsStatic = true,
@@ -384,8 +384,12 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     new ParameterDefinition(project.GetEntityName(table), "entity"),
                     new ParameterDefinition("bool", "tracking", "true"),
                     new ParameterDefinition("bool", "include", "true")
-                },
-                Lines =
+                }
+            };
+
+            if (includeExpression.Count == 0)
+            {
+                method.Lines = new()
                 {
                     new CodeLine("var query = dbContext.{0}.AsQueryable();", dbSetName),
                     new EmptyLine(),
@@ -396,8 +400,22 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     new CodeLine(1, "query = query.{0};", string.Join(".", includeExpression)),
                     new EmptyLine(),
                     new CodeLine("return await query.FirstOrDefaultAsync({1});", dbSetName, expression)
-                }
-            };
+                };
+            }
+            else
+            {
+                method.Lines = new()
+                {
+                    new CodeLine("var query = dbContext.{0}.AsQueryable();", dbSetName),
+                    new EmptyLine(),
+                    new CodeLine("if (!tracking)"),
+                    new CodeLine(1, "query = query.AsNoTracking();"),
+                    new EmptyLine(),
+                    new CodeLine("return await query.FirstOrDefaultAsync({1});", dbSetName, expression)
+                };
+            }
+
+            return method;
         }
 
         private static MethodDefinition GetGetByUniqueMethods(ProjectFeature<EntityFrameworkCoreProjectSettings> projectFeature, ITable table, Unique unique)
