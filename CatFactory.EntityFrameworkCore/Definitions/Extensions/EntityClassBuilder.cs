@@ -83,13 +83,13 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
 
                 if (projectSelection.Settings.EnableDataBindings)
                 {
-                    definition.AddViewModelProperty(propertyType, project.GetPropertyName(table, column));
+                    definition.AddPropWithField(propertyType, project.GetPropertyName(table, column));
                 }
                 else
                 {
                     if (projectSelection.Settings.BackingFields.Contains(table.GetFullColumnName(column)))
                     {
-                        definition.AddPropertyWithField(propertyType, project.GetPropertyName(table, column));
+                        definition.AddPropWithField(propertyType, project.GetPropertyName(table, column));
                     }
                     else if (projectSelection.Settings.UseAutomaticPropertiesForEntities)
                     {
@@ -100,7 +100,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     }
                     else
                     {
-                        definition.AddPropertyWithField(propertyType, project.GetPropertyName(table, column));
+                        definition.AddPropWithField(propertyType, project.GetPropertyName(table, column));
                     }
                 }
             }
