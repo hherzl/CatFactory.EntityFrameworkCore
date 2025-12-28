@@ -9,6 +9,7 @@
         Version_3_1 = 31,
         Version_5_0 = 50,
         Version_6_0 = 60,
-        Version_7_0 = 70
+        Version_7_0 = 70,
+        Version_9_0 = 90
     }
 }

@@ -1,19 +1,18 @@
 ﻿using CatFactory.ObjectOrientedProgramming;
 
-namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
+namespace CatFactory.EntityFrameworkCore.Definitions.Extensions;
+
+public static class EntityInterfaceBuilder
 {
-    public static class EntityInterfaceBuilder
-    {
-        public static EntityInterfaceDefinition GetEntityInterfaceDefinition(this EntityFrameworkCoreProject project, bool isDomainDrivenDesign)
-            => new EntityInterfaceDefinition
+    public static EntityInterfaceDefinition GetEntityInterfaceDef(this DomainProject project)
+        => new()
+        {
+            Namespace = project.GetDomainEntitiesNs(),
+            Namespaces =
             {
-                Namespace = isDomainDrivenDesign ? project.GetDomainModelsNamespace() : project.GetEntityLayerNamespace(),
-                Namespaces =
-                {
-                    "System"
-                },
-                AccessModifier = AccessModifier.Public,
-                Name = "IEntity"
-            };
-    }
+                "System"
+            },
+            AccessModifier = AccessModifier.Public,
+            Name = "IEntity"
+        };
 }

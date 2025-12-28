@@ -15,10 +15,10 @@ namespace CatFactory.EntityFrameworkCore
 
         private static void ScaffoldEntityInterface(EntityFrameworkCoreProject project)
         {
-            project.Scaffold(project.GetEntityInterfaceDefinition(false), project.GetEntityLayerDirectory());
+            //project.Scaffold(project.GetEntityInterfaceDefinition(false), project.GetEntityLayerDirectory());
 
-            if (project.GlobalSelection().Settings.AuditEntity != null)
-                project.Scaffold(project.GetAuditEntityInterfaceDefinition(false), project.GetEntityLayerDirectory());
+            //if (project.GlobalSelection().Settings.AuditEntity != null)
+            //    project.Scaffold(project.GetAuditEntityInterfaceDefinition(false), project.GetEntityLayerDirectory());
         }
 
         private static EntityFrameworkCoreProject ScaffoldEntities(this EntityFrameworkCoreProject project)

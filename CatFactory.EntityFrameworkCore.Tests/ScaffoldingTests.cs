@@ -1,306 +1,155 @@
-﻿using System.Threading.Tasks;
-using CatFactory.SqlServer;
+﻿using CatFactory.SqlServer;
+using CatFactory.SqlServer.CodeFactory;
+using CatFactory.SqlServer.ObjectRelationalMapping;
 using Xunit;
 
-namespace CatFactory.EntityFrameworkCore.Tests
+namespace CatFactory.EntityFrameworkCore.Tests;
+
+public class ScaffoldingTests
 {
-    public class ScaffoldingTests
+    [Fact]
+    public void ExportXavierSchoolScript()
     {
-        [Fact]
-        public async Task ScaffoldingDomainProjectForOnlineStoreDbAsync()
+        var database = SqlServerDatabase.CreateWithDefaults("XavierSchool");
+
+        database.AddDefaultTypeMapFor(typeof(string), "nvarchar");
+        database.AddDefaultTypeMapFor(typeof(DateTime), "datetime");
+
+        var now = DateTime.Now;
+
+        var teacher = database
+            .DefineEntity(new
+            {
+                Id = 0,
+                GivenName = "",
+                MiddleName = "",
+                FamilyName = "",
+                BirthDate = now,
+                Gender = "",
+                Phone = "",
+                Email = ""
+            })
+            .SetNaming("Teacher")
+            .SetColumnFor(p => p.GivenName, 25)
+            .SetColumnFor(p => p.MiddleName, 25, true)
+            .SetColumnFor(p => p.FamilyName, 25)
+            .SetIdentity(p => p.Id)
+            .SetPrimaryKey(e => e.Id)
+            ;
+
+        var classroom = database
+            .DefineEntity(new
+            {
+                Id = (short)0,
+                Code = "",
+                Name = ""
+            })
+            .SetNaming("Classroom")
+            .SetColumnFor(e => e.Code, 25)
+            .SetColumnFor(e => e.Name, 100)
+            .SetIdentity(e => e.Id)
+            .SetPrimaryKey(e => e.Id)
+            .AddUnique(e => e.Code)
+            .AddUnique(e => e.Name)
+            ;
+
+        var course = database
+            .DefineEntity(new
+            {
+                Id = 0,
+                TeacherId = 0,
+                ClassroomId = (short)0,
+                Name = "",
+                Description = ""
+            })
+            .SetNaming("Course")
+            .SetColumnFor(e => e.Name, 100)
+            .SetIdentity(e => e.Id, 1000, 1000)
+            .SetPrimaryKey(e => e.Id)
+            .AddUnique(e => e.Name)
+            .AddForeignKey(e => e.TeacherId, teacher.Table)
+            .AddForeignKey(e => e.ClassroomId, classroom.Table)
+            ;
+
+        var student = database
+            .DefineEntity(new
+            {
+                Id = 0,
+                GivenName = "",
+                MiddleName = "",
+                FamilyName = "",
+                BirthDate = now,
+                Gender = "",
+                Phone = "",
+                Email = ""
+            })
+            .SetNaming("Student")
+            .SetColumnFor(p => p.GivenName, 25)
+            .SetColumnFor(p => p.MiddleName, 25, true)
+            .SetColumnFor(p => p.FamilyName, 25)
+            .SetIdentity(p => p.Id)
+            .SetPrimaryKey(e => e.Id)
+            ;
+
+        student
+            .AddExtendedProp(p => p.GivenName, "MS_Description", "Given name")
+            .AddExtendedProp(p => p.MiddleName, "MS_Description", "Middle name")
+            .AddExtendedProp(p => p.FamilyName, "MS_Description", "Family name")
+            ;
+
+        var courseStudent = database
+            .DefineEntity(new
+            {
+                Id = 0,
+                CourseId = 0,
+                StudentId = 0,
+                EnrollmentDate = now
+            })
+            .SetNaming("CourseStudent")
+            .SetIdentity(p => p.Id)
+            .SetPrimaryKey(p => p.Id)
+            .AddUnique(p => new { p.CourseId, p.StudentId })
+            .AddForeignKey(p => p.CourseId, course.Table)
+            .AddForeignKey(p => p.StudentId, student.Table)
+            ;
+
+        SqlServerDatabaseScriptCodeBuilder.CreateScript(database, @"C:\Temp\CatFactory.SqlServer", true, true);
+    }
+
+    [Fact]
+    public async Task ScaffoldingXavierSchoolAsync()
+    {
+        var database = await SqlServerDatabaseFactory
+            .ImportAsync("server=(local); database=XavierSchool; integrated security=yes; TrustServerCertificate=True;", "dbo.sysdiagrams");
+
+        var project = EntityFrameworkCoreProject
+            .CreateForV9x("XavierSchool", database, @"C:\Temp\CatFactory.EntityFrameworkCore\XavierSchool");
+
+        project.GlobalSelection(settings =>
         {
-            // Create database factory
-            var databaseFactory = new SqlServerDatabaseFactory
-            {
-                DatabaseImportSettings = new DatabaseImportSettings
-                {
-                    ConnectionString = "server=(local); database=OnlineStore; integrated security=yes; TrustServerCertificate=True;",
-                    Exclusions =
-                    {
-                        "dbo.sysdiagrams"
-                    }
-                }
-            };
+            settings.ForceOverwrite = true;
+            settings.DeclareNavigationProperties = true;
+            settings.DeclareNavigationPropertiesAsVirtual = true;
+            settings.AddConfigurationForForeignKeysInFluentAPI = true;
+            settings.UseApplyConfigurationsFromAssemblyMethod = true;
+        });
 
-            // Import database
-            var database = await databaseFactory.ImportAsync();
+        //project.BuildFeatures();
+        //project.ScaffoldDomain().ScaffoldApplication().ScaffoldInfrastructure(settings => settings.UseEntityFrameworkCore()).ScaffoldSharedKernel();
+    }
 
-            // Create instance of Entity Framework Core project
-            var project = EntityFrameworkCoreProject
-                .CreateForV2x("OnlineStore.Domain", database, @"C:\Temp\CatFactory.EntityFrameworkCore\OnlineStore.Domain");
+    [Fact]
+    public async Task ScaffoldingCleanArchitectureSolution()
+    {
+        var database = await SqlServerDatabaseFactory
+            .ImportAsync("server=(local); database=XavierSchool; integrated security=yes; TrustServerCertificate=True;", "dbo.sysdiagrams");
 
-            // Apply settings for Entity Framework Core project
-            project.GlobalSelection(settings =>
-            {
-                settings.ForceOverwrite = true;
-                settings.ConcurrencyToken = "Timestamp";
-                settings.AuditEntity = new AuditEntity
-                {
-                    CreationUserColumnName = "CreationUser",
-                    CreationDateTimeColumnName = "CreationDateTime",
-                    LastUpdateUserColumnName = "LastUpdateUser",
-                    LastUpdateDateTimeColumnName = "LastUpdateDateTime"
-                };
+        var solution = new CleanArchitectureSolution("XavierSchool", @"C:\Temp\CatFactory.EntityFrameworkCore\XavierSchool", database);
 
-                settings.AddConfigurationForUniquesInFluentAPI = true;
-                settings.AddConfigurationForForeignKeysInFluentAPI = true;
-                settings.DeclareNavigationProperties = true;
-            });
+        // TODO: scaffold DbContext queries: entities by primary key, unique and foreign key (add flags for tracking and includes)
 
-            project.Selection("Sales.OrderHeader", settings =>
-            {
-                settings.EntitiesWithDataContracts = true;
-                settings.AddConfigurationForForeignKeysInFluentAPI = true;
-                settings.DeclareNavigationProperties = true;
-            });
-
-            // Build features for project, group all entities by schema into a feature
-            project.BuildFeatures();
-
-            // Scaffolding =^^=
-            project
-                .ScaffoldDomain()
-                ;
-        }
-
-        [Fact]
-        public async Task ScaffoldingProjectWithRepositoriesForOnlineStoreDbAsync()
-        {
-            // Create database factory
-            var databaseFactory = new SqlServerDatabaseFactory
-            {
-                DatabaseImportSettings = new DatabaseImportSettings
-                {
-                    ConnectionString = "server=(local); database=OnlineStore; integrated security=yes; TrustServerCertificate=True;",
-                    ImportTableFunctions = true,
-                    Exclusions =
-                    {
-                        "dbo.sysdiagrams",
-                        "dbo.fn_diagramobjects"
-                    }
-                }
-            };
-
-            // Import database
-            var database = await databaseFactory.ImportAsync();
-
-            // Create instance of Entity Framework Core project
-            var project = EntityFrameworkCoreProject
-                .CreateForV2x("OnlineStore.Core", database, @"C:\Temp\CatFactory.EntityFrameworkCore\OnlineStore.Core");
-
-            // Apply settings for Entity Framework Core project
-            project.GlobalSelection(settings =>
-            {
-                settings.ForceOverwrite = true;
-                settings.ConcurrencyToken = "Timestamp";
-                settings.AuditEntity = new AuditEntity
-                {
-                    CreationUserColumnName = "CreationUser",
-                    CreationDateTimeColumnName = "CreationDateTime",
-                    LastUpdateUserColumnName = "LastUpdateUser",
-                    LastUpdateDateTimeColumnName = "LastUpdateDateTime"
-                };
-
-                settings.AddConfigurationForUniquesInFluentAPI = true;
-                settings.AddConfigurationForForeignKeysInFluentAPI = true;
-                settings.DeclareNavigationProperties = true;
-            });
-
-            project.Selection("Sales.OrderHeader", settings =>
-            {
-                settings.EntitiesWithDataContracts = true;
-                settings.AddConfigurationForForeignKeysInFluentAPI = true;
-                settings.DeclareNavigationProperties = true;
-            });
-
-            // Build features for project, group all entities by schema into a feature
-            project.BuildFeatures();
-
-            // Scaffolding =^^=
-            project
-                .ScaffoldEntityLayer()
-                .ScaffoldDataLayer()
-                ;
-        }
-
-        [Fact]
-        public async Task ScaffoldingProjectWithDataAnnotationsForOnlineStoreDbAsync()
-        {
-            // Import database
-            var database = await SqlServerDatabaseFactory
-                .ImportAsync("server=(local); database=OnlineStore; integrated security=yes; TrustServerCertificate=True;", "dbo.sysdiagrams");
-
-            // Create instance of Entity Framework Core Project
-            var project = EntityFrameworkCoreProject
-                .CreateForV2x("OnlineStoreWithDataAnnotations.Core", database, @"C:\Temp\CatFactory.EntityFrameworkCore\OnlineStoreWithDataAnnotations.Core");
-
-            // Apply settings for Entity Framework Core project
-            project.GlobalSelection(settings =>
-            {
-                settings.ForceOverwrite = true;
-                settings.UseDataAnnotations = true;
-                settings.ConcurrencyToken = "Timestamp";
-                settings.AuditEntity = new AuditEntity
-                {
-                    CreationUserColumnName = "CreationUser",
-                    CreationDateTimeColumnName = "CreationDateTime",
-                    LastUpdateUserColumnName = "LastUpdateUser",
-                    LastUpdateDateTimeColumnName = "LastUpdateDateTime"
-                };
-                settings.DeclareNavigationProperties = true;
-            });
-
-            project.Selection("Sales.OrderHeader", settings => settings.EntitiesWithDataContracts = true);
-
-            // Build features for project, group all entities by schema into a feature
-            project.BuildFeatures();
-
-            // Scaffolding =^^=
-            project
-                .ScaffoldEntityLayer()
-                .ScaffoldDataLayer()
-                ;
-        }
-
-        [Fact]
-        public async Task ScaffoldingProjectForNorthwindDbAsync()
-        {
-            // Import database
-            var factory = new SqlServerDatabaseFactory
-            {
-                DatabaseImportSettings = new DatabaseImportSettings
-                {
-                    ConnectionString = "server=(local); database=Northwind; integrated security=yes; TrustServerCertificate=True;",
-                    ImportScalarFunctions = true,
-                    ImportTableFunctions = true,
-                    ImportStoredProcedures = true,
-                    Exclusions =
-                    {
-                        "dbo.sysdiagrams",
-                        "dbo.sp_alterdiagram",
-                        "dbo.sp_creatediagram",
-                        "dbo.sp_dropdiagram",
-                        "dbo.sp_helpdiagramdefinition",
-                        "dbo.sp_helpdiagrams",
-                        "dbo.sp_renamediagram",
-                        "dbo.sp_upgraddiagrams",
-                        "dbo.fn_diagramobjects"
-                    }
-                }
-            };
-
-            var database = await factory.ImportAsync();
-
-            // Create instance of Entity Framework Core Project
-            var project = EntityFrameworkCoreProject
-                .CreateForV2x("Northwind.Core", database, @"C:\Temp\CatFactory.EntityFrameworkCore\Northwind.Core");
-
-            // Apply settings for Entity Framework Core project
-            project.GlobalSelection(settings =>
-            {
-                settings.ForceOverwrite = true;
-                settings.DeclareNavigationProperties = true;
-            });
-
-            project.Selection("dbo.Orders", settings => settings.EntitiesWithDataContracts = true);
-
-            // Build features for project, group all entities by schema into a feature
-            project.BuildFeatures();
-
-            // Scaffolding =^^=
-            project
-                .ScaffoldEntityLayer()
-                .ScaffoldDataLayer()
-                ;
-        }
-
-        [Fact]
-        public async Task ScaffoldingProjectForAdventureWorksDbAsync()
-        {
-            // Create instance of factory for SQL Server
-            var databaseFactory = new SqlServerDatabaseFactory
-            {
-                DatabaseImportSettings = new DatabaseImportSettings
-                {
-                    ConnectionString = "server=(local); database=AdventureWorks2017; integrated security=yes; TrustServerCertificate=True;",
-                    ImportScalarFunctions = true,
-                    ImportTableFunctions = true,
-                    Exclusions =
-                    {
-                        "dbo.sysdiagrams",
-                        "Production.Document",
-                        "Production.ProductDocument"
-                    },
-                    ExclusionTypes =
-                    {
-                        "hierarchyid",
-                        "geography"
-                    }
-                }
-            };
-
-            // Import database
-            var database = await databaseFactory.ImportAsync();
-
-            // Create instance of Entity Framework Core Project
-            var project = EntityFrameworkCoreProject
-                .CreateForV2x("AdventureWorks", database, @"C:\Temp\CatFactory.EntityFrameworkCore\AdventureWorks.Core");
-
-            // Apply settings for Entity Framework Core project
-            project.GlobalSelection(settings =>
-            {
-                settings.ForceOverwrite = true;
-                settings.DeclareNavigationProperties = true;
-
-                settings.AddConfigurationForForeignKeysInFluentAPI = true;
-            });
-
-            // Build features for project, group all entities by schema into a feature
-            project.BuildFeatures();
-
-            // Scaffolding =^^=
-            project
-                .ScaffoldEntityLayer()
-                .ScaffoldDataLayer()
-                ;
-        }
-
-        [Fact]
-        public async Task ScaffoldingProjectForWideWorldImportersDbAsync()
-        {
-            // Create database factory
-            var databaseFactory = new SqlServerDatabaseFactory
-            {
-                DatabaseImportSettings = new DatabaseImportSettings
-                {
-                    ConnectionString = "server=(local); database=WideWorldImporters; integrated security=yes; TrustServerCertificate=True;",
-                    ImportTableFunctions = true,
-                    Exclusions =
-                    {
-                        "dbo.sysdiagrams",
-                        "dbo.fn_diagramobjects"
-                    }
-                }
-            };
-
-            // Import database
-            var database = await databaseFactory.ImportAsync();
-
-            // Create instance of Entity Framework Core project
-            var project = EntityFrameworkCoreProject
-                .CreateForV2x("WideWorldImporters.Core", database, @"C:\Temp\CatFactory.EntityFrameworkCore\WideWorldImporters.Core");
-
-            // Apply settings for Entity Framework Core project
-            project.GlobalSelection(settings => settings.ForceOverwrite = true);
-
-            // Build features for project, group all entities by schema into a feature
-            project.BuildFeatures();
-
-            // Scaffolding =^^=
-            project
-                .ScaffoldEntityLayer()
-                .ScaffoldDataLayer()
-                ;
-        }
+        solution
+            .ScaffoldDomain()
+            .ScaffoldApplication();
     }
 }

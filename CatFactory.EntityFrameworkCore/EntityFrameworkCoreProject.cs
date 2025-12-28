@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using CatFactory.CodeFactory;
 using CatFactory.CodeFactory.Scaffolding;
 using CatFactory.NetCore;
@@ -11,155 +8,162 @@ using CatFactory.ObjectOrientedProgramming;
 using CatFactory.ObjectRelationalMapping;
 using Microsoft.Extensions.Logging;
 
-namespace CatFactory.EntityFrameworkCore
+namespace CatFactory.EntityFrameworkCore;
+
+public class EntityFrameworkCoreProject : CSharpProject<EntityFrameworkCoreProjectSettings>
 {
-    public class EntityFrameworkCoreProject : CSharpProject<EntityFrameworkCoreProjectSettings>
+    public static EntityFrameworkCoreProject CreateForV2x(string name, Database database, string outputDirectory)
+        => new()
+        {
+            Name = name,
+            Database = database,
+            OutputDirectory = outputDirectory,
+            Version = EntityFrameworkCoreVersion.Version_2_0
+        };
+
+    public static EntityFrameworkCoreProject CreateForV3x(string name, Database database, string outputDirectory)
+        => new()
+        {
+            Name = name,
+            Database = database,
+            OutputDirectory = outputDirectory,
+            Version = EntityFrameworkCoreVersion.Version_3_0
+        };
+
+    public static EntityFrameworkCoreProject CreateForV5x(string name, Database database, string outputDirectory)
+        => new()
+        {
+            Name = name,
+            Database = database,
+            OutputDirectory = outputDirectory,
+            Version = EntityFrameworkCoreVersion.Version_5_0
+        };
+
+    public static EntityFrameworkCoreProject CreateForV9x(string name, Database database, string outputDirectory)
+        => new()
+        {
+            Name = name,
+            Database = database,
+            OutputDirectory = outputDirectory,
+            Version = EntityFrameworkCoreVersion.Version_9_0
+        };
+
+    [Obsolete("Replace using the CreateForV2x method")]
+    public static EntityFrameworkCoreProject Create(string name, Database database, string outputDirectory)
+        => new()
+        {
+            Name = name,
+            Database = database,
+            OutputDirectory = outputDirectory
+        };
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private EntityFrameworkCoreProjectNamespaces m_projectNamespaces;
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private Dictionary<string, Type> m_valueConversionMaps;
+
+    public EntityFrameworkCoreProject()
+        : base()
     {
-        public static EntityFrameworkCoreProject CreateForV2x(string name, Database database, string outputDirectory)
-            => new()
+    }
+
+    public EntityFrameworkCoreProject(ILogger<EntityFrameworkCoreProject> logger)
+        : base(logger)
+    {
+    }
+
+    public EntityFrameworkCoreVersion Version { get; set; }
+
+    public EntityFrameworkCoreProjectNamespaces ProjectNamespaces
+    {
+        get => m_projectNamespaces ??= new EntityFrameworkCoreProjectNamespaces();
+        set => m_projectNamespaces = value;
+    }
+
+    /// <summary>
+    /// A dictionary of (string)CatFactory.ObjectRelationalMapping.DatabaseTypeMap.DatabaseType to
+    /// {OutputDirectory}\{EntityFrameworkCoreProjectNamespaces.ValueConversions}\Type can be
+    /// submitted to the Entity Framework Core project via ValueConversionMaps for use in {Enity}Configuration.cs
+    /// files
+    /// </summary>
+    public Dictionary<string, Type> ValueConversionMaps
+    {
+        get => m_valueConversionMaps ??= new Dictionary<string, Type>();
+        set => m_valueConversionMaps = value;
+    }
+
+    // todo: Add logic to show author's info
+    public AuthorInfo AuthorInfo { get; set; }
+
+    protected override IEnumerable<DbObject> GetDbObjectsBySchema(string schema)
+    {
+        foreach (var item in base.GetDbObjectsBySchema(schema))
+        {
+            yield return item;
+        }
+
+        foreach (var item in Database.GetTableFunctions().Where(tableFunction => tableFunction.Schema == schema))
+        {
+            yield return new DbObject(item.Schema, item.Name)
             {
-                Name = name,
-                Database = database,
+                Type = "TableFunction"
+            };
+        }
+
+        foreach (var item in Database.GetStoredProcedures().Where(storedProcedure => storedProcedure.Schema == schema))
+        {
+            yield return new DbObject(item.Schema, item.Name)
+            {
+                Type = "StoredProcedure"
+            };
+        }
+    }
+
+    public override void BuildFeatures()
+    {
+        if (Database == null)
+            return;
+
+        if (this.GlobalSelection().Settings.AuditEntity != null)
+            this.GlobalSelection().Settings.EntityInterfaceName = "IAuditEntity";
+
+        Features = [.. Database
+            .DbObjects
+            .Select(item => item.Schema)
+            .Distinct()
+            .Select(item => new ProjectFeature<EntityFrameworkCoreProjectSettings>(item, GetDbObjectsBySchema(item), this))];
+    }
+
+    public override void Scaffold(IObjectDefinition objectDefinition, string outputDirectory, string subdirectory = "")
+    {
+        var codeBuilder = default(ICodeBuilder);
+
+        var selection = objectDefinition.DbObject == null ? this.GlobalSelection() : this.GetSelection(objectDefinition.DbObject);
+
+        if (objectDefinition is CSharpClassDefinition)
+        {
+            codeBuilder = new CSharpClassBuilder
+            {
                 OutputDirectory = outputDirectory,
-                Version = EntityFrameworkCoreVersion.Version_2_0
+                ForceOverwrite = selection.Settings.ForceOverwrite,
+                ObjectDefinition = objectDefinition
             };
-
-        public static EntityFrameworkCoreProject CreateForV3x(string name, Database database, string outputDirectory)
-            => new()
+        }
+        else if (objectDefinition is CSharpInterfaceDefinition)
+        {
+            codeBuilder = new CSharpInterfaceBuilder
             {
-                Name = name,
-                Database = database,
                 OutputDirectory = outputDirectory,
-                Version = EntityFrameworkCoreVersion.Version_3_0
+                ForceOverwrite = selection.Settings.ForceOverwrite,
+                ObjectDefinition = objectDefinition
             };
-
-        public static EntityFrameworkCoreProject CreateForV5x(string name, Database database, string outputDirectory)
-            => new()
-            {
-                Name = name,
-                Database = database,
-                OutputDirectory = outputDirectory,
-                Version = EntityFrameworkCoreVersion.Version_5_0
-            };
-
-        [Obsolete("Replace using the CreateForV2x method")]
-        public static EntityFrameworkCoreProject Create(string name, Database database, string outputDirectory)
-            => new()
-            {
-                Name = name,
-                Database = database,
-                OutputDirectory = outputDirectory
-            };
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private EntityFrameworkCoreProjectNamespaces m_projectNamespaces;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private Dictionary<string, Type> m_valueConversionMaps;
-
-        public EntityFrameworkCoreProject()
-            : base()
-        {
         }
 
-        public EntityFrameworkCoreProject(ILogger<EntityFrameworkCoreProject> logger)
-            : base(logger)
-        {
-        }
+        OnScaffoldingDefinition(new ScaffoldingDefinitionEventArgs(Logger, codeBuilder));
 
-        public EntityFrameworkCoreVersion Version { get; set; }
+        codeBuilder.CreateFile(subdirectory: subdirectory);
 
-        public EntityFrameworkCoreProjectNamespaces ProjectNamespaces
-        {
-            get => m_projectNamespaces ??= new EntityFrameworkCoreProjectNamespaces();
-            set => m_projectNamespaces = value;
-        }
-
-        /// <summary>
-        /// A dictionary of (string)CatFactory.ObjectRelationalMapping.DatabaseTypeMap.DatabaseType to
-        /// {OutputDirectory}\{EntityFrameworkCoreProjectNamespaces.ValueConversions}\Type can be
-        /// submitted to the Entity Framework Core project via ValueConversionMaps for use in {Enity}Configuration.cs
-        /// files
-        /// </summary>
-        public Dictionary<string, Type> ValueConversionMaps
-        {
-            get => m_valueConversionMaps ??= new Dictionary<string, Type>();
-            set => m_valueConversionMaps = value;
-        }
-
-        // todo: Add logic to show author's info
-        public AuthorInfo AuthorInfo { get; set; }
-
-        protected override IEnumerable<DbObject> GetDbObjectsBySchema(string schema)
-        {
-            foreach (var item in base.GetDbObjectsBySchema(schema))
-            {
-                yield return item;
-            }
-
-            foreach (var item in Database.GetTableFunctions().Where(tableFunction => tableFunction.Schema == schema))
-            {
-                yield return new DbObject(item.Schema, item.Name)
-                {
-                    Type = "TableFunction"
-                };
-            }
-
-            foreach (var item in Database.GetStoredProcedures().Where(storedProcedure => storedProcedure.Schema == schema))
-            {
-                yield return new DbObject(item.Schema, item.Name)
-                {
-                    Type = "StoredProcedure"
-                };
-            }
-        }
-
-        public override void BuildFeatures()
-        {
-            if (Database == null)
-                return;
-
-            if (this.GlobalSelection().Settings.AuditEntity != null)
-                this.GlobalSelection().Settings.EntityInterfaceName = "IAuditEntity";
-
-            Features = Database
-                .DbObjects
-                .Select(item => item.Schema)
-                .Distinct()
-                .Select(item => new ProjectFeature<EntityFrameworkCoreProjectSettings>(item, GetDbObjectsBySchema(item), this))
-                .ToList();
-        }
-
-        public override void Scaffold(IObjectDefinition objectDefinition, string outputDirectory, string subdirectory = "")
-        {
-            var codeBuilder = default(ICodeBuilder);
-
-            var selection = objectDefinition.DbObject == null ? this.GlobalSelection() : this.GetSelection(objectDefinition.DbObject);
-
-            if (objectDefinition is CSharpClassDefinition)
-            {
-                codeBuilder = new CSharpClassBuilder
-                {
-                    OutputDirectory = outputDirectory,
-                    ForceOverwrite = selection.Settings.ForceOverwrite,
-                    ObjectDefinition = objectDefinition
-                };
-            }
-            else if (objectDefinition is CSharpInterfaceDefinition)
-            {
-                codeBuilder = new CSharpInterfaceBuilder
-                {
-                    OutputDirectory = outputDirectory,
-                    ForceOverwrite = selection.Settings.ForceOverwrite,
-                    ObjectDefinition = objectDefinition
-                };
-            }
-
-            OnScaffoldingDefinition(new ScaffoldingDefinitionEventArgs(Logger, codeBuilder));
-
-            codeBuilder.CreateFile(subdirectory: subdirectory);
-
-            OnScaffoldedDefinition(new ScaffoldedDefinitionEventArgs(Logger, codeBuilder));
-        }
+        OnScaffoldedDefinition(new ScaffoldedDefinitionEventArgs(Logger, codeBuilder));
     }
 }

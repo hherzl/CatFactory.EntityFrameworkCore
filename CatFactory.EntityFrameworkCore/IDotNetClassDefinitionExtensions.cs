@@ -1,108 +1,207 @@
-﻿using System.Linq;
-using CatFactory.NetCore;
+﻿using CatFactory.NetCore;
 using CatFactory.NetCore.ObjectOrientedProgramming;
 using CatFactory.ObjectOrientedProgramming;
 using CatFactory.ObjectRelationalMapping;
 
-namespace CatFactory.EntityFrameworkCore
+namespace CatFactory.EntityFrameworkCore;
+
+public static class IDotNetClassDefinitionExtensions
 {
-    public static class IDotNetClassDefinitionExtensions
+    public static void AddDataAnnotations(this IDotNetClassDefinition classDefinition, ITable table, DomainProject project)
     {
-        public static void AddDataAnnotations(this IDotNetClassDefinition classDefinition, ITable table, EntityFrameworkCoreProject project)
+        classDefinition.Attributes.Add(new MetadataAttribute("Table", $"\"{table.Name}\"")
         {
-            classDefinition.Attributes.Add(new MetadataAttribute("Table", string.Format("\"{0}\"", table.Name))
+            Sets =
             {
-                Sets =
-                {
-                    new MetadataAttributeSet("Schema", string.Format("\"{0}\"", table.Schema))
-                }
-            });
+                new MetadataAttributeSet("Schema", $"\"{table.Schema}\"")
+            }
+        });
 
-            var selection = project.GetSelection(table);
+        var selection = project.GetSelection(table);
 
-            for (var i = 0; i < table.Columns.Count; i++)
+        for (var i = 0; i < table.Columns.Count; i++)
+        {
+            var column = table.Columns[i];
+
+            foreach (var prop in classDefinition.Properties)
             {
-                var column = table.Columns[i];
+                if (project.GetPropName(table, column) != prop.Name)
+                    continue;
 
-                foreach (var property in classDefinition.Properties)
-                {
-                    if (project.GetPropertyName(table, column) != property.Name)
-                        continue;
+                if (table.Identity?.Name == column.Name)
+                    prop.Attributes.Add(new MetadataAttribute("DatabaseGenerated", "DatabaseGeneratedOption.Identity"));
 
-                    if (table.Identity?.Name == column.Name)
-                        property.Attributes.Add(new MetadataAttribute("DatabaseGenerated", "DatabaseGeneratedOption.Identity"));
+                if (table.PrimaryKey != null && table.PrimaryKey.Key.Contains(column.Name))
+                    prop.Attributes.Add(new MetadataAttribute("Key"));
 
-                    if (table.PrimaryKey != null && table.PrimaryKey.Key.Contains(column.Name))
-                        property.Attributes.Add(new MetadataAttribute("Key"));
+                if (prop.Name == column.Name)
+                    prop.Attributes.Add(new MetadataAttribute("Column"));
+                else
+                    prop.Attributes.Add(new MetadataAttribute("Column", $"\"{column.Name}\""));
 
-                    if (property.Name == column.Name)
-                        property.Attributes.Add(new MetadataAttribute("Column"));
-                    else
-                        property.Attributes.Add(new MetadataAttribute("Column", string.Format("\"{0}\"", column.Name)));
+                if (!column.Nullable && table.Identity != null && table.Identity.Name != column.Name)
+                    prop.Attributes.Add(new MetadataAttribute("Required"));
 
-                    if (!column.Nullable && table.Identity != null && table.Identity.Name != column.Name)
-                        property.Attributes.Add(new MetadataAttribute("Required"));
+                if (project.Database.ColumnIsString(column) && column.Length > 0)
+                    prop.Attributes.Add(new MetadataAttribute("StringLength", column.Length.ToString()));
 
-                    if (project.Database.ColumnIsString(column) && column.Length > 0)
-                        property.Attributes.Add(new MetadataAttribute("StringLength", column.Length.ToString()));
-
-                    if (!string.IsNullOrEmpty(selection.Settings.ConcurrencyToken) && selection.Settings.ConcurrencyToken == column.Name)
-                        property.Attributes.Add(new MetadataAttribute("Timestamp"));
-                }
+                if (!string.IsNullOrEmpty(selection.Settings.ConcurrencyToken) && selection.Settings.ConcurrencyToken == column.Name)
+                    prop.Attributes.Add(new MetadataAttribute("Timestamp"));
             }
         }
+    }
 
-        public static void AddDataAnnotations(this IDotNetClassDefinition classDefinition, IView view, EntityFrameworkCoreProject project)
+    public static void AddDataAnnotations(this IDotNetClassDefinition classDefinition, IView view, DomainProject project)
+    {
+        classDefinition.Attributes.Add(new MetadataAttribute("Table", $"\"{view.Name}\"")
         {
-            classDefinition.Attributes.Add(new MetadataAttribute("Table", string.Format("\"{0}\"", view.Name))
+            Sets =
             {
-                Sets =
-                {
-                    new MetadataAttributeSet("Schema", string.Format("\"{0}\"", view.Schema))
-                }
-            });
+                new MetadataAttributeSet("Schema", $"\"{view.Schema}\"")
+            }
+        });
 
-            var primaryKeys = project
-                .Database
-                .Tables
-                .Where(item => item.PrimaryKey != null)
-                .Select(item => item.GetColumnsFromConstraint(item.PrimaryKey).Select(column => column.Name).First())
-                .ToList();
+        var primaryKeys = project
+            .Database
+            .Tables
+            .Where(item => item.PrimaryKey != null)
+            .Select(item => item.GetColumnsFromConstraint(item.PrimaryKey).Select(column => column.Name).First())
+            .ToList();
 
-            var result = view.Columns
-                .Where(item => primaryKeys.Contains(item.Name))
-                .ToList();
+        var result = view.Columns
+            .Where(item => primaryKeys.Contains(item.Name))
+            .ToList();
 
-            for (var i = 0; i < view.Columns.Count; i++)
+        for (var i = 0; i < view.Columns.Count; i++)
+        {
+            var column = view.Columns[i];
+
+            foreach (var prop in classDefinition.Properties)
             {
-                var column = view.Columns[i];
+                if (project.GetPropName(view, column) != prop.Name)
+                    continue;
 
-                foreach (var property in classDefinition.Properties)
+                if (prop.Name == column.Name)
                 {
-                    if (project.GetPropertyName(view, column) != property.Name)
-                        continue;
-
-                    if (property.Name == column.Name)
+                    prop.Attributes.Add(new MetadataAttribute("Column")
                     {
-                        property.Attributes.Add(new MetadataAttribute("Column")
-                        {
-                            Sets = { new MetadataAttributeSet("Order", (i + 1).ToString()) }
-                        });
-                    }
-                    else
-                    {
-                        property.Attributes.Add(new MetadataAttribute("Column", string.Format("\"{0}\"", column.Name))
-                        {
-                            Sets = { new MetadataAttributeSet("Order", (i + 1).ToString()) }
-                        });
-                    }
-
-                    if (!column.Nullable && primaryKeys.Contains(column.Name))
-                        property.Attributes.Add(new MetadataAttribute("Key"));
-
-                    if (!column.Nullable)
-                        property.Attributes.Add(new MetadataAttribute("Required"));
+                        Sets = { new MetadataAttributeSet("Order", (i + 1).ToString()) }
+                    });
                 }
+                else
+                {
+                    prop.Attributes.Add(new MetadataAttribute("Column", $"\"{column.Name}\"")
+                    {
+                        Sets =
+                        {
+                            new MetadataAttributeSet("Order", (i + 1).ToString())
+                        }
+                    });
+                }
+
+                if (!column.Nullable && primaryKeys.Contains(column.Name))
+                    prop.Attributes.Add(new MetadataAttribute("Key"));
+
+                if (!column.Nullable)
+                    prop.Attributes.Add(new MetadataAttribute("Required"));
+            }
+        }
+    }
+
+    public static void AddDataAnnotations(this IDotNetClassDefinition classDefinition, ITable table, EntityFrameworkCoreProject project)
+    {
+        classDefinition.Attributes.Add(new MetadataAttribute("Table", string.Format("\"{0}\"", table.Name))
+        {
+            Sets =
+            {
+                new MetadataAttributeSet("Schema", string.Format("\"{0}\"", table.Schema))
+            }
+        });
+
+        var selection = project.GetSelection(table);
+
+        for (var i = 0; i < table.Columns.Count; i++)
+        {
+            var column = table.Columns[i];
+
+            foreach (var prop in classDefinition.Properties)
+            {
+                if (project.GetPropName(table, column) != prop.Name)
+                    continue;
+
+                if (table.Identity?.Name == column.Name)
+                    prop.Attributes.Add(new MetadataAttribute("DatabaseGenerated", "DatabaseGeneratedOption.Identity"));
+
+                if (table.PrimaryKey != null && table.PrimaryKey.Key.Contains(column.Name))
+                    prop.Attributes.Add(new MetadataAttribute("Key"));
+
+                if (prop.Name == column.Name)
+                    prop.Attributes.Add(new MetadataAttribute("Column"));
+                else
+                    prop.Attributes.Add(new MetadataAttribute("Column", string.Format("\"{0}\"", column.Name)));
+
+                if (!column.Nullable && table.Identity != null && table.Identity.Name != column.Name)
+                    prop.Attributes.Add(new MetadataAttribute("Required"));
+
+                if (project.Database.ColumnIsString(column) && column.Length > 0)
+                    prop.Attributes.Add(new MetadataAttribute("StringLength", column.Length.ToString()));
+
+                if (!string.IsNullOrEmpty(selection.Settings.ConcurrencyToken) && selection.Settings.ConcurrencyToken == column.Name)
+                    prop.Attributes.Add(new MetadataAttribute("Timestamp"));
+            }
+        }
+    }
+
+    public static void AddDataAnnotations(this IDotNetClassDefinition classDefinition, IView view, EntityFrameworkCoreProject project)
+    {
+        classDefinition.Attributes.Add(new MetadataAttribute("Table", string.Format("\"{0}\"", view.Name))
+        {
+            Sets =
+            {
+                new MetadataAttributeSet("Schema", string.Format("\"{0}\"", view.Schema))
+            }
+        });
+
+        var primaryKeys = project
+            .Database
+            .Tables
+            .Where(item => item.PrimaryKey != null)
+            .Select(item => item.GetColumnsFromConstraint(item.PrimaryKey).Select(column => column.Name).First())
+            .ToList();
+
+        var result = view.Columns
+            .Where(item => primaryKeys.Contains(item.Name))
+            .ToList();
+
+        for (var i = 0; i < view.Columns.Count; i++)
+        {
+            var column = view.Columns[i];
+
+            foreach (var prop in classDefinition.Properties)
+            {
+                if (project.GetPropName(view, column) != prop.Name)
+                    continue;
+
+                if (prop.Name == column.Name)
+                {
+                    prop.Attributes.Add(new MetadataAttribute("Column")
+                    {
+                        Sets = { new MetadataAttributeSet("Order", (i + 1).ToString()) }
+                    });
+                }
+                else
+                {
+                    prop.Attributes.Add(new MetadataAttribute("Column", string.Format("\"{0}\"", column.Name))
+                    {
+                        Sets = { new MetadataAttributeSet("Order", (i + 1).ToString()) }
+                    });
+                }
+
+                if (!column.Nullable && primaryKeys.Contains(column.Name))
+                    prop.Attributes.Add(new MetadataAttribute("Key"));
+
+                if (!column.Nullable)
+                    prop.Attributes.Add(new MetadataAttribute("Required"));
             }
         }
     }

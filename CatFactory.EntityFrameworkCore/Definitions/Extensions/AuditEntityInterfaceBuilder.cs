@@ -1,30 +1,29 @@
 ﻿using CatFactory.ObjectOrientedProgramming;
 
-namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
+namespace CatFactory.EntityFrameworkCore.Definitions.Extensions;
+
+public static class AuditEntityInterfaceBuilder
 {
-    public static class AuditEntityInterfaceBuilder
-    {
-        public static AuditEntityInterfaceDefinition GetAuditEntityInterfaceDefinition(this EntityFrameworkCoreProject project, bool isDomainDrivenDesign)
-            => new AuditEntityInterfaceDefinition
+    public static AuditEntityInterfaceDefinition GetAuditEntityInterfaceDefinition(this DomainProject project)
+        => new()
+        {
+            Namespaces =
             {
-                Namespaces =
-                {
-                    "System"
-                },
-                Namespace = isDomainDrivenDesign ? project.GetDomainModelsNamespace() : project.GetEntityLayerNamespace(),
-                AccessModifier = AccessModifier.Public,
-                Name = "IAuditEntity",
-                Implements =
-                {
-                    "IEntity"
-                },
-                Properties =
-                {
-                    new PropertyDefinition("string", "CreationUser"),
-                    new PropertyDefinition("DateTime?", "CreationDateTime"),
-                    new PropertyDefinition("string", "LastUpdateUser"),
-                    new PropertyDefinition("DateTime?", "LastUpdateDateTime")
-                }
-            };
-    }
+                "System"
+            },
+            Namespace = project.GetDomainEntitiesNs(),
+            AccessModifier = AccessModifier.Public,
+            Name = "IAuditEntity",
+            Implements =
+            {
+                "IEntity"
+            },
+            Properties =
+            {
+                new("string", "CreationUser"),
+                new("DateTime?", "CreationDateTime"),
+                new("string", "LastUpdateUser"),
+                new("DateTime?", "LastUpdateDateTime")
+            }
+        };
 }

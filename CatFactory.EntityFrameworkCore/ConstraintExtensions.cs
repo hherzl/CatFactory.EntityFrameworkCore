@@ -1,40 +1,66 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using CatFactory.ObjectOrientedProgramming;
+﻿using CatFactory.ObjectOrientedProgramming;
 using CatFactory.ObjectRelationalMapping;
 
-namespace CatFactory.EntityFrameworkCore
+namespace CatFactory.EntityFrameworkCore;
+
+public static class ConstraintExtensions
 {
-    public static class ConstraintExtensions
+    public static PropertyDefinition GetParentNavigationProp(this ForeignKey foreignKey, ITable table, DomainProject project)
     {
-        public static PropertyDefinition GetParentNavigationProperty(this ForeignKey foreignKey, ITable table, EntityFrameworkCoreProject project)
+        var propType = "";
+
+        if (table.HasSameEnclosingName())
         {
-            var propertyType = "";
-
-            if (table.HasSameEnclosingName())
+            propType = string.Join(".", (new string[]
             {
-                propertyType = string.Join(".", (new string[]
-                {
-                    project.ProjectNamespaces.EntityLayer,
-                    project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema, project.GetEntityName(table)
-                }).Where(item => !string.IsNullOrEmpty(item)));
-            }
-            else
-            {
-                propertyType = project.GetEntityName(table);
-            }
-
-            var selection = project.GetSelection(table);
-
-            return new PropertyDefinition(propertyType, $"{project.GetEntityName(table)}Fk")
-            {
-                AccessModifier = AccessModifier.Public,
-                IsVirtual = selection.Settings.DeclareNavigationPropertiesAsVirtual,
-                Attributes = selection.Settings.UseDataAnnotations ? new List<MetadataAttribute>
-                {
-                    new MetadataAttribute("ForeignKey", $"\"{string.Join(",", foreignKey.Key)}\"")
-                } : null
-            };
+                project.GetDomainEntitiesNs(),
+                project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema, project.GetEntityName(table)
+            }).Where(item => !string.IsNullOrEmpty(item)));
         }
+        else
+        {
+            propType = project.GetEntityName(table);
+        }
+
+        var selection = project.GetSelection(table);
+
+        return new PropertyDefinition(propType, $"{project.GetEntityName(table)}Fk")
+        {
+            AccessModifier = AccessModifier.Public,
+            IsVirtual = true,
+            IsAutomatic = true,
+            Attributes = selection.Settings.UseDataAnnotations ? new() { new MetadataAttribute("ForeignKey", $"\"{string.Join(",", foreignKey.Key)}\"") } : null
+        };
+    }
+
+    public static PropertyDefinition GetParentNavigationProperty(this ForeignKey foreignKey, ITable table, EntityFrameworkCoreProject project)
+    {
+        var propertyType = "";
+
+        if (table.HasSameEnclosingName())
+        {
+            propertyType = string.Join(".", (new string[]
+            {
+                project.ProjectNamespaces.EntityLayer,
+                project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema, project.GetEntityName(table)
+            }).Where(item => !string.IsNullOrEmpty(item)));
+        }
+        else
+        {
+            propertyType = project.GetEntityName(table);
+        }
+
+        var selection = project.GetSelection(table);
+
+        return new PropertyDefinition(propertyType, $"{project.GetEntityName(table)}Fk")
+        {
+            AccessModifier = AccessModifier.Public,
+            IsVirtual = selection.Settings.DeclareNavigationPropertiesAsVirtual,
+            IsAutomatic = true,
+            Attributes = selection.Settings.UseDataAnnotations ? new List<MetadataAttribute>
+            {
+                new MetadataAttribute("ForeignKey", $"\"{string.Join(",", foreignKey.Key)}\"")
+            } : null
+        };
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.IO;
-using CatFactory.EntityFrameworkCore.Definitions.Extensions;
+﻿using CatFactory.EntityFrameworkCore.Definitions.Extensions;
 using CatFactory.Markdown;
 using CatFactory.ObjectRelationalMapping;
 
@@ -27,10 +26,10 @@ namespace CatFactory.EntityFrameworkCore
 
         internal static void ScaffoldEntityInterface(EntityFrameworkCoreProject project)
         {
-            project.Scaffold(project.GetEntityInterfaceDefinition(true), project.GetDomainModelsDirectory());
+            //project.Scaffold(project.GetEntityInterfaceDefinition(true), project.GetDomainModelsDirectory());
 
-            if (project.GlobalSelection().Settings.AuditEntity != null)
-                project.Scaffold(project.GetAuditEntityInterfaceDefinition(true), project.GetDomainModelsDirectory());
+            //if (project.GlobalSelection().Settings.AuditEntity != null)
+            //    project.Scaffold(project.GetAuditEntityInterfaceDefinition(true), project.GetDomainModelsDirectory());
         }
 
         internal static EntityFrameworkCoreProject ScaffoldModels(this EntityFrameworkCoreProject project)
