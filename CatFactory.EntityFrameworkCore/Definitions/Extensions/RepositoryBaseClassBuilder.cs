@@ -1,190 +1,188 @@
-﻿using System.Collections.Generic;
-using CatFactory.CodeFactory;
+﻿using CatFactory.CodeFactory;
 using CatFactory.ObjectOrientedProgramming;
 
-namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
+namespace CatFactory.EntityFrameworkCore.Definitions.Extensions;
+
+public static class RepositoryBaseClassBuilder
 {
-    public static class RepositoryBaseClassBuilder
+    public static PagingExtensionsClassDefinition GetRepositoryBaseClassDefinition(this EntityFrameworkCoreProject project)
     {
-        public static PagingExtensionsClassDefinition GetRepositoryBaseClassDefinition(this EntityFrameworkCoreProject project)
+        var definition = new PagingExtensionsClassDefinition
         {
-            var definition = new PagingExtensionsClassDefinition
+            Namespaces =
             {
-                Namespaces =
+                "System",
+                "System.Threading.Tasks",
+            },
+            Namespace = project.GetDataLayerContractsNamespace(),
+            AccessModifier = AccessModifier.Public,
+            Name = "Repository",
+            Fields =
+            {
+                new FieldDefinition(AccessModifier.Protected, "bool", "Disposed"),
+                new FieldDefinition(AccessModifier.Protected, project.GetDbContextName(project.Database), "DbContext")
                 {
-                    "System",
-                    "System.Threading.Tasks",
-                },
-                Namespace = project.GetDataLayerContractsNamespace(),
-                AccessModifier = AccessModifier.Public,
-                Name = "Repository",
-                Fields =
+                    IsReadonly = true
+                }
+            },
+            Constructors =
+            {
+                new ClassConstructorDefinition(AccessModifier.Public, new ParameterDefinition(project.GetDbContextName(project.Database), "dbContext"))
                 {
-                    new FieldDefinition(AccessModifier.Protected, "bool", "Disposed"),
-                    new FieldDefinition(AccessModifier.Protected, project.GetDbContextName(project.Database), "DbContext")
+                    Lines =
                     {
-                        IsReadOnly = true
-                    }
-                },
-                Constructors =
-                {
-                    new ClassConstructorDefinition(AccessModifier.Public, new ParameterDefinition(project.GetDbContextName(project.Database), "dbContext"))
-                    {
-                        Lines =
-                        {
-                            new CodeLine("DbContext = dbContext;")
-                        }
-                    }
-                },
-                Methods =
-                {
-                    new MethodDefinition(AccessModifier.Public, "void", "Dispose")
-                    {
-                        IsVirtual = true,
-                        Lines =
-                        {
-                            new CodeLine("if (Disposed)"),
-                            new CodeLine(1, "return;"),
-                            new EmptyLine(),
-                            new CodeLine("DbContext?.Dispose();"),
-                            new EmptyLine(),
-                            new CodeLine("Disposed = true;")
-                        }
-                    },
-                    GetAddMethod(project),
-                    GetUpdateMethod(project),
-                    GetRemoveMethod(project),
-                    new MethodDefinition(AccessModifier.Public, "int", "CommitChanges")
-                    {
-                        Lines =
-                        {
-                            new CodeLine("return DbContext.SaveChanges();")
-                        }
-                    },
-                    new MethodDefinition(AccessModifier.Public, "Task<int>", "CommitChangesAsync")
-                    {
-                        IsAsync = true,
-                        Lines =
-                        {
-                            new CodeLine("return await DbContext.SaveChangesAsync();")
-                        }
+                        new CodeLine("DbContext = dbContext;")
                     }
                 }
-            };
-
-            var selection = project.GlobalSelection();
-
-            if (selection.Settings.AuditEntity != null)
-                definition.Namespaces.Add(project.GetEntityLayerNamespace());
-
-            return definition;
-        }
-
-        private static MethodDefinition GetAddMethod(EntityFrameworkCoreProject project)
-        {
-            var lines = new List<ILine>();
-
-            var selection = project.GlobalSelection();
-
-            if (selection.Settings.AuditEntity == null)
+            },
+            Methods =
             {
-                lines.AddRange(new List<ILine>
+                new MethodDefinition(AccessModifier.Public, "void", "Dispose")
                 {
-                    new CodeLine("DbContext.Add(entity);")
-                });
-            }
-            else
-            {
-                lines.AddRange(new List<ILine>
-                {
-                    new CommentLine(" Cast entity to IAuditEntity"),
-                    new CodeLine("if(entity is IAuditEntity cast)"),
-                    new CodeLine("{"),
-                    new CommentLine(1, " Set creation datetime"),
-                    new CodeLine(1, "cast.CreationDateTime = DateTime.Now;"),
-                    new CodeLine("}"),
-                    new CodeLine(),
-                    new CodeLine("DbContext.Add(entity);"),
-                });
-            }
-
-            return new MethodDefinition("void", "Add", new ParameterDefinition("TEntity", "entity"))
-            {
-                AccessModifier = AccessModifier.Public,
-                IsVirtual = true,
-                GenericTypes =
-                {
-                    new GenericTypeDefinition
+                    IsVirtual = true,
+                    Lines =
                     {
-                        Name = "TEntity",
-                        Constraint = "TEntity : class"
+                        new CodeLine("if (Disposed)"),
+                        new CodeLine(1, "return;"),
+                        new EmptyLine(),
+                        new CodeLine("DbContext?.Dispose();"),
+                        new EmptyLine(),
+                        new CodeLine("Disposed = true;")
                     }
                 },
-                Lines = lines
-            };
-        }
-
-        private static MethodDefinition GetUpdateMethod(EntityFrameworkCoreProject project)
-        {
-            var lines = new List<ILine>();
-
-            var selection = project.GlobalSelection();
-
-            if (selection.Settings.AuditEntity == null)
-            {
-                lines.AddRange(new List<ILine>
+                GetAddMethod(project),
+                GetUpdateMethod(project),
+                GetRemoveMethod(project),
+                new MethodDefinition(AccessModifier.Public, "int", "CommitChanges")
                 {
-                    new CodeLine("DbContext.Update(entity);")
-                });
-            }
-            else
-            {
-                lines.AddRange(new List<ILine>
-                {
-                    new CommentLine(" Cast entity to IAuditEntity"),
-                    new CodeLine("if (entity is IAuditEntity cast)"),
-                    new CodeLine("{"),
-                    new CommentLine(1, " Set update datetime"),
-                    new CodeLine(1, "cast.LastUpdateDateTime = DateTime.Now;"),
-                    new CodeLine("}"),
-                    new CodeLine(),
-                    new CodeLine("DbContext.Update(entity);")
-                });
-            }
-
-            return new MethodDefinition("void", "Update", new ParameterDefinition("TEntity", "entity"))
-            {
-                AccessModifier = AccessModifier.Public,
-                IsVirtual = true,
-                GenericTypes =
-                {
-                    new GenericTypeDefinition
+                    Lines =
                     {
-                        Name = "TEntity",
-                        Constraint = "TEntity : class"
+                        new CodeLine("return DbContext.SaveChanges();")
                     }
                 },
-                Lines = lines
-            };
-        }
-
-        private static MethodDefinition GetRemoveMethod(EntityFrameworkCoreProject project)
-            => new MethodDefinition("void", "Remove", new ParameterDefinition("TEntity", "entity"))
-            {
-                AccessModifier = AccessModifier.Public,
-                IsVirtual = true,
-                GenericTypes =
+                new MethodDefinition(AccessModifier.Public, "Task<int>", "CommitChangesAsync")
                 {
-                    new GenericTypeDefinition
+                    IsAsync = true,
+                    Lines =
                     {
-                        Name = "TEntity",
-                        Constraint = "TEntity : class"
+                        new CodeLine("return await DbContext.SaveChangesAsync();")
                     }
-                },
-                Lines =
-                {
-                    new CodeLine("DbContext.Remove(entity);")
                 }
-            };
+            }
+        };
+
+        var selection = project.GlobalSelection();
+
+        if (selection.Settings.AuditEntity != null)
+            definition.Namespaces.Add(project.GetEntityLayerNamespace());
+
+        return definition;
     }
+
+    private static MethodDefinition GetAddMethod(EntityFrameworkCoreProject project)
+    {
+        var lines = new List<ILine>();
+
+        var selection = project.GlobalSelection();
+
+        if (selection.Settings.AuditEntity == null)
+        {
+            lines.AddRange(new List<ILine>
+            {
+                new CodeLine("DbContext.Add(entity);")
+            });
+        }
+        else
+        {
+            lines.AddRange(new List<ILine>
+            {
+                new CommentLine(" Cast entity to IAuditEntity"),
+                new CodeLine("if(entity is IAuditEntity cast)"),
+                new CodeLine("{"),
+                new CommentLine(1, " Set creation datetime"),
+                new CodeLine(1, "cast.CreationDateTime = DateTime.Now;"),
+                new CodeLine("}"),
+                new CodeLine(),
+                new CodeLine("DbContext.Add(entity);"),
+            });
+        }
+
+        return new MethodDefinition("void", "Add", new ParameterDefinition("TEntity", "entity"))
+        {
+            AccessModifier = AccessModifier.Public,
+            IsVirtual = true,
+            GenericTypes =
+            {
+                new GenericTypeDefinition
+                {
+                    Name = "TEntity",
+                    Constraints = ["class"]
+                }
+            },
+            Lines = lines
+        };
+    }
+
+    private static MethodDefinition GetUpdateMethod(EntityFrameworkCoreProject project)
+    {
+        var lines = new List<ILine>();
+
+        var selection = project.GlobalSelection();
+
+        if (selection.Settings.AuditEntity == null)
+        {
+            lines.AddRange(new List<ILine>
+            {
+                new CodeLine("DbContext.Update(entity);")
+            });
+        }
+        else
+        {
+            lines.AddRange(new List<ILine>
+            {
+                new CommentLine(" Cast entity to IAuditEntity"),
+                new CodeLine("if (entity is IAuditEntity cast)"),
+                new CodeLine("{"),
+                new CommentLine(1, " Set update datetime"),
+                new CodeLine(1, "cast.LastUpdateDateTime = DateTime.Now;"),
+                new CodeLine("}"),
+                new CodeLine(),
+                new CodeLine("DbContext.Update(entity);")
+            });
+        }
+
+        return new MethodDefinition("void", "Update", new ParameterDefinition("TEntity", "entity"))
+        {
+            AccessModifier = AccessModifier.Public,
+            IsVirtual = true,
+            GenericTypes =
+            {
+                new GenericTypeDefinition
+                {
+                    Name = "TEntity",
+                    Constraints = ["class"]
+                }
+            },
+            Lines = lines
+        };
+    }
+
+    private static MethodDefinition GetRemoveMethod(EntityFrameworkCoreProject project)
+        => new MethodDefinition("void", "Remove", new ParameterDefinition("TEntity", "entity"))
+        {
+            AccessModifier = AccessModifier.Public,
+            IsVirtual = true,
+            GenericTypes =
+            {
+                new GenericTypeDefinition
+                {
+                    Name = "TEntity",
+                    Constraints = ["class"]
+                }
+            },
+            Lines =
+            {
+                new CodeLine("DbContext.Remove(entity);")
+            }
+        };
 }

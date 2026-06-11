@@ -10,6 +10,279 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions;
 
 public static class DbContextClassBuilder
 {
+    public static DbContextClassDefinition GetDbContextClassDef(this InfrastructureProject project, ProjectSelection<InfrastructureProjectSettings> projectSelection)
+    {
+        var definition = new DbContextClassDefinition
+        {
+            Namespaces =
+            {
+                "System",
+                "Microsoft.EntityFrameworkCore",
+                project.Solution.Domain.GetDomainEntitiesNs()
+            },
+            Namespace = project.GetInfrastructurePersistenceNs(),
+            AccessModifier = AccessModifier.Public,
+            Name = project.GetDbContextName(project.Database),
+            BaseClass = "DbContext"
+        };
+
+        if (projectSelection.Settings.UseApplyConfigurationsFromAssemblyMethod)
+            definition.Namespaces.Add("System.Reflection");
+
+        if (!projectSelection.Settings.UseDataAnnotations)
+            definition.Namespaces.Add(project.Solution.Infrastructure.GetInfrastructurePersistenceConfigurationsNs());
+
+        definition.Namespaces.Add(project.Solution.Application.GetApplicationQuerySpecsNs());
+
+        definition.Constructors.Add(new ClassConstructorDefinition
+        {
+            AccessModifier = AccessModifier.Public,
+            Parameters =
+            {
+                new ParameterDefinition(string.Format("DbContextOptions<{0}>", definition.Name), "options")
+            },
+            Invocation = "base(options)"
+        });
+
+        definition.Methods.Add(GetOnModelCreatingMethod(project));
+
+        foreach (var table in project.Database.Tables)
+        {
+            var existingViews = project.Database.Views.Count(item => item.Name == table.Name);
+
+            var genericTypeName = existingViews == 0 ? project.Solution.Domain.GetEntityName(table) : project.Solution.Domain.GetFullEntityName(table);
+            var name = existingViews == 0 ? project.GetDbSetPropName(table, projectSelection.Settings.PluralizeDbSetPropertyNames) : project.GetFullDbSetPropName(table);
+
+            definition.Properties.Add(new PropertyDefinition(AccessModifier.Public, string.Format("DbSet<{0}>", genericTypeName), name) { IsAutomatic = true });
+        }
+
+        foreach (var view in project.Database.Views)
+        {
+            var existingTables = project.Database.Tables.Count(item => item.Name == view.Name);
+
+            var genericTypeName = existingTables == 0 ? project.Solution.Domain.GetEntityName(view) : project.Solution.Domain.GetFullEntityName(view);
+            var name = existingTables == 0 ? project.GetDbSetPropName(view, projectSelection.Settings.PluralizeDbSetPropertyNames) : project.GetFullDbSetPropName(view);
+
+            definition.Properties.Add(new PropertyDefinition(AccessModifier.Public, string.Format("DbSet<{0}>", genericTypeName), name) { IsAutomatic = true });
+        }
+
+        foreach (var table in project.Database.Tables)
+        {
+            if (!projectSelection.Settings.UseDataAnnotations && !project.Database.HasDefaultSchema(table))
+                definition.Namespaces.AddUnique(project.Solution.Infrastructure.GetInfrastructurePersistenceConfigurationsNs());
+        }
+
+        foreach (var view in project.Database.Views)
+        {
+            if (!projectSelection.Settings.UseDataAnnotations && !project.Database.HasDefaultSchema(view))
+                definition.Namespaces.AddUnique(project.Solution.Infrastructure.GetInfrastructurePersistenceConfigurationsNs());
+        }
+
+        if (projectSelection.Settings.SimplifyDataTypes)
+            definition.SimplifyDataTypes();
+
+        foreach (var table in project.Database.Tables)
+        {
+            var names = new
+            {
+                Feature = $"{table.Name}s",
+                PkQuery = $"Get{table.Name}",
+                SingleQuery = $"Get{table.Name}Async",
+                ComposedQuery = $"Get{table.Name}s"
+            };
+
+            // TODO: Add by FK
+            definition.Methods.Add(new MethodDefinition($"IQueryable<{project.Solution.Domain.GetEntityName(table)}>", names.ComposedQuery)
+            {
+                AccessModifier = AccessModifier.Public
+            }.AddParam("bool", "tracking", "false")
+            .Set(body =>
+            {
+                body.Line($"var query = {project.Solution.Infrastructure.GetDbSetPropName(table, true)}.AsQueryable();");
+                body.Line($"return query;");
+            }));
+
+            // By PK
+            definition.Methods.Add(new MethodDefinition($"Task<{project.Solution.Domain.GetEntityName(table)}>", names.SingleQuery)
+            {
+                AccessModifier = AccessModifier.Public,
+                IsAsync = true,
+            }
+            .AddParam(project.Solution.Domain.GetEntityName(table), "entity")
+            .AddParam("bool", "tracking", "false")
+            .AddParam("CancellationToken", "ct", "default")
+            .Set(body =>
+            {
+                body.Line($"var query = {project.Solution.Infrastructure.GetDbSetPropName(table, true)}.AsQueryable();");
+                body.Empty();
+                body.Line($"if (tracking)");
+                body.Line(1, $"query = query.AsNoTracking();");
+                body.Empty();
+
+                var pk = table.PrimaryKey;
+                body.Line($"return await query.QuerySpec(new {project.Solution.Application.GetQuerySpecClassName(names.PkQuery)}(entity.{pk.Key.First()})).SingleOrDefaultAsync(ct);");
+            }));
+
+            // TODO: Add by UQ
+
+            foreach (var unique in table.Uniques.Where(item => item.Key.Count == 1))
+            {
+                var methodName = $"Get{table.Name}By{unique.Key.First()}Async";
+                definition.Methods.Add(new MethodDefinition($"Task<{project.Solution.Domain.GetEntityName(table)}>", methodName)
+                {
+                    AccessModifier = AccessModifier.Public,
+                    IsAsync = true,
+                }
+                .AddParam(project.Solution.Domain.GetEntityName(table), "entity")
+                .AddParam("bool", "tracking", "false")
+                .AddParam("CancellationToken", "ct", "default")
+                .Set(body =>
+                {
+                    body.Line($"var query = {project.Solution.Infrastructure.GetDbSetPropName(table, true)}.AsQueryable();");
+                    body.Empty();
+                    body.Line($"if (tracking)");
+                    body.Line(1, $"query = query.AsNoTracking();");
+                    body.Empty();
+                    body.Line($"return await query.SingleOrDefaultAsync(item => item.{unique.Key.First()} == entity.{unique.Key.First()}, ct);");
+                }));
+            }
+        }
+
+        return definition;
+    }
+
+    private static MethodDefinition GetOnModelCreatingMethod(InfrastructureProject project)
+    {
+        var lines = new List<ILine>();
+
+        var selection = project.GlobalSelection();
+
+        if (selection.Settings.UseDataAnnotations)
+        {
+            var primaryKeys = project
+                .Database
+                .Tables
+                .Where(item => item.PrimaryKey != null)
+                .Select(item => item.GetColumnsFromConstraint(item.PrimaryKey).Select(key => key.Name).First())
+                .ToList();
+
+            foreach (var view in project.Database.Views)
+            {
+                var result = view.Columns.Where(item => primaryKeys.Contains(item.Name)).ToList();
+
+                var exp = "modelBuilder.Entity<{0}>().HasKey(e => new {{ {1} }});";
+                var properties = string.Join(", ", view.Columns.Select(item => string.Format("e.{0}", project.GetPropName(view, item))));
+
+                if (result.Count == 0)
+                {
+                    lines.Add(new CodeLine(exp, project.Solution.Domain.GetEntityName(view), properties));
+                    lines.Add(new EmptyLine());
+                }
+                else
+                {
+                    properties = string.Join(", ", result.Select(item => string.Format("e.{0}", project.GetPropName(view, item))));
+
+                    lines.Add(new CodeLine(exp, project.Solution.Domain.GetEntityName(view), properties));
+                    lines.Add(new EmptyLine());
+                }
+            }
+        }
+        else
+        {
+            if (selection.Settings.UseApplyConfigurationsFromAssemblyMethod)
+            {
+                lines.Add(new CommentLine(" Apply all configurations from assembly"));
+                lines.Add(new EmptyLine());
+
+                lines.Add(new CodeLine("modelBuilder"));
+                lines.Add(new CodeLine(1, ".ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly())"));
+                lines.Add(new CodeLine(1, ";"));
+                lines.Add(new EmptyLine());
+            }
+            else
+            {
+                var schemas = project.Database.DbObjects.Select(item => item.Schema).Distinct().OrderBy(item => item);
+
+                if (project.Database.Tables.Count > 0)
+                {
+                    lines.Add(new CommentLine(" Apply all configurations for tables"));
+                    lines.Add(new EmptyLine());
+
+                    foreach (var schema in schemas)
+                    {
+                        var tables = project.Database.FindTablesBySchema(schema).ToList();
+
+                        if (tables.Count == 0)
+                            continue;
+
+                        lines.Add(new CommentLine(" Schema '{0}'", schema));
+
+                        lines.Add(new CodeLine("modelBuilder"));
+
+                        foreach (var table in tables)
+                        {
+                            var existingViews = project.Database.Views.Count(item => item.Name == table.Name);
+
+                            var genericTypeName = existingViews == 0 ? project.Solution.Domain.GetEntityName(table) : project.Solution.Domain.GetFullEntityName(table);
+                            var name = existingViews == 0 ? project.GetEntityConfigurationName(table) : project.GetFullEntityConfigurationName(table);
+
+                            lines.Add(new CodeLine(1, ".ApplyConfiguration(new {0}())", name));
+                        }
+
+                        lines.Add(new CodeLine(";"));
+                        lines.Add(new EmptyLine());
+                    }
+                }
+
+                if (project.Database.Views.Count > 0)
+                {
+                    lines.Add(new CommentLine(" Apply all configurations for views"));
+                    lines.Add(new EmptyLine());
+
+                    foreach (var schema in schemas)
+                    {
+                        var views = project.Database.FindViewsBySchema(schema).ToList();
+
+                        if (views.Count == 0)
+                            continue;
+
+                        lines.Add(new CommentLine(" Schema '{0}'", schema));
+
+                        lines.Add(new CodeLine("modelBuilder"));
+
+                        foreach (var view in views)
+                        {
+                            var existingTables = project.Database.Tables.Count(item => item.Name == view.Name);
+
+                            var genericTypeName = existingTables == 0 ? project.Solution.Domain.GetEntityName(view) : project.Solution.Domain.GetFullEntityName(view);
+                            var name = existingTables == 0 ? project.GetEntityConfigurationName(view) : project.GetFullEntityConfigurationName(view);
+
+                            lines.Add(new CodeLine(1, ".ApplyConfiguration(new {0}())", name));
+                        }
+
+                        lines.Add(new CodeLine(";"));
+                        lines.Add(new EmptyLine());
+                    }
+                }
+            }
+        }
+
+        lines.Add(new CodeLine("base.OnModelCreating(modelBuilder);"));
+
+        return new MethodDefinition
+        {
+            AccessModifier = AccessModifier.Protected,
+            IsOverride = true,
+            Type = "void",
+            Name = "OnModelCreating",
+            Parameters =
+            {
+                new ParameterDefinition("ModelBuilder", "modelBuilder")
+            },
+            Lines = lines
+        };
+    }
+
     public static DbContextClassDefinition GetDbContextClassDefinition(this EntityFrameworkCoreProject project, ProjectSelection<EntityFrameworkCoreProjectSettings> projectSelection, bool isDomainDrivenDesign)
     {
         var definition = new DbContextClassDefinition
@@ -29,16 +302,8 @@ public static class DbContextClassBuilder
         if (projectSelection.Settings.UseApplyConfigurationsFromAssemblyMethod)
             definition.Namespaces.Add("System.Reflection");
 
-        if (isDomainDrivenDesign)
-        {
-            if (!projectSelection.Settings.UseDataAnnotations)
-                definition.Namespaces.Add(project.GetDomainConfigurationsNamespace());
-        }
-        else
-        {
-            if (!projectSelection.Settings.UseDataAnnotations)
-                definition.Namespaces.Add(project.GetDataLayerConfigurationsNamespace());
-        }
+        if (!projectSelection.Settings.UseDataAnnotations)
+            definition.Namespaces.Add(project.GetDomainConfigurationsNamespace());
 
         definition.Constructors.Add(new ClassConstructorDefinition
         {
@@ -175,6 +440,57 @@ public static class DbContextClassBuilder
 
         if (projectSelection.Settings.SimplifyDataTypes)
             definition.SimplifyDataTypes();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         return definition;
     }

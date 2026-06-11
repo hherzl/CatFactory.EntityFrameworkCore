@@ -36,7 +36,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     new GenericTypeDefinition
                     {
                         Name = "TEntity",
-                        Constraint = "TEntity : class"
+                        Constraints = ["class"]
                     }
                 },
                 Lines =
@@ -57,7 +57,7 @@ namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
                     new GenericTypeDefinition
                     {
                         Name = "TModel",
-                        Constraint = "TModel : class"
+                        Constraints = ["class"]
                     }
                 },
                 Lines =

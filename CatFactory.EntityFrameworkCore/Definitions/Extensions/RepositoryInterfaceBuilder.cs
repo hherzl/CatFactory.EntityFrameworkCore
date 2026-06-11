@@ -1,62 +1,61 @@
 ﻿using CatFactory.ObjectOrientedProgramming;
 
-namespace CatFactory.EntityFrameworkCore.Definitions.Extensions
+namespace CatFactory.EntityFrameworkCore.Definitions.Extensions;
+
+public static class RepositoryInterfaceBuilder
 {
-    public static class RepositoryInterfaceBuilder
-    {
-        public static RepositoryInterfaceDefinition GetRepositoryInterfaceDefinition(this EntityFrameworkCoreProject project)
-            => new RepositoryInterfaceDefinition
+    public static RepositoryInterfaceDefinition GetRepositoryInterfaceDefinition(this EntityFrameworkCoreProject project)
+        => new()
+        {
+            Namespaces =
             {
-                Namespaces =
+                "System",
+                "System.Threading.Tasks"
+            },
+            Namespace = project.GetDataLayerContractsNamespace(),
+            AccessModifier = AccessModifier.Public,
+            Name = "IRepository",
+            Implements =
+            {
+                "IDisposable"
+            },
+            Methods =
+            {
+                new MethodDefinition("void", "Add", new ParameterDefinition("TEntity", "entity"))
                 {
-                    "System",
-                    "System.Threading.Tasks"
+                    GenericTypes =
+                    {
+                        new GenericTypeDefinition
+                        {
+                            Name = "TEntity",
+                            Constraints = ["class"]
+                        }
+                    }
                 },
-                Namespace = project.GetDataLayerContractsNamespace(),
-                AccessModifier = AccessModifier.Public,
-                Name = "IRepository",
-                Implements =
+                new MethodDefinition("void", "Update", new ParameterDefinition("TEntity", "entity"))
                 {
-                    "IDisposable"
+                    GenericTypes =
+                    {
+                        new GenericTypeDefinition
+                        {
+                            Name = "TEntity",
+                            Constraints = ["class"]
+                        }
+                    }
                 },
-                Methods =
+                new MethodDefinition("void", "Remove", new ParameterDefinition("TEntity", "entity"))
                 {
-                    new MethodDefinition("void", "Add", new ParameterDefinition("TEntity", "entity"))
+                    GenericTypes =
                     {
-                        GenericTypes =
+                        new GenericTypeDefinition
                         {
-                            new GenericTypeDefinition
-                            {
-                                Name = "TEntity",
-                                Constraint = "TEntity : class"
-                            }
+                            Name = "TEntity",
+                            Constraints = ["class"]
                         }
-                    },
-                    new MethodDefinition("void", "Update", new ParameterDefinition("TEntity", "entity"))
-                    {
-                        GenericTypes =
-                        {
-                            new GenericTypeDefinition
-                            {
-                                Name = "TEntity",
-                                Constraint = "TEntity : class"
-                            }
-                        }
-                    },
-                    new MethodDefinition("void", "Remove", new ParameterDefinition("TEntity", "entity"))
-                    {
-                        GenericTypes =
-                        {
-                            new GenericTypeDefinition
-                            {
-                                Name = "TEntity",
-                                Constraint = "TEntity : class"
-                            }
-                        }
-                    },
-                    new MethodDefinition("int", "CommitChanges"),
-                    new MethodDefinition("Task<int>", "CommitChangesAsync")
-                }
-            };
-    }
+                    }
+                },
+                new MethodDefinition("int", "CommitChanges"),
+                new MethodDefinition("Task<int>", "CommitChangesAsync")
+            }
+        };
 }

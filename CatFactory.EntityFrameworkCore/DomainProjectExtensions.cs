@@ -33,11 +33,14 @@ public static class DomainProjectExtensions
     public static string GetEntityName(this DomainProject project, IDbObject dbObject)
         => project.CodeNamingConvention.GetClassName(dbObject.Name);
 
+    public static string GetFullEntityName(this DomainProject project, IDbObject dbObject)
+        => string.Join(".", project.CodeNamingConvention.GetNamespace(project.GetDomainEntitiesNs(), project.CodeNamingConvention.GetClassName(dbObject.Name)));
+
     public static string GetParamName(this DomainProject project, Column column)
         => project.CodeNamingConvention.GetParameterName(column.Name);
 
     public static string GetNavigationPropName(this DomainProject project, IDbObject dbObject)
-        => string.Format("{0}List", project.CodeNamingConvention.GetClassName(dbObject.Name));
+        => $"{project.CodeNamingConvention.GetClassName(dbObject.Name)}List";
 
     #endregion
 

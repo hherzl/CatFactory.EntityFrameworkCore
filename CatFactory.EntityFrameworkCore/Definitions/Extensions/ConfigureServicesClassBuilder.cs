@@ -25,7 +25,7 @@ public static class ConfigureServicesClassBuilder
         return (ConfigureServicesClassDefinition)definition;
     }
 
-    public static ConfigureServicesClassDefinition GetInfrastructureConfigureServicesClassDefinition(this EntityFrameworkCoreProject project)
+    public static ConfigureServicesClassDefinition GetInfrastructureConfigureServicesClassDefinition(this InfrastructureProject project)
     {
         var definition = CSharpClassDefinition.Create<ConfigureServicesClassDefinition>(AccessModifier.Public, "ConfigureServices", ns: project.GetInfrastructureNs(), isStatic: true)
             .UsingNs("Microsoft.Extensions.Configuration")

@@ -8,7 +8,8 @@ public static class QueryHandlerClassBuilder
 {
     public static QueryHandlerClassDefinition GetSingleQueryHandlerClassDef(this ApplicationProject project, string feature, string query)
     {
-        var definition = CSharpClassDefinition.Create<QueryHandlerClassDefinition>(AccessModifier.Public, project.GetQueryHandlerClassName(query), ns: project.GetApplicationFeaturesNs(feature), isSealed: true)
+        var definition = CSharpClassDefinition.Create<QueryHandlerClassDefinition>(AccessModifier.Public, project.GetQueryHandlerClassName(query), isSealed: true)
+            .Ns(project.GetApplicationFeaturesNs(feature))
             .UsingNs("Microsoft.EntityFrameworkCore")
             .UsingNs(project.GetApplicationCommonNs())
             .AddCtor(new(AccessModifier.Public, new ParameterDefinition(project.GetDbContextInterfaceName(project.Database), "dbContext"))
@@ -25,7 +26,9 @@ public static class QueryHandlerClassBuilder
                 .AddParam("CancellationToken", "ct", "default")
                 .Set(body =>
                 {
-                    body.Line("await Task.FromResult(0);");
+                    body.Line("var entity = await _dbContext.GetAsync(request.Id);");
+                    body.Empty();
+                    body.Line("return entity;");
                 })
             );
 
@@ -34,7 +37,8 @@ public static class QueryHandlerClassBuilder
 
     public static QueryHandlerClassDefinition GetComposedQueryHandlerClassDef(this ApplicationProject project, string feature, string query)
     {
-        var definition = CSharpClassDefinition.Create<QueryHandlerClassDefinition>(AccessModifier.Public, project.GetQueryHandlerClassName(query), ns: project.GetApplicationFeaturesNs(feature), isSealed: true)
+        var definition = CSharpClassDefinition.Create<QueryHandlerClassDefinition>(AccessModifier.Public, project.GetQueryHandlerClassName(query), isSealed: true)
+            .Ns(project.GetApplicationFeaturesNs(feature))
             .UsingNs("Microsoft.EntityFrameworkCore")
             .UsingNs(project.GetApplicationCommonNs())
             .AddCtor(new(AccessModifier.Public, new ParameterDefinition(project.GetDbContextInterfaceName(project.Database), "dbContext"))

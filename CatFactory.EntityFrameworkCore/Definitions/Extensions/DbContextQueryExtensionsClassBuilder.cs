@@ -363,7 +363,7 @@ public static class DbContextQueryExtensionsClassBuilder
                 if (foreignKey == null)
                     continue;
 
-                includeExpression.Add(string.Format("Include(e => e.{0})", foreignKey.GetParentNavigationProperty(foreignTable, project).Name));
+                includeExpression.Add($"Include(e => e.{foreignKey.GetParentNavigationProp(foreignTable, project).Name})");
             }
         }
 
@@ -439,7 +439,7 @@ public static class DbContextQueryExtensionsClassBuilder
                 if (foreignKey == null)
                     continue;
 
-                includeExpression.Add(string.Format("Include(e => e.{0})", foreignKey.GetParentNavigationProperty(foreignTable, project).Name));
+                includeExpression.Add($"Include(e => e.{foreignKey.GetParentNavigationProp(foreignTable, project).Name})");
             }
         }
 

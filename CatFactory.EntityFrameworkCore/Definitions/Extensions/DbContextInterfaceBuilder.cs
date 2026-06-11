@@ -13,6 +13,8 @@ public static class DbContextInterfaceBuilder
             .UsingNs(project.Solution.Domain.GetDomainEntitiesNs())
             ;
 
+        definition.Methods.Add(new MethodDefinition("Task<int>", "SaveChangesAsync").AddParam("CancellationToken", "ct", "default"));
+
         foreach (var table in project.Database.Tables)
         {
             definition.Properties.Add(new($"DbSet<{project.Solution.Domain.GetEntityName(table)}>", project.GetPropName(table.Name))

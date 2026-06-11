@@ -647,7 +647,7 @@ public static class RepositoryClassBuilder
                     if (foreignKey == null)
                         continue;
 
-                    lines.Add(new CodeLine(1, ".Include(p => p.{0})", foreignKey.GetParentNavigationProperty(foreignTable, project).Name));
+                    lines.Add(new CodeLine(1, $".Include(p => p.{foreignKey.GetParentNavigationProp(foreignTable, project).Name})"));
                 }
             }
 

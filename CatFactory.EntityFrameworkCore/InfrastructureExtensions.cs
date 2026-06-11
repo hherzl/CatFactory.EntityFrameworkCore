@@ -16,7 +16,7 @@ public static class InfrastructureExtensions
 
     internal static void ScaffoldInfrastructureConfigureServices(EntityFrameworkCoreProject project)
     {
-        project.Scaffold(project.GetInfrastructureConfigureServicesClassDefinition(), project.GetInfrastructureDirectory());
+        //project.Scaffold(project.GetInfrastructureConfigureServicesClassDefinition(), project.GetInfrastructureDirectory());
     }
 
     internal static void ScaffoldConfigurations(EntityFrameworkCoreProject project)

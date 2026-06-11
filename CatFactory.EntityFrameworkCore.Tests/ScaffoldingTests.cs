@@ -148,8 +148,26 @@ public class ScaffoldingTests
 
         // TODO: scaffold DbContext queries: entities by primary key, unique and foreign key (add flags for tracking and includes)
 
-        solution
-            .ScaffoldDomain()
-            .ScaffoldApplication();
+        /*
+        
+        public IQueryable<Student> FindStudents(bool tracking = false)
+        {
+	        var query = Students.AsQueryable();
+	
+	        if (!tracking)
+		        query = query.AsNoTracking();
+	
+	        return query;
+        }
+
+        var students = _dbContext.FindStudents()
+	        .QuerySpec(new FindStudentsByGivenQuerySpec(request.GivenName))
+	        .QuerySpec(new FindStudentsByEmailQuerySpec(request.Email))
+	        .Select(item => item.ToItemModel())
+	        .ToListAsync(ct);
+         
+         */
+
+        solution.ScaffoldDomain().ScaffoldApplication().ScaffoldInfrastructure();
     }
 }

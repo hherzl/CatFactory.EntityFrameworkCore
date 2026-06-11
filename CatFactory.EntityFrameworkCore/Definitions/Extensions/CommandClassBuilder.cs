@@ -9,7 +9,8 @@ public static class CommandClassBuilder
 {
     public static CommandClassDefinition GetCreateCommandClassDef(this ApplicationProject project, string feature, string command, ITable table)
     {
-        var definition = CSharpClassDefinition.Create<CommandClassDefinition>(AccessModifier.Public, project.GetCommandClassName(command), ns: project.GetApplicationFeaturesNs(feature))
+        var definition = CSharpClassDefinition.Create<CommandClassDefinition>(AccessModifier.Public, project.GetCommandClassName(command))
+            .Ns(project.GetApplicationFeaturesNs(feature))
             .Implement("IValidatableObject")
             .UsingNs("System.ComponentModel.DataAnnotations")
             .UsingNs("System.Linq")
@@ -23,7 +24,7 @@ public static class CommandClassBuilder
         {
             var propType = project.Database.ResolveDatabaseType(column);
 
-            definition.AddAutomaticProperty(propType, project.GetPropName(table, column));
+            definition.AddAutomaticProp(propType, project.GetPropName(table, column));
         }
 
         definition.SimplifyDataTypes();

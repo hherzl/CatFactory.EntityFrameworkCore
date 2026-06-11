@@ -8,7 +8,8 @@ public static class BaseQuerySpecClassBuilder
 {
     public static QuerySpecBaseClassDefinition GetBaseQuerySpecClassDef(this ApplicationProject project)
     {
-        var definition = CSharpClassDefinition.Create<QuerySpecBaseClassDefinition>(AccessModifier.Public, project.GetBaseQuerySpecClassName(), ns: project.GetApplicationQuerySpecsNs())
+        var definition = CSharpClassDefinition.Create<QuerySpecBaseClassDefinition>(AccessModifier.Public, project.GetBaseQuerySpecClassName())
+            .Ns(project.GetApplicationQuerySpecsNs())
             .UsingNs("System.Linq.Expressions")
             .AddCtor(new(AccessModifier.Public)
             {
@@ -31,16 +32,17 @@ public static class BaseQuerySpecClassBuilder
 
         definition.GenericTypes.Add(new GenericTypeDefinition { Name = "TQuerySpec" });
 
-        definition.AddAutomaticProperty("Expression<Func<TQuerySpec, bool>>", "Criteria");
-        definition.AddAutomaticProperty("List<Expression<Func<TQuerySpec, object>>>", "Includes");
-        definition.AddAutomaticProperty("List<string>", "IncludeStrings");
+        definition.AddAutomaticProp("Expression<Func<TQuerySpec, bool>>", "Criteria");
+        definition.AddAutomaticProp("List<Expression<Func<TQuerySpec, object>>>", "Includes");
+        definition.AddAutomaticProp("List<string>", "IncludeStrings");
 
         return (QuerySpecBaseClassDefinition)definition;
     }
 
     public static CSharpInterfaceDefinition GetBaseQuerySpecInterfaceDef(this ApplicationProject project)
     {
-        var classDefinition = CSharpClassDefinition.Create<QuerySpecBaseClassDefinition>(AccessModifier.Public, project.GetBaseQuerySpecClassName(), ns: project.GetApplicationQuerySpecsNs())
+        var classDefinition = CSharpClassDefinition.Create<QuerySpecBaseClassDefinition>(AccessModifier.Public, project.GetBaseQuerySpecClassName())
+            .Ns(project.GetApplicationQuerySpecsNs())
             .UsingNs("System.Linq.Expressions")
             .AddCtor(new(AccessModifier.Public))
             .Add(new MethodDefinition(AccessModifier.Protected, "void", "AddInclude")
@@ -54,15 +56,15 @@ public static class BaseQuerySpecClassBuilder
                 .Set(body => body.Line("IncludeStrings.Add(includeString);"))
             );
 
-        classDefinition.GenericTypes.Add(new GenericTypeDefinition { Name = "TQuerySpec" });
+        classDefinition.GenericTypes.Add(new GenericTypeDefinition("TQuerySpec", "class"));
 
-        classDefinition.AddAutomaticProperty("Expression<Func<TQuerySpec, bool>>", "Criteria");
-        classDefinition.AddAutomaticProperty("List<Expression<Func<TQuerySpec, object>>>", "Includes");
-        classDefinition.AddAutomaticProperty("List<string>", "IncludeStrings");
+        classDefinition.AddAutomaticProp("Expression<Func<TQuerySpec, bool>>", "Criteria");
+        classDefinition.AddAutomaticProp("List<Expression<Func<TQuerySpec, object>>>", "Includes");
+        classDefinition.AddAutomaticProp("List<string>", "IncludeStrings");
 
         var interfaceDefinition = classDefinition.RefactInterface();
 
-        interfaceDefinition.GenericTypes.Add(new GenericTypeDefinition { Name = "TQuerySpec" });
+        interfaceDefinition.GenericTypes.Add(new GenericTypeDefinition("TQuerySpec"));
 
         return interfaceDefinition;
     }

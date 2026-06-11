@@ -66,6 +66,9 @@ public static class ApplicationProjectExtensions
     public static string GetBaseQuerySpecClassName(this ApplicationProject project)
         => project.CodeNamingConvention.GetClassName("BaseQuerySpec");
 
+    public static string GetQuerySpecExtensionsClassName(this ApplicationProject project)
+        => project.CodeNamingConvention.GetClassName("QuerySpecExtensions");
+
     #endregion
 
     public static ApplicationProject Scaffold(this ApplicationProject project, Action<ApplicationProjectSettings> action = null)
@@ -100,7 +103,7 @@ public static class ApplicationProjectExtensions
                 var table = project.Database.FindTable(dbObject.FullName);
                 var names = new
                 {
-                    Feature = dbObject.Name,
+                    Feature = $"{dbObject.Name}s",
                     SingleQuery = $"Get{table.Name}",
                     ComposedQuery = $"Get{table.Name}s",
                     CreateCommand = $"Create{dbObject.Name}"
@@ -113,7 +116,7 @@ public static class ApplicationProjectExtensions
                 project.Scaffold(project.GetComposedQueryHandlerClassDef(names.Feature, names.ComposedQuery), project.GetApplicationFeaturesDirectory(names.Feature));
 
                 project.Scaffold(project.GetCreateCommandClassDef(names.Feature, names.CreateCommand, table), project.GetApplicationFeaturesDirectory(names.Feature));
-                project.Scaffold(project.GetCreateCommandHandlerClassDef(names.Feature, names.CreateCommand), project.GetApplicationFeaturesDirectory(names.Feature));
+                project.Scaffold(project.GetCreateCommandHandlerClassDef(names.Feature, names.CreateCommand, table), project.GetApplicationFeaturesDirectory(names.Feature));
             }
         }
     }
@@ -123,6 +126,8 @@ public static class ApplicationProjectExtensions
         project.Scaffold(project.GetBaseQuerySpecInterfaceDef(), project.GetApplicationQuerySpecsDirectory());
         project.Scaffold(project.GetBaseQuerySpecClassDef(), project.GetApplicationQuerySpecsDirectory());
 
+        project.Scaffold(project.GetQuerySpecExtensionsClassDef(), project.GetApplicationQuerySpecsDirectory());
+
         foreach (var feature in project.Features)
         {
             foreach (var dbObject in feature.DbObjects)
@@ -130,13 +135,14 @@ public static class ApplicationProjectExtensions
                 if (!dbObject.Type.Contains("TABLE"))
                     continue;
 
+                var table = project.Database.FindTable(dbObject.FullName);
                 var names = new
                 {
                     Entity = dbObject.Name,
                     Query = $"Get{dbObject.Name}",
                 };
 
-                project.Scaffold(project.GetQuerySpecClassDef(names.Query, names.Entity), project.GetApplicationQuerySpecsDirectory());
+                project.Scaffold(project.GetQuerySpecClassDef(names.Query, names.Entity, table), project.GetApplicationQuerySpecsDirectory());
             }
         }
     }

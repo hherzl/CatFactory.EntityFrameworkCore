@@ -29,4 +29,18 @@ public static class CleanArchitectureSolutionExtensions
 
         return solution;
     }
+
+    public static CleanArchitectureSolution ScaffoldInfrastructure(this CleanArchitectureSolution solution)
+    {
+        solution.Infrastructure.Name = solution.Name;
+        solution.Infrastructure.OutputDirectory = solution.OutputDirectory;
+        solution.Infrastructure.Database = solution.Database;
+
+        solution.Infrastructure.GlobalSelection(settings => settings.ForceOverwrite = true);
+
+        solution.Infrastructure.BuildFeatures();
+        solution.Infrastructure.Scaffold();
+
+        return solution;
+    }
 }

@@ -13,6 +13,10 @@ public class CleanArchitectureSolution
         Namespaces = new();
         Domain = new(this);
         Application = new(this);
+        Infrastructure = new(this)
+        {
+            Version = EntityFrameworkCoreVersion.Version_5_0
+        };
     }
 
     public string Name { get; set; }
@@ -22,4 +26,5 @@ public class CleanArchitectureSolution
     public CleanArchitecureNamespaces Namespaces { get; set; }
     public DomainProject Domain { get; set; }
     public ApplicationProject Application { get; set; }
+    public InfrastructureProject Infrastructure { get; set; }
 }

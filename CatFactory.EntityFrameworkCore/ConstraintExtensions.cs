@@ -33,7 +33,35 @@ public static class ConstraintExtensions
         };
     }
 
-    public static PropertyDefinition GetParentNavigationProperty(this ForeignKey foreignKey, ITable table, EntityFrameworkCoreProject project)
+    public static PropertyDefinition GetParentNavigationProp(this ForeignKey foreignKey, ITable table, InfrastructureProject project)
+    {
+        var propType = "";
+
+        if (table.HasSameEnclosingName())
+        {
+            propType = string.Join(".", (new string[]
+            {
+                project.Solution.Namespaces.Domain,
+                project.Database.HasDefaultSchema(table) ? string.Empty : table.Schema, project.Solution.Domain.GetEntityName(table)
+            }).Where(item => !string.IsNullOrEmpty(item)));
+        }
+        else
+        {
+            propType = project.Solution.Domain.GetEntityName(table);
+        }
+
+        var selection = project.GetSelection(table);
+
+        return new PropertyDefinition(propType, $"{project.Solution.Domain.GetEntityName(table)}Fk")
+        {
+            AccessModifier = AccessModifier.Public,
+            IsVirtual = selection.Settings.DeclareNavigationPropertiesAsVirtual,
+            IsAutomatic = true,
+            Attributes = selection.Settings.UseDataAnnotations ? [new MetadataAttribute("ForeignKey", $"\"{string.Join(",", foreignKey.Key)}\"")] : null
+        };
+    }
+
+    public static PropertyDefinition GetParentNavigationProp(this ForeignKey foreignKey, ITable table, EntityFrameworkCoreProject project)
     {
         var propertyType = "";
 

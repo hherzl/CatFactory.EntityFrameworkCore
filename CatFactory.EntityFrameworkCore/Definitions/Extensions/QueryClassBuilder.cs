@@ -10,8 +10,7 @@ public static class QueryClassBuilder
     {
         var definition = CSharpClassDefinition.Create<QueryClassDefinition>(AccessModifier.Public, project.GetQueryClassName(query), ns: project.GetApplicationFeaturesNs(feature))
             .UsingNs("System")
-            .AddCtor(new ClassConstructorDefinition(AccessModifier.Public))
-            ;
+            .AddCtor(new ClassConstructorDefinition(AccessModifier.Public));
 
         return (QueryClassDefinition)definition;
     }
@@ -20,11 +19,10 @@ public static class QueryClassBuilder
     {
         var definition = CSharpClassDefinition.Create<QueryClassDefinition>(AccessModifier.Public, project.GetQueryClassName(query), ns: project.GetApplicationFeaturesNs(feature))
             .UsingNs("System")
-            .AddCtor(new ClassConstructorDefinition(AccessModifier.Public))
-            ;
+            .AddCtor(new ClassConstructorDefinition(AccessModifier.Public));
 
-        definition.AddAutomaticProperty(AccessModifier.Public, "int", "PageSize");
-        definition.AddAutomaticProperty(AccessModifier.Public, "int", "PageNumber");
+        definition.AddAutomaticProp(AccessModifier.Public, "int", "PageSize");
+        definition.AddAutomaticProp(AccessModifier.Public, "int", "PageNumber");
 
         return (QueryClassDefinition)definition;
     }

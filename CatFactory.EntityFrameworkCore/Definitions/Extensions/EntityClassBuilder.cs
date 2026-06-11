@@ -237,23 +237,23 @@ public static class EntityClassBuilder
 
         if (table.PrimaryKey != null)
         {
-            var constructor = new ClassConstructorDefinition
+            var ctor = new ClassConstructorDefinition
             {
                 AccessModifier = AccessModifier.Public
             };
 
             foreach (var key in table.GetColumnsFromConstraint(table.PrimaryKey))
             {
-                var col = (Column)key;
+                var column = (Column)key;
 
-                var propType = project.Database.ResolveDatabaseType(col);
+                var propType = project.Database.ResolveDatabaseType(column);
 
-                constructor.Parameters.Add(new ParameterDefinition(propType, project.GetParameterName(col)));
+                ctor.Parameters.Add(new ParameterDefinition(propType, project.GetParameterName(column)));
 
-                constructor.Lines.Add(new CodeLine("{0} = {1};", project.GetPropName(key.Name), project.GetParameterName(col)));
+                ctor.Lines.Add(new CodeLine("{0} = {1};", project.GetPropName(key.Name), project.GetParameterName(column)));
             }
 
-            definition.Constructors.Add(constructor);
+            definition.Constructors.Add(ctor);
         }
 
         var columns = table.Columns;
@@ -339,7 +339,7 @@ public static class EntityClassBuilder
                 }
             }
 
-            var fkProperty = foreignKey.GetParentNavigationProperty(foreignTable, project);
+            var fkProperty = foreignKey.GetParentNavigationProp(foreignTable, project);
 
             if (!definition.Properties.Any(item => item.Name == fkProperty.Name))
                 definition.Properties.Add(fkProperty);
